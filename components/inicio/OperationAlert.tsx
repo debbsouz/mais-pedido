@@ -2,7 +2,7 @@
 
 import { WarningCircle } from "@phosphor-icons/react";
 
-export function DashboardAlert() {
+export function OperationAlert() {
   return (
     <section className="dashboard__alert">
       <div className="dashboard__alert-icon">

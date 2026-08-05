@@ -1,15 +1,15 @@
-export function DashboardHeader() {
+export function OperationHeader() {
   return (
     <section className="dashboard__heading">
       <div>
         <span className="dashboard__eyebrow">
-          Terça-feira, 4 de agosto
+          Central de operações
         </span>
 
         <h1>Boa tarde, Débora!</h1>
 
         <p>
-          Acompanhe tudo o que está acontecendo na Burger House.
+          Veja o que está acontecendo agora na Burger House.
         </p>
       </div>
 

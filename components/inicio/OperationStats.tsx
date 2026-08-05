@@ -1,44 +1,43 @@
 "use client";
 
 import {
-  ArrowUpRight,
-  Clock,
-  CurrencyDollar,
-  ForkKnife,
-  Receipt,
+  CheckCircle,
+  ClockCountdown,
+  CookingPot,
+  Motorcycle,
 } from "@phosphor-icons/react";
 
-const statistics = [
+const operationStats = [
   {
-    title: "Vendas de hoje",
-    value: "R$ 2.450,00",
-    detail: "18% acima de ontem",
-    icon: CurrencyDollar,
+    title: "Aguardando confirmação",
+    value: "3",
+    detail: "Pedido mais antigo há 6 min",
+    icon: ClockCountdown,
   },
   {
-    title: "Pedidos",
-    value: "58",
-    detail: "12 em andamento",
-    icon: Receipt,
+    title: "Em preparo",
+    value: "8",
+    detail: "Tempo médio de 17 min",
+    icon: CookingPot,
   },
   {
-    title: "Ticket médio",
-    value: "R$ 42,24",
-    detail: "R$ 3,80 acima da média",
-    icon: ForkKnife,
+    title: "Pedidos prontos",
+    value: "3",
+    detail: "Aguardando retirada",
+    icon: CheckCircle,
   },
   {
-    title: "Tempo médio",
-    value: "18 min",
-    detail: "2 minutos mais rápido",
-    icon: Clock,
+    title: "Entregas em rota",
+    value: "2",
+    detail: "1 aguardando entregador",
+    icon: Motorcycle,
   },
 ];
 
-export function DashboardStats() {
+export function OperationStats() {
   return (
     <section className="dashboard__stats">
-      {statistics.map((stat) => {
+      {operationStats.map((stat) => {
         const Icon = stat.icon;
 
         return (
@@ -54,7 +53,6 @@ export function DashboardStats() {
             <strong>{stat.value}</strong>
 
             <div className="stat-card__detail">
-              <ArrowUpRight size={15} weight="bold" />
               {stat.detail}
             </div>
           </article>

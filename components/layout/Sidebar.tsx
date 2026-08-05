@@ -4,7 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
-  ChartPieSlice,
+  House,
   ClipboardText,
   ForkKnife,
   Table,
@@ -12,27 +12,23 @@ import {
   Motorcycle,
   Users,
   CurrencyCircleDollar,
+  ChartPieSlice,
   ChartBar,
   Gear,
   SignOut,
   Plus,
 } from "@phosphor-icons/react";
 
-const navigation = [
+const operationNavigation = [
   {
-    label: "Dashboard",
-    href: "/dashboard",
-    icon: ChartPieSlice,
+    label: "Início",
+    href: "/inicio",
+    icon: House,
   },
   {
     label: "Pedidos",
     href: "/pedidos",
     icon: ClipboardText,
-  },
-  {
-    label: "Cardápio",
-    href: "/cardapio",
-    icon: ForkKnife,
   },
   {
     label: "Mesas",
@@ -49,6 +45,14 @@ const navigation = [
     href: "/entregas",
     icon: Motorcycle,
   },
+];
+
+const managementNavigation = [
+  {
+    label: "Cardápio",
+    href: "/cardapio",
+    icon: ForkKnife,
+  },
   {
     label: "Clientes",
     href: "/clientes",
@@ -60,6 +64,11 @@ const navigation = [
     icon: CurrencyCircleDollar,
   },
   {
+    label: "Dashboard",
+    href: "/dashboard",
+    icon: ChartPieSlice,
+  },
+  {
     label: "Relatórios",
     href: "/relatorios",
     icon: ChartBar,
@@ -68,6 +77,29 @@ const navigation = [
 
 export function Sidebar() {
   const pathname = usePathname();
+
+  function renderNavigationItem(
+    item: (typeof operationNavigation)[number],
+  ) {
+    const Icon = item.icon;
+
+    const isActive =
+      pathname === item.href ||
+      pathname.startsWith(`${item.href}/`);
+
+    return (
+      <Link
+        key={item.href}
+        href={item.href}
+        className={`sidebar__item ${
+          isActive ? "sidebar__item--active" : ""
+        }`}
+      >
+        <Icon size={21} weight={isActive ? "fill" : "regular"} />
+        <span>{item.label}</span>
+      </Link>
+    );
+  }
 
   return (
     <aside className="sidebar">
@@ -97,25 +129,17 @@ export function Sidebar() {
       </Link>
 
       <nav className="sidebar__navigation">
-        {navigation.map((item) => {
-          const Icon = item.icon;
-          const isActive =
-            pathname === item.href ||
-            pathname.startsWith(`${item.href}/`);
+        <div className="sidebar__group">
+          <span className="sidebar__group-title">Operação</span>
 
-          return (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={`sidebar__item ${
-                isActive ? "sidebar__item--active" : ""
-              }`}
-            >
-              <Icon size={21} weight={isActive ? "fill" : "regular"} />
-              <span>{item.label}</span>
-            </Link>
-          );
-        })}
+          {operationNavigation.map(renderNavigationItem)}
+        </div>
+
+        <div className="sidebar__group">
+          <span className="sidebar__group-title">Gestão</span>
+
+          {managementNavigation.map(renderNavigationItem)}
+        </div>
       </nav>
 
       <div className="sidebar__footer">
@@ -124,7 +148,10 @@ export function Sidebar() {
           <span>Configurações</span>
         </Link>
 
-        <button type="button" className="sidebar__item sidebar__logout">
+        <button
+          type="button"
+          className="sidebar__item sidebar__logout"
+        >
           <SignOut size={21} />
           <span>Sair</span>
         </button>
