@@ -139,7 +139,9 @@ export function NewOrderDrawer({
     }
 
     if (fulfillment === "Mesa") {
-      return Boolean(customer.tableNumber.trim());
+      return Boolean(
+        customer.tableNumber.trim(),
+      );
     }
 
     return Boolean(
@@ -221,7 +223,11 @@ export function NewOrderDrawer({
   }
 
   function handleCreateOrder() {
-    if (!fulfillment || !origin || !payment.method) {
+    if (
+      !fulfillment ||
+      !origin ||
+      !payment.method
+    ) {
       return;
     }
 
@@ -256,6 +262,47 @@ export function NewOrderDrawer({
       items: itemsDescription,
       status: "new",
       delayed: false,
+
+      phone: customer.phone || undefined,
+
+      tableNumber:
+        fulfillment === "Mesa"
+          ? customer.tableNumber
+          : undefined,
+
+      pickupName:
+        fulfillment === "Balcão"
+          ? customer.pickupName
+          : undefined,
+
+      address:
+        fulfillment === "Delivery"
+          ? {
+              zipCode: customer.zipCode,
+              street: customer.street,
+              number: customer.number,
+              complement: customer.complement,
+              neighborhood:
+                customer.neighborhood,
+              city: customer.city,
+            }
+          : undefined,
+
+      itemDetails: items.map((item) => ({
+        productId: item.productId,
+        name: item.name,
+        price: item.price,
+        quantity: item.quantity,
+      })),
+
+      payment: {
+        method: payment.method,
+        cardBrand: payment.cardBrand,
+        needsCardMachine:
+          payment.needsCardMachine,
+        changeFor: payment.changeFor,
+        observation: payment.observation,
+      },
     };
 
     onCreateOrder(newOrder);
@@ -377,7 +424,9 @@ export function NewOrderDrawer({
             <OrderTypeSelector
               fulfillment={fulfillment}
               origin={origin}
-              onFulfillmentChange={setFulfillment}
+              onFulfillmentChange={
+                setFulfillment
+              }
               onOriginChange={setOrigin}
             />
           )}
@@ -414,7 +463,6 @@ export function NewOrderDrawer({
 
               <div className="new-order-review-preview__item">
                 <span>Atendimento</span>
-
                 <strong>
                   {fulfillment ?? "Não informado"}
                 </strong>
@@ -422,7 +470,6 @@ export function NewOrderDrawer({
 
               <div className="new-order-review-preview__item">
                 <span>Origem</span>
-
                 <strong>
                   {origin ?? "Não informada"}
                 </strong>
@@ -433,18 +480,22 @@ export function NewOrderDrawer({
                   Cliente / identificação
                 </span>
 
-                <strong>{getCustomerLabel()}</strong>
+                <strong>
+                  {getCustomerLabel()}
+                </strong>
               </div>
 
               {customer.phone && (
                 <div className="new-order-review-preview__item">
                   <span>Telefone</span>
-
-                  <strong>{customer.phone}</strong>
+                  <strong>
+                    {customer.phone}
+                  </strong>
                 </div>
               )}
 
-              {fulfillment === "Delivery" && (
+              {fulfillment ===
+                "Delivery" && (
                 <div className="new-order-review-preview__item">
                   <span>Endereço</span>
 
@@ -465,12 +516,14 @@ export function NewOrderDrawer({
                 {items.map((item) => (
                   <div key={item.productId}>
                     <span>
-                      {item.quantity}x {item.name}
+                      {item.quantity}x{" "}
+                      {item.name}
                     </span>
 
                     <strong>
                       {formatCurrency(
-                        item.price * item.quantity,
+                        item.price *
+                          item.quantity,
                       )}
                     </strong>
                   </div>
@@ -480,21 +533,23 @@ export function NewOrderDrawer({
               <div className="new-order-review-preview__item">
                 <span>Pagamento</span>
 
-                <strong>{getPaymentLabel()}</strong>
+                <strong>
+                  {getPaymentLabel()}
+                </strong>
               </div>
 
               {payment.needsCardMachine && (
                 <div className="new-order-review-preview__item">
                   <span>Maquininha</span>
-
-                  <strong>Levar na entrega</strong>
+                  <strong>
+                    Levar na entrega
+                  </strong>
                 </div>
               )}
 
               {payment.changeFor && (
                 <div className="new-order-review-preview__item">
                   <span>Troco para</span>
-
                   <strong>
                     R$ {payment.changeFor}
                   </strong>
@@ -504,7 +559,6 @@ export function NewOrderDrawer({
               {payment.observation && (
                 <div className="new-order-review-preview__item">
                   <span>Observação</span>
-
                   <strong>
                     {payment.observation}
                   </strong>
@@ -513,7 +567,6 @@ export function NewOrderDrawer({
 
               <div className="new-order-review-preview__item">
                 <span>Total</span>
-
                 <strong>
                   {formatCurrency(subtotal)}
                 </strong>

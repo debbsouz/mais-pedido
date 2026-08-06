@@ -6,6 +6,7 @@ import {
   Phone,
   Printer,
   Receipt,
+  Storefront,
   User,
   X,
 } from "@phosphor-icons/react";
@@ -17,6 +18,57 @@ interface OrderDrawerProps {
   onClose: () => void;
 }
 
+function formatCurrency(value: number) {
+  return new Intl.NumberFormat("pt-BR", {
+    style: "currency",
+    currency: "BRL",
+  }).format(value);
+}
+
+function getPaymentLabel(order: Order) {
+  if (!order.payment) {
+    return "Não informado";
+  }
+
+  const { method, cardBrand } = order.payment;
+
+  if (
+    method === "Crédito" ||
+    method === "Débito"
+  ) {
+    return `${method} · ${
+      cardBrand ?? "Bandeira não informada"
+    }`;
+  }
+
+  return method;
+}
+
+function getAddressLabel(order: Order) {
+  if (!order.address) {
+    return null;
+  }
+
+  const {
+    street,
+    number,
+    complement,
+    neighborhood,
+    city,
+    zipCode,
+  } = order.address;
+
+  return [
+    `${street}, ${number}`,
+    complement,
+    neighborhood,
+    city,
+    zipCode ? `CEP ${zipCode}` : "",
+  ]
+    .filter(Boolean)
+    .join(" · ");
+}
+
 export function OrderDrawer({
   order,
   onClose,
@@ -24,6 +76,8 @@ export function OrderDrawer({
   if (!order) {
     return null;
   }
+
+  const addressLabel = getAddressLabel(order);
 
   return (
     <div className="order-drawer">
@@ -69,37 +123,78 @@ export function OrderDrawer({
               </div>
 
               <div>
-                <MapPin size={18} />
+                <Storefront size={18} />
                 <span>Atendimento</span>
                 <strong>{order.fulfillment}</strong>
               </div>
 
-              <div>
-                <Phone size={18} />
-                <span>Contato</span>
-                <strong>(51) 99999-9999</strong>
-              </div>
+              {order.phone && (
+                <div>
+                  <Phone size={18} />
+                  <span>Contato</span>
+                  <strong>{order.phone}</strong>
+                </div>
+              )}
+
+              {order.tableNumber && (
+                <div>
+                  <Receipt size={18} />
+                  <span>Mesa</span>
+                  <strong>
+                    Mesa {order.tableNumber}
+                  </strong>
+                </div>
+              )}
+
+              {order.pickupName && (
+                <div>
+                  <User size={18} />
+                  <span>Identificação</span>
+                  <strong>{order.pickupName}</strong>
+                </div>
+              )}
             </div>
           </section>
+
+          {addressLabel && (
+            <section className="order-drawer__section">
+              <h3>Endereço de entrega</h3>
+
+              <div className="order-drawer__payment">
+                <MapPin size={20} />
+
+                <div>
+                  <span>Destino</span>
+                  <strong>{addressLabel}</strong>
+                </div>
+              </div>
+            </section>
+          )}
 
           <section className="order-drawer__section">
             <h3>Itens do pedido</h3>
 
             <div className="order-drawer__items">
-              <div>
-                <span>2x X-Burger</span>
-                <strong>R$ 44,00</strong>
-              </div>
+              {order.itemDetails?.length ? (
+                order.itemDetails.map((item) => (
+                  <div key={item.productId}>
+                    <span>
+                      {item.quantity}x {item.name}
+                    </span>
 
-              <div>
-                <span>1x Batata grande</span>
-                <strong>R$ 18,90</strong>
-              </div>
-
-              <div>
-                <span>Adicionais</span>
-                <strong>R$ 10,00</strong>
-              </div>
+                    <strong>
+                      {formatCurrency(
+                        item.price * item.quantity,
+                      )}
+                    </strong>
+                  </div>
+                ))
+              ) : (
+                <div>
+                  <span>{order.items}</span>
+                  <strong>{order.total}</strong>
+                </div>
+              )}
             </div>
           </section>
 
@@ -111,18 +206,48 @@ export function OrderDrawer({
 
               <div>
                 <span>Forma de pagamento</span>
-                <strong>Pix</strong>
+                <strong>
+                  {getPaymentLabel(order)}
+                </strong>
               </div>
             </div>
+
+            {order.payment?.needsCardMachine && (
+              <div className="order-drawer__payment">
+                <CreditCard size={20} />
+
+                <div>
+                  <span>Maquininha</span>
+                  <strong>
+                    Levar na entrega
+                  </strong>
+                </div>
+              </div>
+            )}
+
+            {order.payment?.changeFor && (
+              <div className="order-drawer__payment">
+                <Receipt size={20} />
+
+                <div>
+                  <span>Troco para</span>
+                  <strong>
+                    R$ {order.payment.changeFor}
+                  </strong>
+                </div>
+              </div>
+            )}
           </section>
 
-          <section className="order-drawer__section">
-            <h3>Observações</h3>
+          {order.payment?.observation && (
+            <section className="order-drawer__section">
+              <h3>Observações</h3>
 
-            <p className="order-drawer__note">
-              Sem cebola e com molho separado.
-            </p>
-          </section>
+              <p className="order-drawer__note">
+                {order.payment.observation}
+              </p>
+            </section>
+          )}
         </div>
 
         <div className="order-drawer__footer">

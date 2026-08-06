@@ -28,6 +28,43 @@ export type OrderFulfillment =
   | "Mesa"
   | "Balcão";
 
+export type OrderPaymentMethod =
+  | "Pix"
+  | "Dinheiro"
+  | "Crédito"
+  | "Débito"
+  | "Comanda";
+
+export type OrderCardBrand =
+  | "Visa"
+  | "Mastercard"
+  | "Elo"
+  | "Hipercard";
+
+export interface OrderItemDetail {
+  productId: string;
+  name: string;
+  price: number;
+  quantity: number;
+}
+
+export interface OrderAddress {
+  zipCode: string;
+  street: string;
+  number: string;
+  complement: string;
+  neighborhood: string;
+  city: string;
+}
+
+export interface OrderPaymentDetails {
+  method: OrderPaymentMethod;
+  cardBrand: OrderCardBrand | null;
+  needsCardMachine: boolean;
+  changeFor: string;
+  observation: string;
+}
+
 export interface Order {
   id: string;
   customer: string;
@@ -38,6 +75,13 @@ export interface Order {
   items: string;
   status: OrderStatus;
   delayed?: boolean;
+
+  phone?: string;
+  tableNumber?: string;
+  pickupName?: string;
+  address?: OrderAddress;
+  itemDetails?: OrderItemDetail[];
+  payment?: OrderPaymentDetails;
 }
 
 interface OrderCardProps {
@@ -75,7 +119,10 @@ function AdvanceIcon({
     return <Package size={17} weight="bold" />;
   }
 
-  if (status === "ready" && fulfillment === "Delivery") {
+  if (
+    status === "ready" &&
+    fulfillment === "Delivery"
+  ) {
     return <Motorcycle size={17} weight="bold" />;
   }
 
@@ -148,7 +195,10 @@ export function OrderCard({
 
       <div className="order-card__header">
         <div>
-          <span className="order-card__id">#{id}</span>
+          <span className="order-card__id">
+            #{id}
+          </span>
+
           <strong>{customer}</strong>
         </div>
 
@@ -160,7 +210,10 @@ export function OrderCard({
       </div>
 
       <div className="order-card__fulfillment">
-        <FulfillmentIcon fulfillment={fulfillment} />
+        <FulfillmentIcon
+          fulfillment={fulfillment}
+        />
+
         <span>{fulfillment}</span>
       </div>
 
