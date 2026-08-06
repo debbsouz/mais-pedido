@@ -1,6 +1,14 @@
+"use client";
+
 import { Plus } from "@phosphor-icons/react";
 
-export function OrdersHeader() {
+interface OrdersHeaderProps {
+  onNewOrder: () => void;
+}
+
+export function OrdersHeader({
+  onNewOrder,
+}: OrdersHeaderProps) {
   return (
     <section className="orders-header">
       <div>
@@ -11,11 +19,16 @@ export function OrdersHeader() {
         <h1>Pedidos</h1>
 
         <p>
-          Acompanhe todos os pedidos do restaurante em tempo real.
+          Acompanhe todos os pedidos do restaurante em
+          tempo real.
         </p>
       </div>
 
-      <button type="button" className="orders-header__new-order">
+      <button
+        type="button"
+        className="orders-header__new-order"
+        onClick={onNewOrder}
+      >
         <Plus size={20} weight="bold" />
         Novo pedido
       </button>
