@@ -18,11 +18,18 @@ interface OrdersBoardProps {
     | "Mesa"
     | "Balcão"
     | "WhatsApp";
+
   searchTerm: string;
+
   orders: Order[];
+
   onOrdersChange: (
-    updater: Order[] | ((currentOrders: Order[]) => Order[]),
+    updater:
+      | Order[]
+      | ((currentOrders: Order[]) => Order[]),
   ) => void;
+
+  onOrderHandled: (orderId: string) => void;
 }
 
 export const initialOrders: Order[] = [
@@ -144,6 +151,7 @@ export function OrdersBoard({
   searchTerm,
   orders,
   onOrdersChange,
+  onOrderHandled,
 }: OrdersBoardProps) {
   const [selectedOrder, setSelectedOrder] =
     useState<Order | null>(null);
@@ -167,6 +175,7 @@ export function OrdersBoard({
 
   function acceptOrder(orderId: string) {
     moveOrder(orderId, "preparing");
+    onOrderHandled(orderId);
   }
 
   function rejectOrder(orderId: string) {
@@ -183,6 +192,8 @@ export function OrdersBoard({
         (order) => order.id !== orderId,
       ),
     );
+
+    onOrderHandled(orderId);
 
     if (selectedOrder?.id === orderId) {
       setSelectedOrder(null);
