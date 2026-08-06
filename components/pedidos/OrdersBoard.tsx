@@ -19,9 +19,13 @@ interface OrdersBoardProps {
     | "Balcão"
     | "WhatsApp";
   searchTerm: string;
+  orders: Order[];
+  onOrdersChange: (
+    updater: Order[] | ((currentOrders: Order[]) => Order[]),
+  ) => void;
 }
 
-const initialOrders: Order[] = [
+export const initialOrders: Order[] = [
   {
     id: "1052",
     customer: "Amanda Rocha",
@@ -125,7 +129,10 @@ const initialOrders: Order[] = [
   },
 ];
 
-const statusSequence: Record<OrderStatus, OrderStatus | null> = {
+const statusSequence: Record<
+  OrderStatus,
+  OrderStatus | null
+> = {
   new: "preparing",
   preparing: "ready",
   ready: "delivery",
@@ -135,13 +142,17 @@ const statusSequence: Record<OrderStatus, OrderStatus | null> = {
 export function OrdersBoard({
   activeFilter,
   searchTerm,
+  orders,
+  onOrdersChange,
 }: OrdersBoardProps) {
-  const [orders, setOrders] = useState<Order[]>(initialOrders);
   const [selectedOrder, setSelectedOrder] =
     useState<Order | null>(null);
 
-  function moveOrder(orderId: string, newStatus: OrderStatus) {
-    setOrders((currentOrders) =>
+  function moveOrder(
+    orderId: string,
+    newStatus: OrderStatus,
+  ) {
+    onOrdersChange((currentOrders) =>
       currentOrders.map((order) =>
         order.id === orderId
           ? {
@@ -167,8 +178,10 @@ export function OrdersBoard({
       return;
     }
 
-    setOrders((currentOrders) =>
-      currentOrders.filter((order) => order.id !== orderId),
+    onOrdersChange((currentOrders) =>
+      currentOrders.filter(
+        (order) => order.id !== orderId,
+      ),
     );
 
     if (selectedOrder?.id === orderId) {
@@ -177,7 +190,7 @@ export function OrdersBoard({
   }
 
   function advanceOrder(orderId: string) {
-    setOrders((currentOrders) =>
+    onOrdersChange((currentOrders) =>
       currentOrders.flatMap((order) => {
         if (order.id !== orderId) {
           return [order];
@@ -190,7 +203,8 @@ export function OrdersBoard({
           return [];
         }
 
-        const nextStatus = statusSequence[order.status];
+        const nextStatus =
+          statusSequence[order.status];
 
         if (!nextStatus) {
           return [];
@@ -263,9 +277,11 @@ export function OrdersBoard({
   }
 
   const newOrders = ordersByStatus("new");
-  const preparingOrders = ordersByStatus("preparing");
+  const preparingOrders =
+    ordersByStatus("preparing");
   const readyOrders = ordersByStatus("ready");
-  const deliveryOrders = ordersByStatus("delivery");
+  const deliveryOrders =
+    ordersByStatus("delivery");
 
   return (
     <>

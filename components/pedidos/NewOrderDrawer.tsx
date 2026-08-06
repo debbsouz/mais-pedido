@@ -8,6 +8,8 @@ import {
 } from "@phosphor-icons/react";
 import { useState } from "react";
 
+import type { Order } from "./OrderCard";
+
 import {
   OrderCustomerForm,
   type NewOrderCustomerData,
@@ -32,6 +34,7 @@ import {
 interface NewOrderDrawerProps {
   isOpen: boolean;
   onClose: () => void;
+  onCreateOrder: (order: Order) => void;
 }
 
 const steps = [
@@ -73,6 +76,7 @@ function formatCurrency(value: number) {
 export function NewOrderDrawer({
   isOpen,
   onClose,
+  onCreateOrder,
 }: NewOrderDrawerProps) {
   const [currentStep, setCurrentStep] = useState(0);
 
@@ -217,16 +221,52 @@ export function NewOrderDrawer({
   }
 
   function handleCreateOrder() {
-    window.alert(
-      "Pedido montado com sucesso! Depois conectaremos essa ação ao Kanban e ao Supabase.",
-    );
+    if (!fulfillment || !origin || !payment.method) {
+      return;
+    }
 
-    handleClose();
+    const orderId = Date.now()
+      .toString()
+      .slice(-6);
+
+    const customerName =
+      fulfillment === "Mesa"
+        ? customer.name.trim() ||
+          `Mesa ${customer.tableNumber}`
+        : fulfillment === "Balcão"
+          ? customer.name.trim() ||
+            customer.pickupName.trim() ||
+            "Cliente balcão"
+          : customer.name.trim() || "Cliente";
+
+    const itemsDescription = items
+      .map(
+        (item) =>
+          `${item.quantity}x ${item.name}`,
+      )
+      .join(", ");
+
+    const newOrder: Order = {
+      id: orderId,
+      customer: customerName,
+      origin,
+      fulfillment,
+      time: "agora",
+      total: formatCurrency(subtotal),
+      items: itemsDescription,
+      status: "new",
+      delayed: false,
+    };
+
+    onCreateOrder(newOrder);
+    resetDrawer();
   }
 
   function getCustomerLabel() {
     if (fulfillment === "Mesa") {
-      return customer.tableNumber || "Não informada";
+      return customer.name.trim()
+        ? `${customer.name} · Mesa ${customer.tableNumber}`
+        : `Mesa ${customer.tableNumber}`;
     }
 
     if (fulfillment === "Balcão") {
@@ -307,7 +347,10 @@ export function NewOrderDrawer({
                 >
                   <div className="new-order-step__number">
                     {isCompleted ? (
-                      <Check size={14} weight="bold" />
+                      <Check
+                        size={14}
+                        weight="bold"
+                      />
                     ) : (
                       index + 1
                     )}
@@ -386,7 +429,9 @@ export function NewOrderDrawer({
               </div>
 
               <div className="new-order-review-preview__item">
-                <span>Cliente / identificação</span>
+                <span>
+                  Cliente / identificação
+                </span>
 
                 <strong>{getCustomerLabel()}</strong>
               </div>
@@ -404,8 +449,12 @@ export function NewOrderDrawer({
                   <span>Endereço</span>
 
                   <strong>
-                    {customer.street}, {customer.number} —{" "}
+                    {customer.street},{" "}
+                    {customer.number} —{" "}
                     {customer.neighborhood}
+                    {customer.complement
+                      ? ` · ${customer.complement}`
+                      : ""}
                   </strong>
                 </div>
               )}
@@ -487,7 +536,10 @@ export function NewOrderDrawer({
               "Cancelar"
             ) : (
               <>
-                <ArrowLeft size={17} weight="bold" />
+                <ArrowLeft
+                  size={17}
+                  weight="bold"
+                />
                 Voltar
               </>
             )}
@@ -498,8 +550,12 @@ export function NewOrderDrawer({
               type="button"
               className="new-order-drawer__primary"
               onClick={handleCreateOrder}
+              disabled={!canContinue}
             >
-              <Check size={18} weight="bold" />
+              <Check
+                size={18}
+                weight="bold"
+              />
               Criar pedido
             </button>
           ) : (

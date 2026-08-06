@@ -1,9 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useCallback, useState } from "react";
 
 import { NewOrderDrawer } from "@/components/pedidos/NewOrderDrawer";
-import { OrdersBoard } from "@/components/pedidos/OrdersBoard";
+import type { Order } from "@/components/pedidos/OrderCard";
+import {
+  initialOrders,
+  OrdersBoard,
+} from "@/components/pedidos/OrdersBoard";
 import {
   OrdersFilters,
   type OrderFilter,
@@ -15,13 +19,39 @@ export default function PedidosPage() {
     useState<OrderFilter>("Todos");
 
   const [searchTerm, setSearchTerm] = useState("");
+
   const [isNewOrderOpen, setIsNewOrderOpen] =
     useState(false);
+
+  const [orders, setOrders] =
+    useState<Order[]>(initialOrders);
+
+  const openNewOrderDrawer = useCallback(() => {
+    setIsNewOrderOpen(true);
+  }, []);
+
+  const closeNewOrderDrawer = useCallback(() => {
+    setIsNewOrderOpen(false);
+  }, []);
+
+  const handleCreateOrder = useCallback(
+    (order: Order) => {
+      setOrders((currentOrders) => [
+        order,
+        ...currentOrders,
+      ]);
+
+      setIsNewOrderOpen(false);
+      setActiveFilter("Todos");
+      setSearchTerm("");
+    },
+    [],
+  );
 
   return (
     <>
       <OrdersHeader
-        onNewOrder={() => setIsNewOrderOpen(true)}
+        onNewOrder={openNewOrderDrawer}
       />
 
       <OrdersFilters
@@ -34,11 +64,14 @@ export default function PedidosPage() {
       <OrdersBoard
         activeFilter={activeFilter}
         searchTerm={searchTerm}
+        orders={orders}
+        onOrdersChange={setOrders}
       />
 
       <NewOrderDrawer
         isOpen={isNewOrderOpen}
-        onClose={() => setIsNewOrderOpen(false)}
+        onClose={closeNewOrderDrawer}
+        onCreateOrder={handleCreateOrder}
       />
     </>
   );
