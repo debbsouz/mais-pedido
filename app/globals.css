@@ -4764,3 +4764,923 @@ html[data-theme="dark"]
   font-size: 12px;
   font-weight: 700;
 }
+
+/* =========================================
+   MESAS
+========================================= */
+
+.tables-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 22px;
+}
+
+.tables-header__eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--brand-600);
+  font-size: 10px;
+  font-weight: 850;
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+}
+
+.tables-header h1 {
+  margin: 8px 0 0;
+  font-size: 30px;
+}
+
+.tables-header p {
+  margin: 8px 0 0;
+  color: var(--text-secondary);
+  font-size: 13px;
+}
+
+.tables-header__new {
+  display: inline-flex;
+  min-height: 46px;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 0 18px;
+  border: 0;
+  border-radius: 13px;
+  background: var(--brand-600);
+  color: #ffffff;
+  font-size: 11px;
+  font-weight: 850;
+  cursor: pointer;
+  box-shadow: 0 10px 24px rgb(249 115 22 / 0.18);
+}
+
+.tables-header__new:hover {
+  filter: brightness(0.96);
+}
+
+.tables-board {
+  display: grid;
+  gap: 18px;
+}
+
+.tables-board__summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 14px 16px;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: var(--surface);
+}
+
+.tables-board__summary > div {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.tables-board__summary span {
+  color: var(--text-secondary);
+  font-size: 11px;
+}
+
+.tables-board__summary strong {
+  display: grid;
+  min-width: 48px;
+  height: 28px;
+  place-items: center;
+  padding: 0 8px;
+  border-radius: 999px;
+  background: var(--brand-600);
+  color: #ffffff;
+  font-size: 11px;
+}
+
+.tables-board__summary p {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 10px;
+}
+
+.tables-board__grid {
+  display: grid;
+  grid-template-columns:
+    repeat(4, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.table-card {
+  display: flex;
+  min-height: 210px;
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: var(--surface);
+  box-shadow: var(--shadow-sm);
+  cursor: pointer;
+  transition:
+    transform 150ms ease,
+    box-shadow 150ms ease,
+    border-color 150ms ease;
+}
+
+.table-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 14px 30px rgb(15 23 42 / 0.08);
+}
+
+.table-card--free {
+  border-top: 4px solid #22c55e;
+}
+
+.table-card--occupied {
+  border-top: 4px solid var(--brand-600);
+}
+
+.table-card--waiting-payment {
+  border-top: 4px solid #f59e0b;
+}
+
+.table-card__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px;
+  border-bottom: 1px solid var(--border);
+}
+
+.table-card__header > div {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.table-card__header > div span {
+  color: var(--text-muted);
+  font-size: 8px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.table-card__header > div strong {
+  font-size: 24px;
+  line-height: 1;
+}
+
+.table-card__status {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 8px;
+  border-radius: 999px;
+  font-size: 8px;
+  font-weight: 850;
+}
+
+.table-card__status--free {
+  background: #dcfce7;
+  color: #15803d;
+}
+
+.table-card__status--occupied {
+  background: var(--brand-50);
+  color: var(--brand-700);
+}
+
+.table-card__status--waiting-payment {
+  background: #fef3c7;
+  color: #b45309;
+}
+
+.table-card__free {
+  display: grid;
+  flex: 1;
+  place-content: center;
+  justify-items: center;
+  gap: 7px;
+  padding: 18px;
+  text-align: center;
+}
+
+.table-card__free > svg {
+  color: #22c55e;
+}
+
+.table-card__free strong {
+  font-size: 12px;
+}
+
+.table-card__free span {
+  max-width: 160px;
+  color: var(--text-muted);
+  font-size: 9px;
+  line-height: 1.4;
+}
+
+.table-card__details {
+  display: grid;
+  gap: 8px;
+  padding: 14px;
+}
+
+.table-card__details > div {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--text-secondary);
+  font-size: 9px;
+}
+
+.table-card__details svg {
+  flex-shrink: 0;
+  color: var(--text-muted);
+}
+
+.table-card__total {
+  display: flex;
+  margin: auto 14px 14px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+}
+
+.table-card__total span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--text-muted);
+  font-size: 9px;
+}
+
+.table-card__total strong {
+  font-size: 13px;
+}
+
+/* =========================================
+   PREVIEW DA MESA
+========================================= */
+
+.table-preview {
+  position: fixed;
+  inset: 0;
+  z-index: 120;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.table-preview__backdrop {
+  position: absolute;
+  inset: 0;
+  border: 0;
+  background: rgb(15 23 42 / 0.46);
+  backdrop-filter: blur(2px);
+}
+
+.table-preview__panel {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  width: min(420px, 100%);
+  height: 100%;
+  flex-direction: column;
+  padding: 28px;
+  background: var(--surface);
+  box-shadow: -20px 0 50px rgb(15 23 42 / 0.18);
+}
+
+.table-preview__panel > span {
+  color: var(--brand-600);
+  font-size: 9px;
+  font-weight: 850;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.table-preview__panel h2 {
+  margin: 8px 0 0;
+  font-size: 34px;
+}
+
+.table-preview__panel p {
+  margin: 14px 0 0;
+  color: var(--text-secondary);
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.table-preview__panel > button {
+  min-height: 46px;
+  margin-top: auto;
+  border: 0;
+  border-radius: 12px;
+  background: var(--brand-600);
+  color: #ffffff;
+  font-size: 11px;
+  font-weight: 850;
+  cursor: pointer;
+}
+
+/* =========================================
+   DARK MODE
+========================================= */
+
+html[data-theme="dark"]
+  .tables-board__summary,
+html[data-theme="dark"]
+  .table-card,
+html[data-theme="dark"]
+  .table-preview__panel {
+  background: var(--surface);
+  border-color: var(--border);
+}
+
+html[data-theme="dark"]
+  .table-card__status--free {
+  background: rgb(34 197 94 / 0.14);
+  color: #86efac;
+}
+
+html[data-theme="dark"]
+  .table-card__status--occupied {
+  background: rgb(249 115 22 / 0.12);
+  color: #fdba74;
+}
+
+html[data-theme="dark"]
+  .table-card__status--waiting-payment {
+  background: rgb(245 158 11 / 0.14);
+  color: #fbbf24;
+}
+
+/* =========================================
+   RESPONSIVIDADE
+========================================= */
+
+@media (max-width: 1180px) {
+  .tables-board__grid {
+    grid-template-columns:
+      repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 900px) {
+  .tables-board__grid {
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 620px) {
+  .tables-header {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .tables-header__new {
+    width: 100%;
+  }
+
+  .tables-board__summary {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .tables-board__grid {
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+
+  .table-card {
+    min-height: 180px;
+  }
+
+  .table-card__header {
+    padding: 12px;
+  }
+
+  .table-card__details {
+    padding: 12px;
+  }
+
+  .table-preview__panel {
+    width: 100%;
+  }
+}
+
+@media (max-width: 420px) {
+  .tables-board__grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* =========================================
+   MESA - DRAWER COMPLETO
+========================================= */
+
+.table-preview__panel {
+  padding: 0;
+}
+
+.table-preview__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 24px;
+  border-bottom: 1px solid var(--border);
+}
+
+.table-preview__header > div > span {
+  color: var(--brand-600);
+  font-size: 9px;
+  font-weight: 850;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.table-preview__header h2 {
+  margin: 5px 0 0;
+  font-size: 32px;
+}
+
+.table-preview__header > button {
+  display: grid;
+  width: 38px;
+  height: 38px;
+  place-items: center;
+  border: 1px solid var(--border);
+  border-radius: 11px;
+  background: var(--surface);
+  color: var(--foreground);
+  font-size: 22px;
+  cursor: pointer;
+}
+
+.table-preview__content {
+  display: flex;
+  min-height: 0;
+  flex: 1;
+  flex-direction: column;
+  gap: 18px;
+  overflow-y: auto;
+  padding: 24px;
+}
+
+.table-preview__intro > span,
+.table-preview__customer > span {
+  color: var(--brand-600);
+  font-size: 9px;
+  font-weight: 850;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+}
+
+.table-preview__intro h3,
+.table-preview__customer h3 {
+  margin: 6px 0 0;
+  font-size: 21px;
+}
+
+.table-preview__intro p,
+.table-preview__customer p {
+  margin: 7px 0 0;
+  color: var(--text-secondary);
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.table-preview__field {
+  display: grid;
+  gap: 7px;
+}
+
+.table-preview__field > span {
+  color: var(--foreground);
+  font-size: 10px;
+  font-weight: 750;
+}
+
+.table-preview__field small {
+  color: var(--text-muted);
+  font-size: 8px;
+  font-weight: 500;
+}
+
+.table-preview__field input {
+  width: 100%;
+  min-height: 45px;
+  padding: 0 13px;
+  border: 1px solid var(--border);
+  border-radius: 11px;
+  outline: none;
+  background: var(--background);
+  color: var(--foreground);
+  font-size: 11px;
+}
+
+.table-preview__field input:focus {
+  border-color: var(--brand-600);
+  box-shadow: 0 0 0 3px
+    rgb(249 115 22 / 0.08);
+}
+
+.table-preview__notice {
+  padding: 12px;
+  border: 1px solid
+    rgb(249 115 22 / 0.2);
+  border-radius: 11px;
+  background: rgb(249 115 22 / 0.06);
+  color: var(--text-secondary);
+  font-size: 9px;
+  line-height: 1.5;
+}
+
+.table-preview__command {
+  display: grid;
+  gap: 12px;
+  padding: 15px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--background);
+}
+
+.table-preview__section-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.table-preview__section-title > span {
+  color: var(--text-muted);
+  font-size: 9px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.table-preview__section-title > strong {
+  font-size: 14px;
+}
+
+.table-preview__empty-command {
+  padding: 14px;
+  border: 1px dashed var(--border);
+  border-radius: 10px;
+  text-align: center;
+}
+
+.table-preview__empty-command > span {
+  font-size: 10px;
+  font-weight: 750;
+}
+
+.table-preview__empty-command p {
+  margin: 4px 0 0;
+  color: var(--text-muted);
+  font-size: 9px;
+}
+
+.table-preview__add-items {
+  min-height: 42px;
+  border: 1px solid
+    rgb(249 115 22 / 0.35);
+  border-radius: 10px;
+  background: rgb(249 115 22 / 0.06);
+  color: var(--brand-600);
+  font-size: 10px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.table-preview__secondary {
+  min-height: 44px;
+  border: 1px solid var(--border);
+  border-radius: 11px;
+  background: var(--surface);
+  color: var(--foreground);
+  font-size: 10px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.table-preview__primary {
+  min-height: 46px;
+  border: 0;
+  border-radius: 11px;
+  background: var(--brand-600);
+  color: #ffffff;
+  font-size: 10px;
+  font-weight: 850;
+  cursor: pointer;
+}
+
+.table-preview__payment-status {
+  padding: 11px;
+  border: 1px solid
+    rgb(245 158 11 / 0.32);
+  border-radius: 10px;
+  background: rgb(245 158 11 / 0.08);
+  color: #b45309;
+  text-align: center;
+  font-size: 9px;
+  font-weight: 800;
+}
+
+html[data-theme="dark"]
+  .table-preview__field input,
+html[data-theme="dark"]
+  .table-preview__command,
+html[data-theme="dark"]
+  .table-preview__header > button {
+  background: #1d2028;
+}
+
+html[data-theme="dark"]
+  .table-preview__payment-status {
+  color: #fbbf24;
+}
+
+/* =========================================
+   COMANDA / PRODUTOS DA MESA
+========================================= */
+
+.table-preview__content--products {
+  padding: 18px;
+}
+
+.table-preview__back-products {
+  display: inline-flex;
+  width: fit-content;
+  align-items: center;
+  gap: 6px;
+  border: 0;
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 10px;
+  font-weight: 750;
+  cursor: pointer;
+}
+
+.table-preview__command-list {
+  display: grid;
+  gap: 8px;
+}
+
+.table-preview__command-list > div {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px;
+  border-radius: 9px;
+  background: var(--surface);
+}
+
+.table-preview__command-list span {
+  color: var(--text-secondary);
+  font-size: 10px;
+}
+
+.table-preview__command-list strong {
+  font-size: 10px;
+}
+
+.table-preview__add-items {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.table-preview__send-order {
+  position: sticky;
+  bottom: -18px;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 4px -18px -18px;
+  padding: 14px 18px;
+  border-top: 1px solid var(--border);
+  background: var(--surface);
+  box-shadow: 0 -10px 30px
+    rgb(15 23 42 / 0.08);
+}
+
+.table-preview__send-order > div {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.table-preview__send-order span {
+  color: var(--text-muted);
+  font-size: 8px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.table-preview__send-order strong {
+  font-size: 13px;
+}
+
+.table-preview__send-order > button {
+  display: inline-flex;
+  min-height: 42px;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: 10px;
+  background: var(--brand-600);
+  color: #ffffff;
+  font-size: 9px;
+  font-weight: 850;
+  cursor: pointer;
+}
+
+.table-preview__send-order
+  > button:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+.table-preview__payment-status {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+html[data-theme="dark"]
+  .table-preview__command-list > div {
+  background: #1d2028;
+}
+
+/* =========================================
+   PRODUTOS DENTRO DO DRAWER DE MESA
+========================================= */
+
+.table-preview__content--products
+  .order-items-form__products {
+  grid-template-columns: 1fr;
+}
+
+.table-preview__content--products
+  .order-product-card {
+  display: grid;
+  grid-template-columns: 82px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  min-height: 116px;
+}
+
+.table-preview__content--products
+  .order-product-card__image {
+  width: 82px;
+  height: 88px;
+  min-width: 82px;
+}
+
+.table-preview__content--products
+  .order-product-card__content {
+  min-width: 0;
+}
+
+.table-preview__content--products
+  .order-product-card__content h4 {
+  margin-top: 4px;
+  font-size: 13px;
+}
+
+.table-preview__content--products
+  .order-product-card__content p {
+  margin-top: 5px;
+  font-size: 10px;
+  line-height: 1.4;
+}
+
+.table-preview__content--products
+  .order-product-card__content > strong {
+  display: block;
+  margin-top: 7px;
+  font-size: 12px;
+}
+
+.table-preview__content--products
+  .order-product-card__actions {
+  align-self: center;
+}
+
+.table-preview__content--products
+  .order-items-form__categories {
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  padding-bottom: 6px;
+  scrollbar-width: thin;
+}
+
+.table-preview__content--products
+  .order-items-category {
+  flex-shrink: 0;
+}
+
+.table-preview__content--products
+  .order-items-summary {
+  margin-top: 6px;
+}
+
+@media (max-width: 620px) {
+  .table-preview__content--products
+    .order-product-card {
+    grid-template-columns: 68px minmax(0, 1fr);
+  }
+
+  .table-preview__content--products
+    .order-product-card__image {
+    width: 68px;
+    height: 76px;
+    min-width: 68px;
+  }
+
+  .table-preview__content--products
+    .order-product-card__actions {
+    grid-column: 1 / -1;
+    justify-self: end;
+  }
+}
+
+/* =========================================
+   PAGAMENTO / FECHAMENTO DA MESA
+========================================= */
+
+.table-preview__content--payment {
+  padding-bottom: 24px;
+}
+
+.table-preview__payment-heading {
+  display: grid;
+  gap: 5px;
+}
+
+.table-preview__payment-heading > span {
+  color: var(--brand-600);
+  font-size: 9px;
+  font-weight: 850;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+}
+
+.table-preview__payment-heading h3 {
+  margin: 0;
+  font-size: 20px;
+}
+
+.table-preview__payment-heading p {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 10px;
+  line-height: 1.5;
+}
+
+.table-preview__content--payment
+  .order-payment-form {
+  width: 100%;
+}
+
+.table-preview__content--payment
+  .order-payment-methods {
+  grid-template-columns: 1fr;
+}
+
+.table-preview__confirm-payment {
+  display: inline-flex;
+  min-height: 48px;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: 0;
+  border-radius: 11px;
+  background: #16a34a;
+  color: #ffffff;
+  font-size: 10px;
+  font-weight: 850;
+  cursor: pointer;
+}
+
+.table-preview__confirm-payment:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}

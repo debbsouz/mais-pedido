@@ -37,6 +37,7 @@ interface OrderPaymentFormProps {
   payment: NewOrderPaymentData;
   total: number;
   onChange: (payment: NewOrderPaymentData) => void;
+  allowCommand?: boolean;
 }
 
 /*
@@ -140,11 +141,20 @@ export function OrderPaymentForm({
   payment,
   total,
   onChange,
+  allowCommand = true,
 }: OrderPaymentFormProps) {
-  const availableMethods = enabledPaymentMethods.filter(
-    (method) =>
-      method !== "Comanda" || fulfillment === "Mesa",
-  );
+const availableMethods = enabledPaymentMethods.filter(
+  (method) => {
+    if (method === "Comanda") {
+      return (
+        fulfillment === "Mesa" &&
+        allowCommand
+      );
+    }
+
+    return true;
+  },
+);
 
   const availableBrands =
     payment.method === "Crédito"
