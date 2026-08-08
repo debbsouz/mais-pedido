@@ -13,33 +13,26 @@ import {
 
 import { NewOrderDrawer } from "@/components/pedidos/NewOrderDrawer";
 import type { Order } from "@/components/pedidos/OrderCard";
-import {
-  initialOrders,
-  OrdersBoard,
-} from "@/components/pedidos/OrdersBoard";
+import { OrdersBoard } from "@/components/pedidos/OrdersBoard";
 import {
   OrdersFilters,
   type OrderFilter,
 } from "@/components/pedidos/OrdersFilters";
 import { OrdersHeader } from "@/components/pedidos/OrdersHeader";
+import { useOrders } from "@/components/providers/OrdersProvider";
 
 const notificationSettings = {
   enabled: true,
-
-  // De 0 até 1.
   volume: 0.65,
-
-  // Se false, toca apenas uma vez.
   repeatUntilHandled: true,
-
-  // Intervalo entre os alertas.
   repeatIntervalSeconds: 10,
-
-  // Limite de segurança.
   maxDurationMinutes: 5,
 };
 
 export default function PedidosPage() {
+  const { orders, setOrders, addOrder } =
+    useOrders();
+
   const [activeFilter, setActiveFilter] =
     useState<OrderFilter>("Todos");
 
@@ -48,9 +41,6 @@ export default function PedidosPage() {
 
   const [isNewOrderOpen, setIsNewOrderOpen] =
     useState(false);
-
-  const [orders, setOrders] =
-    useState<Order[]>(initialOrders);
 
   const [notification, setNotification] =
     useState<Order | null>(null);
@@ -85,7 +75,10 @@ export default function PedidosPage() {
     setNotification(null);
 
     if (notificationTimeoutRef.current) {
-      clearTimeout(notificationTimeoutRef.current);
+      clearTimeout(
+        notificationTimeoutRef.current,
+      );
+
       notificationTimeoutRef.current = null;
     }
   }, []);
@@ -97,7 +90,10 @@ export default function PedidosPage() {
     }
 
     if (alarmLimitTimeoutRef.current) {
-      clearTimeout(alarmLimitTimeoutRef.current);
+      clearTimeout(
+        alarmLimitTimeoutRef.current,
+      );
+
       alarmLimitTimeoutRef.current = null;
     }
   }, []);
@@ -135,9 +131,13 @@ export default function PedidosPage() {
       oscillator.type = "sawtooth";
 
       const now = audioContext.currentTime;
+
       const volume = Math.max(
         0.01,
-        Math.min(notificationSettings.volume, 1),
+        Math.min(
+          notificationSettings.volume,
+          1,
+        ),
       );
 
       oscillator.frequency.setValueAtTime(
@@ -193,12 +193,15 @@ export default function PedidosPage() {
       oscillator.start(now);
       oscillator.stop(now + 1.15);
 
-      oscillator.addEventListener("ended", () => {
-        void audioContext.close();
-      });
+      oscillator.addEventListener(
+        "ended",
+        () => {
+          void audioContext.close();
+        },
+      );
     } catch {
-      // O pedido continua funcionando mesmo
-      // caso o navegador bloqueie o áudio.
+      // O pedido continua funcionando
+      // mesmo se o navegador bloquear o áudio.
     }
   }, []);
 
@@ -208,7 +211,9 @@ export default function PedidosPage() {
         return;
       }
 
-      pendingAlarmOrdersRef.current.add(orderId);
+      pendingAlarmOrdersRef.current.add(
+        orderId,
+      );
 
       playNewOrderSiren();
 
@@ -216,10 +221,11 @@ export default function PedidosPage() {
         notificationSettings.repeatUntilHandled &&
         !alarmIntervalRef.current
       ) {
-        alarmIntervalRef.current = setInterval(
-          () => {
+        alarmIntervalRef.current =
+          setInterval(() => {
             if (
-              pendingAlarmOrdersRef.current.size === 0
+              pendingAlarmOrdersRef.current
+                .size === 0
             ) {
               stopAlarmTimers();
               return;
@@ -227,36 +233,43 @@ export default function PedidosPage() {
 
             playNewOrderSiren();
           },
-          notificationSettings.repeatIntervalSeconds *
-            1000,
-        );
+          notificationSettings
+            .repeatIntervalSeconds * 1000);
       }
 
-      if (alarmLimitTimeoutRef.current) {
+      if (
+        alarmLimitTimeoutRef.current
+      ) {
         clearTimeout(
           alarmLimitTimeoutRef.current,
         );
       }
 
-      alarmLimitTimeoutRef.current = setTimeout(
-        () => {
+      alarmLimitTimeoutRef.current =
+        setTimeout(() => {
           pendingAlarmOrdersRef.current.clear();
           stopAlarmTimers();
         },
-        notificationSettings.maxDurationMinutes *
+        notificationSettings
+          .maxDurationMinutes *
           60 *
-          1000,
-      );
+          1000);
     },
-    [playNewOrderSiren, stopAlarmTimers],
+    [
+      playNewOrderSiren,
+      stopAlarmTimers,
+    ],
   );
 
   const handleOrderHandled = useCallback(
     (orderId: string) => {
-      pendingAlarmOrdersRef.current.delete(orderId);
+      pendingAlarmOrdersRef.current.delete(
+        orderId,
+      );
 
       if (
-        pendingAlarmOrdersRef.current.size === 0
+        pendingAlarmOrdersRef.current
+          .size === 0
       ) {
         stopAlarmTimers();
       }
@@ -264,33 +277,29 @@ export default function PedidosPage() {
     [stopAlarmTimers],
   );
 
-  const showNewOrderNotification = useCallback(
-    (order: Order) => {
+  const showNewOrderNotification =
+    useCallback((order: Order) => {
       setNotification(order);
 
-      if (notificationTimeoutRef.current) {
+      if (
+        notificationTimeoutRef.current
+      ) {
         clearTimeout(
           notificationTimeoutRef.current,
         );
       }
 
-      notificationTimeoutRef.current = setTimeout(
-        () => {
+      notificationTimeoutRef.current =
+        setTimeout(() => {
           setNotification(null);
-          notificationTimeoutRef.current = null;
-        },
-        6000,
-      );
-    },
-    [],
-  );
+          notificationTimeoutRef.current =
+            null;
+        }, 6000);
+    }, []);
 
   const handleCreateOrder = useCallback(
     (order: Order) => {
-      setOrders((currentOrders) => [
-        order,
-        ...currentOrders,
-      ]);
+      addOrder(order);
 
       setIsNewOrderOpen(false);
       setActiveFilter("Todos");
@@ -300,6 +309,7 @@ export default function PedidosPage() {
       showNewOrderNotification(order);
     },
     [
+      addOrder,
       showNewOrderNotification,
       startOrderAlarm,
     ],
@@ -307,7 +317,9 @@ export default function PedidosPage() {
 
   useEffect(() => {
     return () => {
-      if (notificationTimeoutRef.current) {
+      if (
+        notificationTimeoutRef.current
+      ) {
         clearTimeout(
           notificationTimeoutRef.current,
         );

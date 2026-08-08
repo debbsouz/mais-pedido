@@ -1,111 +1,137 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo } from "react";
+
+import { useOrders } from "@/components/providers/OrdersProvider";
 
 import {
   KitchenCard,
   type KitchenOrder,
 } from "./KitchenCard";
 
-const initialKitchenOrders: KitchenOrder[] = [
-  {
-    id: "1049",
-    customer: "Mesa 08",
-    origin: "Garçom",
-    fulfillment: "Mesa",
-    elapsedMinutes: 7,
-    items: [
-      {
-        id: "1",
-        quantity: 2,
-        name: "X-Burger",
-      },
-      {
-        id: "2",
-        quantity: 1,
-        name: "Batata grande",
-        observation: "Sem sal",
-      },
-    ],
-  },
-
-  {
-    id: "1048",
-    customer: "Mariana Alves",
-    origin: "Site",
-    fulfillment: "Delivery",
-    elapsedMinutes: 13,
-    items: [
-      {
-        id: "1",
-        quantity: 1,
-        name: "X-Salada",
-        observation: "Sem cebola",
-      },
-      {
-        id: "2",
-        quantity: 1,
-        name: "Coca-Cola 2L",
-      },
-    ],
-    observation:
-      "Enviar os molhos separados.",
-  },
-
-  {
-    id: "1047",
-    customer: "João Pedro",
-    origin: "Atendente",
-    fulfillment: "Balcão",
-    elapsedMinutes: 23,
-    items: [
-      {
-        id: "1",
-        quantity: 2,
-        name: "Cachorro-quente completo",
-      },
-      {
-        id: "2",
-        quantity: 1,
-        name: "Suco de laranja",
-      },
-    ],
-    observation:
-      "Cliente aguardando no balcão.",
-  },
-];
-
-export function KitchenBoard() {
-  const [orders, setOrders] =
-    useState<KitchenOrder[]>(
-      initialKitchenOrders,
-    );
-
-  function markAsReady(orderId: string) {
-    setOrders((currentOrders) =>
-      currentOrders.filter(
-        (order) => order.id !== orderId,
+function getElapsedMinutes(
+  createdAt?: number,
+  time?: string,
+) {
+  if (createdAt) {
+    return Math.max(
+      0,
+      Math.floor(
+        (Date.now() - createdAt) / 1000 / 60,
       ),
     );
   }
 
+  if (time) {
+    const match = time.match(/(\d+)/);
+
+    if (match) {
+      return Number(match[1]);
+    }
+  }
+
+  return 0;
+}
+
+export function KitchenBoard() {
+  const { orders, moveOrder } = useOrders();
+
+  const kitchenOrders = useMemo(() => {
+    return orders
+      .filter(
+        (order) => order.status === "preparing",
+      )
+      .map<KitchenOrder>((order) => {
+        const items =
+          order.itemDetails?.length
+            ? order.itemDetails.map((item) => ({
+                id: item.productId,
+                quantity: item.quantity,
+                name: item.name,
+              }))
+            : [
+                {
+                  id: `${order.id}-summary`,
+                  quantity: 1,
+                  name: order.items,
+                },
+              ];
+
+        return {
+          id: order.id,
+          customer: order.customer,
+          origin: order.origin,
+          fulfillment: order.fulfillment,
+          elapsedMinutes: getElapsedMinutes(
+            order.createdAt,
+            order.time,
+          ),
+          items,
+          observation:
+            order.payment?.observation ||
+            undefined,
+        };
+      });
+  }, [orders]);
+
+  function markAsReady(orderId: string) {
+    moveOrder(orderId, "ready");
+  }
+
+  const delayedOrders =
+    kitchenOrders.filter(
+      (order) =>
+        order.elapsedMinutes >= 20,
+    ).length;
+
+  const averageTime =
+    kitchenOrders.length > 0
+      ? Math.round(
+          kitchenOrders.reduce(
+            (total, order) =>
+              total +
+              order.elapsedMinutes,
+            0,
+          ) / kitchenOrders.length,
+        )
+      : 0;
+
   return (
     <section className="kitchen-board">
       <div className="kitchen-board__summary">
-        <div>
-          <span>Em preparo</span>
-          <strong>{orders.length}</strong>
+        <div className="kitchen-board__metrics">
+          <div className="kitchen-board__metric">
+            <span>Em preparo</span>
+            <strong>
+              {kitchenOrders.length}
+            </strong>
+          </div>
+
+          <div className="kitchen-board__metric">
+            <span>Atrasados</span>
+            <strong>
+              {delayedOrders}
+            </strong>
+          </div>
+
+          <div className="kitchen-board__metric">
+            <span>Tempo médio</span>
+            <strong>
+              {averageTime} min
+            </strong>
+          </div>
         </div>
 
         <p>
-          Pedidos aparecem aqui após serem
+          Pedidos aparecem aqui
+          automaticamente após serem
           aceitos.
         </p>
       </div>
 
-      {orders.length > 0 ? (
+      {kitchenOrders.length > 0 ? (
         <div className="kitchen-board__grid">
-          {orders.map((order) => (
+          {kitchenOrders.map((order) => (
             <KitchenCard
               key={order.id}
               order={order}
@@ -116,9 +142,12 @@ export function KitchenBoard() {
       ) : (
         <div className="kitchen-board__empty">
           <span>✓</span>
+
           <h2>Produção em dia!</h2>
+
           <p>
-            Nenhum pedido aguardando preparo.
+            Nenhum pedido aguardando
+            preparo.
           </p>
         </div>
       )}
