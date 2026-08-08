@@ -253,15 +253,16 @@ export function NewOrderDrawer({
       .join(", ");
 
     const newOrder: Order = {
-      id: orderId,
-      customer: customerName,
-      origin,
-      fulfillment,
-      time: "agora",
-      total: formatCurrency(subtotal),
-      items: itemsDescription,
-      status: "new",
-      delayed: false,
+  id: orderId,
+  customer: customerName,
+  origin,
+  fulfillment,
+  time: "agora",
+  createdAt: Date.now(),
+  total: formatCurrency(subtotal),
+  items: itemsDescription,
+  status: "new",
+  delayed: false,
 
       phone: customer.phone || undefined,
 

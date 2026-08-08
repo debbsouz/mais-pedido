@@ -9,7 +9,9 @@ interface AppLayoutProps {
   children: ReactNode;
 }
 
-export function AppLayout({ children }: AppLayoutProps) {
+export function AppLayout({
+  children,
+}: AppLayoutProps) {
   return (
     <div className="app-shell">
       <Sidebar />

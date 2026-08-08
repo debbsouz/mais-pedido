@@ -2,6 +2,7 @@
 
 import {
   Check,
+  Clock,
   CookingPot,
   Motorcycle,
   Package,
@@ -9,6 +10,7 @@ import {
   Table,
   X,
 } from "@phosphor-icons/react";
+import { useEffect, useState } from "react";
 
 export type OrderStatus =
   | "new"
@@ -76,6 +78,7 @@ export interface Order {
   status: OrderStatus;
   delayed?: boolean;
 
+  createdAt?: number;
   phone?: string;
   tableNumber?: string;
   pickupName?: string;
@@ -150,6 +153,15 @@ function getAdvanceLabel(
   return null;
 }
 
+function formatElapsedTime(seconds: number) {
+  const minutes = Math.floor(seconds / 60);
+  const remainingSeconds = seconds % 60;
+
+  return `${String(minutes).padStart(2, "0")}:${String(
+    remainingSeconds,
+  ).padStart(2, "0")}`;
+}
+
 export function OrderCard({
   order,
   onAccept,
@@ -167,7 +179,48 @@ export function OrderCard({
     items,
     status,
     delayed = false,
+    createdAt,
   } = order;
+
+  const [elapsedSeconds, setElapsedSeconds] =
+    useState(() => {
+      if (!createdAt) {
+        return 0;
+      }
+
+      return Math.max(
+        0,
+        Math.floor((Date.now() - createdAt) / 1000),
+      );
+    });
+
+  useEffect(() => {
+    if (!createdAt || status !== "new") {
+      return;
+    }
+
+    const updateElapsedTime = () => {
+      setElapsedSeconds(
+        Math.max(
+          0,
+          Math.floor(
+            (Date.now() - createdAt) / 1000,
+          ),
+        ),
+      );
+    };
+
+    updateElapsedTime();
+
+    const interval = window.setInterval(
+      updateElapsedTime,
+      1000,
+    );
+
+    return () => {
+      window.clearInterval(interval);
+    };
+  }, [createdAt, status]);
 
   const originClass = origin
     .normalize("NFD")
@@ -179,11 +232,24 @@ export function OrderCard({
     fulfillment,
   );
 
+  const waitingMinutes = elapsedSeconds / 60;
+
+  const urgencyClass =
+    status !== "new" || !createdAt
+      ? ""
+      : waitingMinutes >= 10
+        ? "order-card--critical"
+        : waitingMinutes >= 5
+          ? "order-card--warning"
+          : "";
+
   return (
     <article
       className={`order-card ${
         delayed ? "order-card--delayed" : ""
-      } ${status === "new" ? "order-card--new" : ""}`}
+      } ${
+        status === "new" ? "order-card--new" : ""
+      } ${urgencyClass}`}
       onClick={() => onOpen(order)}
     >
       {status === "new" && (
@@ -220,7 +286,15 @@ export function OrderCard({
       <p className="order-card__items">{items}</p>
 
       <div className="order-card__footer">
-        <span>{time}</span>
+        {createdAt && status === "new" ? (
+          <span className="order-card__timer">
+            <Clock size={14} weight="bold" />
+            {formatElapsedTime(elapsedSeconds)}
+          </span>
+        ) : (
+          <span>{time}</span>
+        )}
+
         <strong>{total}</strong>
       </div>
 
