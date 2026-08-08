@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 
+import { PanelAccessGuard } from "@/components/auth/PanelAccessGuard";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { OrdersProvider } from "@/components/providers/OrdersProvider";
 
@@ -12,7 +13,11 @@ export default function PanelLayout({
 }: PanelLayoutProps) {
   return (
     <OrdersProvider>
-      <AppLayout>{children}</AppLayout>
+      <PanelAccessGuard>
+        <AppLayout>
+          {children}
+        </AppLayout>
+      </PanelAccessGuard>
     </OrdersProvider>
   );
 }

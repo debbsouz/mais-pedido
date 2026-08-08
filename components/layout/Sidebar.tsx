@@ -22,10 +22,16 @@ import {
 } from "@phosphor-icons/react";
 
 import { hasFeature } from "@/lib/access";
+import { currentUser } from "@/lib/current-user";
 import {
   plans,
   type FeatureId,
 } from "@/lib/plans";
+import {
+  roleHasPermission,
+  roles,
+  type PermissionId,
+} from "@/lib/roles";
 import { currentSubscription } from "@/lib/subscription";
 
 type NavigationItem = {
@@ -33,6 +39,7 @@ type NavigationItem = {
   href: string;
   icon: typeof House;
   feature?: FeatureId;
+  permission?: PermissionId;
 };
 
 const operationNavigation: NavigationItem[] = [
@@ -40,29 +47,34 @@ const operationNavigation: NavigationItem[] = [
     label: "Início",
     href: "/inicio",
     icon: House,
+    permission: "viewDashboard",
   },
   {
     label: "Pedidos",
     href: "/pedidos",
     icon: ClipboardText,
+    permission: "viewOrders",
   },
   {
     label: "Mesas",
     href: "/mesas",
     icon: Table,
     feature: "tables",
+    permission: "viewTables",
   },
   {
     label: "Cozinha",
     href: "/cozinha",
     icon: CookingPot,
     feature: "kitchenDisplay",
+    permission: "viewKitchen",
   },
   {
     label: "Entregas",
     href: "/entregas",
     icon: Motorcycle,
     feature: "delivery",
+    permission: "viewDeliveries",
   },
 ];
 
@@ -72,27 +84,32 @@ const managementNavigation: NavigationItem[] = [
     href: "/cardapio",
     icon: ForkKnife,
     feature: "digitalMenu",
+    permission: "viewMenu",
   },
   {
     label: "Clientes",
     href: "/clientes",
     icon: Users,
+    permission: "viewCustomers",
   },
   {
     label: "Financeiro",
     href: "/financeiro",
     icon: CurrencyCircleDollar,
     feature: "financial",
+    permission: "viewFinancial",
   },
   {
     label: "Dashboard",
     href: "/dashboard",
     icon: ChartPieSlice,
+    permission: "viewDashboard",
   },
   {
     label: "Relatórios",
     href: "/relatorios",
     icon: ChartBar,
+    permission: "viewReports",
   },
 ];
 
@@ -102,20 +119,65 @@ export function Sidebar() {
   const currentPlan =
     plans[currentSubscription.planId];
 
+  const currentRole =
+    roles[currentUser.role];
+
+  const canCreateOrders =
+    roleHasPermission(
+      currentUser.role,
+      "createOrders",
+    );
+
+  const canViewSettings =
+    roleHasPermission(
+      currentUser.role,
+      "viewSettings",
+    );
+
   function renderNavigationItem(
     item: NavigationItem,
   ) {
     const Icon = item.icon;
 
+    const hasRolePermission =
+      item.permission === undefined ||
+      roleHasPermission(
+        currentUser.role,
+        item.permission,
+      );
+
+    /*
+     * Se o cargo não tiver permissão,
+     * o funcionário nem vê o item.
+     */
+    if (!hasRolePermission) {
+      return null;
+    }
+
     const isActive =
       pathname === item.href ||
-      pathname.startsWith(`${item.href}/`);
+      pathname.startsWith(
+        `${item.href}/`,
+      );
 
-    const isLocked =
+    const isLockedByPlan =
       item.feature !== undefined &&
       !hasFeature(item.feature);
 
-    if (isLocked) {
+    /*
+     * Recursos bloqueados pelo plano
+     * só aparecem como upgrade para
+     * proprietário e gerente.
+     */
+    if (isLockedByPlan) {
+      const canSeeUpgrade =
+        currentUser.role === "owner" ||
+        currentUser.role === "manager";
+
+      if (!canSeeUpgrade) {
+        return null;
+      }
+
       return (
         <div
           key={item.href}
@@ -128,7 +190,10 @@ export function Sidebar() {
           <span>{item.label}</span>
 
           <span className="sidebar__upgrade">
-            <LockKey size={12} weight="bold" />
+            <LockKey
+              size={12}
+              weight="bold"
+            />
             Upgrade
           </span>
         </div>
@@ -148,7 +213,9 @@ export function Sidebar() {
         <Icon
           size={21}
           weight={
-            isActive ? "fill" : "regular"
+            isActive
+              ? "fill"
+              : "regular"
           }
         />
 
@@ -176,21 +243,34 @@ export function Sidebar() {
 
         <div className="sidebar__restaurant-info">
           <strong>Burger House</strong>
-          <span>Unidade Centro</span>
+
+          <span>
+            Unidade Centro
+          </span>
 
           <small className="sidebar__plan">
             Plano {currentPlan.name}
           </small>
+
+          <small className="sidebar__role">
+            {currentRole.name}
+          </small>
         </div>
       </div>
 
-      <Link
-        href="/pedidos"
-        className="sidebar__new-order"
-      >
-        <Plus size={20} weight="bold" />
-        <span>Novo pedido</span>
-      </Link>
+      {canCreateOrders && (
+        <Link
+          href="/pedidos"
+          className="sidebar__new-order"
+        >
+          <Plus
+            size={20}
+            weight="bold"
+          />
+
+          <span>Novo pedido</span>
+        </Link>
+      )}
 
       <nav className="sidebar__navigation">
         <div className="sidebar__group">
@@ -215,19 +295,21 @@ export function Sidebar() {
       </nav>
 
       <div className="sidebar__footer">
-        <Link
-          href="/configuracoes"
-          className={`sidebar__item ${
-            pathname.startsWith(
-              "/configuracoes",
-            )
-              ? "sidebar__item--active"
-              : ""
-          }`}
-        >
-          <Gear size={21} />
-          <span>Configurações</span>
-        </Link>
+        {canViewSettings && (
+          <Link
+            href="/configuracoes"
+            className={`sidebar__item ${
+              pathname.startsWith(
+                "/configuracoes",
+              )
+                ? "sidebar__item--active"
+                : ""
+            }`}
+          >
+            <Gear size={21} />
+            <span>Configurações</span>
+          </Link>
+        )}
 
         <button
           type="button"

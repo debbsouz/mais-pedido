@@ -4740,3 +4740,27 @@ html[data-theme="dark"]
     grid-template-columns: 1fr;
   }
 }
+
+.sidebar__role {
+  display: inline-flex;
+  width: fit-content;
+  margin-top: 4px;
+  padding: 3px 7px;
+  border-radius: 999px;
+  background: rgb(255 255 255 / 0.1);
+  color: rgb(255 255 255 / 0.72);
+  font-size: 7px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.panel-access-loading {
+  display: grid;
+  min-height: 100vh;
+  place-items: center;
+  background: var(--background);
+  color: var(--text-muted);
+  font-size: 12px;
+  font-weight: 700;
+}
