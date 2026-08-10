@@ -1,20 +1,35 @@
-import type { ReactNode } from "react";
+import {
+  getCurrentSubscription,
+  requireAuth,
+} from "@/lib/dal";
 
+import { AuthProvider } from "@/components/providers/AuthProvider";
 import { OrdersProvider } from "@/components/providers/OrdersProvider";
 import { TablesProvider } from "@/components/providers/TablesProvider";
+import { PanelAccessGuard } from "@/components/auth/PanelAccessGuard";
 
 interface WaiterLayoutProps {
-  children: ReactNode;
+  children: React.ReactNode;
 }
 
-export default function WaiterLayout({
+export default async function WaiterLayout({
   children,
 }: WaiterLayoutProps) {
+  const user = await requireAuth();
+  const subscription = await getCurrentSubscription();
+
   return (
-    <OrdersProvider>
-      <TablesProvider>
-        {children}
-      </TablesProvider>
-    </OrdersProvider>
+    <AuthProvider
+      user={user}
+      subscription={subscription}
+    >
+      <OrdersProvider>
+        <TablesProvider>
+          <PanelAccessGuard>
+            {children}
+          </PanelAccessGuard>
+        </TablesProvider>
+      </OrdersProvider>
+    </AuthProvider>
   );
 }
