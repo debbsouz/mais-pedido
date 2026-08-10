@@ -22,7 +22,6 @@ import {
 } from "@phosphor-icons/react";
 
 import { hasFeature } from "@/lib/access";
-import { currentUser } from "@/lib/current-user";
 import {
   plans,
   type FeatureId,
@@ -32,7 +31,11 @@ import {
   roles,
   type PermissionId,
 } from "@/lib/roles";
-import { currentSubscription } from "@/lib/subscription";
+import {
+  useCurrentUser,
+  useCurrentSubscription,
+} from "@/components/providers/AuthProvider";
+import { signOut } from "@/app/actions/auth";
 
 type NavigationItem = {
   label: string;
@@ -115,6 +118,8 @@ const managementNavigation: NavigationItem[] = [
 
 export function Sidebar() {
   const pathname = usePathname();
+  const currentUser = useCurrentUser();
+  const currentSubscription = useCurrentSubscription();
 
   const currentPlan =
     plans[currentSubscription.planId];
@@ -162,7 +167,10 @@ export function Sidebar() {
 
     const isLockedByPlan =
       item.feature !== undefined &&
-      !hasFeature(item.feature);
+      !hasFeature(
+        currentSubscription.planId,
+        item.feature,
+      );
 
     /*
      * Recursos bloqueados pelo plano
@@ -311,13 +319,15 @@ export function Sidebar() {
           </Link>
         )}
 
-        <button
-          type="button"
-          className="sidebar__item sidebar__logout"
-        >
-          <SignOut size={21} />
-          <span>Sair</span>
-        </button>
+        <form action={signOut}>
+          <button
+            type="submit"
+            className="sidebar__item sidebar__logout"
+          >
+            <SignOut size={21} />
+            <span>Sair</span>
+          </button>
+        </form>
       </div>
     </aside>
   );

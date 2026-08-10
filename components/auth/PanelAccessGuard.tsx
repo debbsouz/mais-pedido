@@ -3,7 +3,7 @@
 import { useEffect } from "react";
 import { usePathname, useRouter } from "next/navigation";
 
-import { currentUser } from "@/lib/current-user";
+import { useCurrentUser } from "@/components/providers/AuthProvider";
 import {
   getRoutePermission,
   roleHomeRoutes,
@@ -19,6 +19,7 @@ export function PanelAccessGuard({
 }: PanelAccessGuardProps) {
   const pathname = usePathname();
   const router = useRouter();
+  const currentUser = useCurrentUser();
 
   const requiredPermission =
     getRoutePermission(pathname);
@@ -41,6 +42,7 @@ export function PanelAccessGuard({
   }, [
     hasAccess,
     router,
+    currentUser.role,
   ]);
 
   if (!hasAccess) {
