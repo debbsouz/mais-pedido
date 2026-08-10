@@ -8331,3 +8331,1249 @@ html[data-theme="dark"]
     font-size: 17px;
   }
 }
+
+/* =========================================
+   MESAS - LEGIBILIDADE E CARDS
+========================================= */
+
+.tables-board__summary > div > span {
+  font-size: 13px;
+}
+
+.tables-board__summary > div > strong {
+  font-size: 18px;
+}
+
+.tables-board__summary > p {
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+/* CARD */
+
+.table-card {
+  position: relative;
+  min-height: 235px;
+  cursor: pointer;
+}
+
+.table-card__header {
+  padding: 16px 17px;
+}
+
+.table-card__number {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.table-card__number > span {
+  color: var(--text-muted);
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.table-card__number > strong {
+  font-size: 29px;
+  line-height: 1;
+}
+
+.table-card__status {
+  padding: 7px 10px;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+/* LIVRE */
+
+.table-card__free {
+  gap: 8px;
+}
+
+.table-card__free-icon {
+  display: grid;
+  width: 44px;
+  height: 44px;
+  place-items: center;
+  border-radius: 50%;
+  background: rgb(34 197 94 / 0.1);
+  color: #16a34a;
+}
+
+.table-card__free > strong {
+  font-size: 15px;
+}
+
+.table-card__free > span {
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+/* OCUPADA */
+
+.table-card__details {
+  gap: 10px;
+  padding: 15px 17px;
+}
+
+.table-card__details > div {
+  gap: 8px;
+  font-size: 13px;
+}
+
+.table-card__details > div svg {
+  flex-shrink: 0;
+}
+
+.table-card__details > div:first-child span {
+  color: var(--foreground);
+  font-weight: 700;
+}
+
+/* TOTAL */
+
+.table-card__total {
+  padding: 13px 17px 16px;
+}
+
+.table-card__total > span {
+  gap: 6px;
+  font-size: 12px;
+}
+
+.table-card__total > strong {
+  font-size: 17px;
+}
+
+/* FECHAMENTO */
+
+.table-card--waiting-payment {
+  border-color:
+    rgb(245 158 11 / 0.5);
+}
+
+.table-card__closing-alert {
+  padding: 8px 12px;
+  background:
+    rgb(245 158 11 / 0.1);
+  color: #b45309;
+  font-size: 11px;
+  font-weight: 850;
+  text-align: center;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+/* =========================================
+   PREVIEW DA MESA - LEGIBILIDADE
+========================================= */
+
+.table-preview__header > div > span {
+  font-size: 12px;
+}
+
+.table-preview__header h2 {
+  font-size: 31px;
+}
+
+.table-preview__intro > span,
+.table-preview__customer > span,
+.table-preview__payment-heading > span {
+  font-size: 12px;
+}
+
+.table-preview__intro h3,
+.table-preview__customer h3,
+.table-preview__payment-heading h3 {
+  font-size: 21px;
+}
+
+.table-preview__intro p,
+.table-preview__customer p,
+.table-preview__payment-heading p {
+  font-size: 14px;
+  line-height: 1.55;
+}
+
+.table-preview__field > span {
+  font-size: 13px;
+}
+
+.table-preview__field small {
+  font-size: 11px;
+}
+
+.table-preview__field input {
+  font-size: 16px;
+}
+
+.table-preview__notice {
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.table-preview__section-title span {
+  font-size: 12px;
+}
+
+.table-preview__section-title strong {
+  font-size: 17px;
+}
+
+.table-preview__command-list span {
+  font-size: 14px;
+}
+
+.table-preview__command-list strong {
+  font-size: 14px;
+}
+
+.table-preview__empty-command span {
+  font-size: 14px;
+}
+
+.table-preview__empty-command p {
+  font-size: 12px;
+}
+
+.table-preview__add-items,
+.table-preview__primary,
+.table-preview__confirm-payment {
+  font-size: 14px;
+}
+
+.table-preview__payment-status {
+  font-size: 13px;
+}
+
+/* MOBILE */
+
+@media (max-width: 680px) {
+  .tables-board__grid {
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr));
+    gap: 11px;
+  }
+
+  .table-card {
+    min-height: 215px;
+  }
+
+  .table-card__header {
+    padding: 13px;
+  }
+
+  .table-card__number > strong {
+    font-size: 26px;
+  }
+
+  .table-card__details {
+    padding: 13px;
+  }
+
+  .table-card__details > div {
+    font-size: 12px;
+  }
+
+  .table-card__total {
+    padding: 11px 13px 13px;
+  }
+
+  .table-card__total > strong {
+    font-size: 15px;
+  }
+}
+
+@media (max-width: 380px) {
+  .tables-board__grid {
+    grid-template-columns: 1fr;
+  }
+
+  .table-card {
+    min-height: 200px;
+  }
+}
+
+@media (max-width: 680px) {
+  .table-card__details {
+    gap: 8px;
+  }
+
+  .table-card__total {
+    align-items: flex-end;
+    gap: 6px;
+  }
+
+  .table-card__total > span {
+    font-size: 11px;
+  }
+
+  .table-card__total > strong {
+    font-size: 14px;
+    white-space: nowrap;
+  }
+
+  .table-card__closing-alert {
+    font-size: 10px;
+    padding: 7px 8px;
+  }
+}
+
+/* =========================================
+   DASHBOARD / SIDEBAR / TOPBAR
+   MELHORIA DE LEGIBILIDADE
+========================================= */
+
+/* SIDEBAR */
+
+.sidebar__restaurant strong {
+  font-size: 15px;
+}
+
+.sidebar__restaurant span {
+  font-size: 13px;
+}
+
+.sidebar__plan {
+  padding: 5px 9px;
+  font-size: 10px;
+}
+
+.sidebar__group-title {
+  font-size: 11px;
+}
+
+.sidebar__item {
+  font-size: 14px;
+}
+
+.sidebar__new-order {
+  font-size: 14px;
+}
+
+.sidebar__upgrade {
+  padding: 4px 7px;
+  font-size: 9px;
+}
+
+/* TOPBAR */
+
+.topbar__search input {
+  font-size: 14px;
+}
+
+.topbar__store-status {
+  font-size: 13px;
+}
+
+.topbar__profile-info strong,
+.topbar__profile-text strong {
+  font-size: 14px;
+}
+
+.topbar__profile-info small,
+.topbar__profile-text span {
+  font-size: 12px;
+}
+
+/* DASHBOARD - CABEÇALHO */
+
+.dashboard__eyebrow {
+  font-size: 12px;
+}
+
+.dashboard__heading p {
+  font-size: 14px;
+  line-height: 1.55;
+}
+
+.dashboard__primary-action {
+  font-size: 14px;
+}
+
+/* CARDS PRINCIPAIS */
+
+.stat-card__header {
+  font-size: 14px;
+}
+
+.stat-card > strong {
+  font-size: 27px;
+}
+
+.stat-card__detail {
+  font-size: 12px;
+}
+
+/* ALERTA */
+
+.dashboard__alert strong {
+  font-size: 15px;
+}
+
+.dashboard__alert p {
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.dashboard__alert button {
+  font-size: 13px;
+}
+
+/* BLOCOS DO DASHBOARD */
+
+.dashboard-card__header h2 {
+  font-size: 19px;
+}
+
+.dashboard-card__header p {
+  font-size: 13px;
+}
+
+.dashboard-card__header button {
+  font-size: 13px;
+}
+
+.operation-list strong,
+.recent-orders strong {
+  font-size: 14px;
+}
+
+.operation-list span,
+.recent-orders > div > div span {
+  font-size: 12px;
+}
+
+.operation-list b,
+.recent-orders b {
+  font-size: 14px;
+}
+
+.status {
+  font-size: 11px;
+}
+
+/* VISÃO GERAL DA OPERAÇÃO */
+
+.operation-overview__item h3 {
+  font-size: 15px;
+}
+
+.operation-overview__item p {
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.operation-quick-action strong {
+  font-size: 14px;
+}
+
+.operation-quick-action span {
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.operation-warning strong {
+  font-size: 14px;
+}
+
+.operation-warning span {
+  font-size: 12px;
+}
+
+.operation-warning button {
+  font-size: 13px;
+}
+
+.operation-summary__content span {
+  font-size: 13px;
+}
+
+.operation-summary__content strong {
+  font-size: 19px;
+}
+
+/* MOBILE */
+
+@media (max-width: 680px) {
+  .dashboard__heading p {
+    font-size: 13px;
+  }
+
+  .stat-card__header {
+    font-size: 13px;
+  }
+
+  .dashboard-card__header h2 {
+    font-size: 18px;
+  }
+
+  .operation-overview__item p,
+  .operation-quick-action span {
+    font-size: 12px;
+  }
+}
+
+/* =========================================
+   SAÚDE DA OPERAÇÃO - DARK MODE
+========================================= */
+
+html[data-theme="dark"] .operation-health {
+  border-color: rgb(34 197 94 / 0.22);
+
+  background:
+    radial-gradient(
+      circle at top right,
+      rgb(34 197 94 / 0.12),
+      transparent 38%
+    ),
+    linear-gradient(
+      135deg,
+      #171b22,
+      #12151a
+    );
+
+  box-shadow:
+    inset 0 0 0 1px
+      rgb(255 255 255 / 0.015);
+}
+
+html[data-theme="dark"] .operation-health__icon {
+  background:
+    rgb(34 197 94 / 0.13);
+
+  color: #4ade80;
+}
+
+html[data-theme="dark"]
+  .operation-health__status span {
+  color: #4ade80;
+}
+
+html[data-theme="dark"]
+  .operation-health__status h2 {
+  color: #f8fafc;
+}
+
+html[data-theme="dark"]
+  .operation-health__status p {
+  color: #94a3b8;
+}
+
+html[data-theme="dark"]
+  .operation-health__metrics > div {
+  border-color:
+    rgb(148 163 184 / 0.13);
+
+  background:
+    rgb(30 34 42 / 0.78);
+}
+
+html[data-theme="dark"]
+  .operation-health__metrics span {
+  color: #94a3b8;
+}
+
+html[data-theme="dark"]
+  .operation-health__metrics strong {
+  color: #f8fafc;
+}
+
+.operation-health__metrics span {
+  font-size: 12px;
+}
+
+.operation-health__metrics strong {
+  font-size: 16px;
+}
+
+.operation-health__status p {
+  font-size: 14px;
+}
+
+/* =========================================
+   SIDEBAR - FIXA E MAIS LIMPA
+========================================= */
+
+.sidebar {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.sidebar__navigation {
+  overflow: hidden;
+}
+
+.sidebar__footer {
+  margin-top: auto;
+}
+
+/* LOGO COM MAIS CONTRASTE */
+
+.sidebar__brand {
+  padding: 10px 12px;
+}
+
+.sidebar__brand-image {
+  padding: 6px 8px;
+  border-radius: 12px;
+  background: rgb(255 255 255 / 0.16);
+  box-shadow:
+    inset 0 0 0 1px
+    rgb(255 255 255 / 0.08);
+}
+
+/* =========================================
+   TOPBAR - FUNCIONAL
+========================================= */
+
+.topbar__store-status {
+  border: 0;
+  cursor: pointer;
+}
+
+.topbar__store-status--closed {
+  color: #dc2626;
+}
+
+.topbar__store-status--closed > span {
+  background: #ef4444;
+  box-shadow:
+    0 0 0 4px
+    rgb(239 68 68 / 0.12);
+}
+
+.topbar__dropdown-wrapper {
+  position: relative;
+}
+
+.topbar__caret {
+  transition:
+    transform 160ms ease;
+}
+
+.topbar__caret--open {
+  transform: rotate(180deg);
+}
+
+.topbar-dropdown {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  z-index: 100;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: 15px;
+  background: var(--surface);
+  box-shadow:
+    0 18px 50px
+    rgb(15 23 42 / 0.18);
+}
+
+.topbar-dropdown--notifications {
+  width: min(
+    360px,
+    calc(100vw - 30px)
+  );
+}
+
+.topbar-dropdown--profile {
+  width: 230px;
+  padding: 8px;
+}
+
+.topbar-dropdown__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 15px 16px;
+  border-bottom: 1px solid var(--border);
+}
+
+.topbar-dropdown__header > div {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.topbar-dropdown__header span {
+  color: var(--brand-600);
+  font-size: 10px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.topbar-dropdown__header strong {
+  font-size: 16px;
+}
+
+.topbar-dropdown__header button {
+  display: grid;
+  width: 34px;
+  height: 34px;
+  place-items: center;
+  border: 0;
+  border-radius: 9px;
+  background: var(--background);
+  color: var(--foreground);
+  cursor: pointer;
+}
+
+.topbar-notifications {
+  display: grid;
+  padding: 5px;
+}
+
+.topbar-notifications article {
+  display: grid;
+  grid-template-columns:
+    36px minmax(0, 1fr);
+  gap: 10px;
+  padding: 12px;
+  border-radius: 11px;
+}
+
+.topbar-notifications article:hover {
+  background: var(--background);
+}
+
+.topbar-notifications__icon {
+  display: grid;
+  width: 36px;
+  height: 36px;
+  place-items: center;
+  border-radius: 10px;
+  background: var(--brand-50);
+  color: var(--brand-600);
+  font-weight: 850;
+}
+
+.topbar-notifications__icon--warning {
+  background:
+    rgb(245 158 11 / 0.12);
+  color: #d97706;
+}
+
+.topbar-notifications__icon--success {
+  background:
+    rgb(34 197 94 / 0.12);
+  color: #16a34a;
+}
+
+.topbar-notifications article > div {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.topbar-notifications strong {
+  font-size: 13px;
+  line-height: 1.35;
+}
+
+.topbar-notifications span {
+  color: var(--text-secondary);
+  font-size: 11px;
+  line-height: 1.45;
+}
+
+/* PERFIL */
+
+.topbar-profile-menu__identity {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px;
+}
+
+.topbar-profile-menu__identity > div {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.topbar-profile-menu__identity strong {
+  font-size: 13px;
+}
+
+.topbar-profile-menu__identity span {
+  color: var(--text-secondary);
+  font-size: 11px;
+}
+
+.topbar-profile-menu__divider {
+  height: 1px;
+  margin: 6px 2px;
+  background: var(--border);
+}
+
+.topbar-dropdown--profile > button,
+.topbar-dropdown--profile > a {
+  display: flex;
+  width: 100%;
+  min-height: 40px;
+  align-items: center;
+  gap: 9px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: 9px;
+  background: transparent;
+  color: var(--foreground);
+  font-size: 12px;
+  font-weight: 650;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.topbar-dropdown--profile > button:hover,
+.topbar-dropdown--profile > a:hover {
+  background: var(--background);
+}
+
+.topbar-dropdown--profile
+  .topbar-profile-menu__logout {
+  color: #dc2626;
+}
+
+/* DARK */
+
+html[data-theme="dark"]
+  .topbar-dropdown {
+  background: #181b22;
+  border-color: #2b303a;
+  box-shadow:
+    0 20px 60px
+    rgb(0 0 0 / 0.38);
+}
+
+/* MOBILE */
+
+@media (max-width: 680px) {
+  .topbar__store-status {
+    display: none;
+  }
+
+  .topbar-dropdown--notifications {
+    position: fixed;
+    top: 70px;
+    right: 12px;
+    left: 12px;
+    width: auto;
+  }
+
+  .topbar-dropdown--profile {
+    right: 0;
+  }
+}
+
+/* =========================================
+   ATENDENTE - PAGAMENTO DE MESA
+========================================= */
+
+.attendant-payment,
+.attendant-confirm {
+  position: fixed;
+  inset: 0;
+  z-index: 120;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.attendant-payment__backdrop,
+.attendant-confirm__backdrop {
+  position: absolute;
+  inset: 0;
+  border: 0;
+  background:
+    rgb(15 23 42 / 0.58);
+  backdrop-filter: blur(4px);
+}
+
+.attendant-payment__panel,
+.attendant-confirm__card {
+  position: relative;
+  z-index: 1;
+  width: min(100%, 620px);
+  max-height: 90vh;
+  overflow-y: auto;
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  background: var(--surface);
+  box-shadow:
+    0 24px 70px
+    rgb(15 23 42 / 0.3);
+}
+
+.attendant-payment__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 22px;
+  border-bottom:
+    1px solid var(--border);
+}
+
+.attendant-payment__header > div {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.attendant-payment__header span,
+.attendant-confirm__heading > span {
+  color: var(--brand-600);
+  font-size: 12px;
+  font-weight: 850;
+  text-transform: uppercase;
+}
+
+.attendant-payment__header h2 {
+  margin: 0;
+  font-size: 26px;
+}
+
+.attendant-payment__header p {
+  margin: 6px 0 0;
+  color: var(--text-muted);
+  font-size: 13px;
+}
+
+.attendant-payment__header > div > strong {
+  font-size: 24px;
+}
+
+.attendant-payment__header > button {
+  display: grid;
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+  place-items: center;
+  border: 1px solid var(--border);
+  border-radius: 11px;
+  background: var(--background);
+  color: var(--foreground);
+  cursor: pointer;
+}
+
+.attendant-payment__content {
+  display: grid;
+  gap: 18px;
+  padding: 22px;
+}
+
+.attendant-payment__confirm {
+  display: inline-flex;
+  min-height: 52px;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: 0;
+  border-radius: 13px;
+  background: var(--brand-600);
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 850;
+  cursor: pointer;
+}
+
+.attendant-payment__confirm:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+/* CONFIRMAÇÃO */
+
+.attendant-confirm__card {
+  display: grid;
+  gap: 18px;
+  width: min(100%, 480px);
+  padding: 24px;
+}
+
+.attendant-confirm__icon {
+  display: grid;
+  width: 52px;
+  height: 52px;
+  place-items: center;
+  border-radius: 15px;
+  background:
+    rgb(34 197 94 / 0.12);
+  color: #16a34a;
+}
+
+.attendant-confirm__heading {
+  display: grid;
+  gap: 6px;
+}
+
+.attendant-confirm__heading h3 {
+  margin: 0;
+  font-size: 22px;
+}
+
+.attendant-confirm__heading p {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 14px;
+  line-height: 1.55;
+}
+
+.attendant-confirm__summary {
+  display: grid;
+  grid-template-columns:
+    1fr 1fr;
+  gap: 10px;
+}
+
+.attendant-confirm__summary > div {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 14px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--background);
+}
+
+.attendant-confirm__summary span {
+  color: var(--text-muted);
+  font-size: 12px;
+}
+
+.attendant-confirm__summary strong {
+  font-size: 16px;
+}
+
+.attendant-confirm__actions {
+  display: grid;
+  grid-template-columns:
+    1fr 1.4fr;
+  gap: 10px;
+}
+
+.attendant-confirm__actions button {
+  display: inline-flex;
+  min-height: 50px;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  border-radius: 12px;
+  font-size: 13px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.attendant-confirm__actions
+  button:first-child {
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--foreground);
+}
+
+.attendant-confirm__actions
+  button:last-child {
+  border: 0;
+  background: #16a34a;
+  color: #ffffff;
+}
+
+/* DARK */
+
+html[data-theme="dark"]
+  .attendant-payment__panel,
+html[data-theme="dark"]
+  .attendant-confirm__card {
+  background: #181b22;
+}
+
+html[data-theme="dark"]
+  .attendant-confirm__summary
+  > div {
+  background: #1d2028;
+}
+
+/* MOBILE */
+
+@media (max-width: 600px) {
+  .attendant-payment,
+  .attendant-confirm {
+    align-items: flex-end;
+    padding: 0;
+  }
+
+  .attendant-payment__panel,
+  .attendant-confirm__card {
+    width: 100%;
+    max-height: 92vh;
+    border-radius:
+      22px 22px 0 0;
+  }
+
+  .attendant-confirm__card {
+    padding: 20px;
+  }
+}
+
+/* =========================================
+   ATENDENTE - PEDIDOS BALCÃO / RETIRADA
+========================================= */
+
+.attendant-order-card {
+  display: grid;
+  grid-template-columns:
+    minmax(150px, 0.75fr)
+    minmax(180px, 1fr)
+    auto
+    auto;
+  align-items: center;
+  gap: 16px;
+}
+
+.attendant-order-card__main,
+.attendant-order-card__details {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.attendant-order-card__main > span {
+  color: var(--brand-600);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.attendant-order-card__main > strong {
+  font-size: 15px;
+}
+
+.attendant-order-card__main > small,
+.attendant-order-card__details > span {
+  color: var(--text-muted);
+  font-size: 12px;
+}
+
+.attendant-order-card__details > strong {
+  font-size: 15px;
+}
+
+.attendant-order-status {
+  display: inline-flex;
+  min-height: 32px;
+  align-items: center;
+  gap: 6px;
+  padding: 0 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.attendant-order-status--new {
+  background:
+    rgb(249 115 22 / 0.1);
+  color: var(--brand-700);
+}
+
+.attendant-order-status--preparing {
+  background:
+    rgb(245 158 11 / 0.12);
+  color: #b45309;
+}
+
+.attendant-order-status--ready {
+  background:
+    rgb(34 197 94 / 0.12);
+  color: #15803d;
+}
+
+.attendant-order-card--ready {
+  border-color:
+    rgb(34 197 94 / 0.3);
+}
+
+.attendant-order-action {
+  display: inline-flex;
+  min-height: 42px;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: 11px;
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.attendant-order-action--accept {
+  background: var(--brand-600);
+  color: #ffffff;
+}
+
+.attendant-order-action--deliver {
+  background: #16a34a;
+  color: #ffffff;
+}
+
+.attendant-order-waiting {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--text-muted);
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.attendant-orders__hint {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 12px;
+}
+
+/* MOBILE */
+
+@media (max-width: 760px) {
+  .attendant-order-card {
+    grid-template-columns:
+      minmax(0, 1fr) auto;
+  }
+
+  .attendant-order-card__details {
+    grid-column: 1 / -1;
+  }
+
+  .attendant-order-card__status {
+    grid-column: 1;
+  }
+
+  .attendant-order-card__actions {
+    grid-column: 2;
+  }
+}
+
+@media (max-width: 480px) {
+  .attendant-order-card {
+    grid-template-columns: 1fr;
+  }
+
+  .attendant-order-card__details,
+  .attendant-order-card__status,
+  .attendant-order-card__actions {
+    grid-column: 1;
+  }
+
+  .attendant-order-action {
+    width: 100%;
+  }
+}

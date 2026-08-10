@@ -29,23 +29,36 @@ export interface RestaurantTable {
 
 interface TableCardProps {
   table: RestaurantTable;
-  onOpen: (table: RestaurantTable) => void;
+
+  onOpen: (
+    table: RestaurantTable,
+  ) => void;
 }
 
-function formatCurrency(value: number) {
-  return new Intl.NumberFormat("pt-BR", {
-    style: "currency",
-    currency: "BRL",
-  }).format(value);
+function formatCurrency(
+  value: number,
+) {
+  return new Intl.NumberFormat(
+    "pt-BR",
+    {
+      style: "currency",
+      currency: "BRL",
+    },
+  ).format(value);
 }
 
-function getStatusLabel(status: TableStatus) {
+function getStatusLabel(
+  status: TableStatus,
+) {
   if (status === "occupied") {
     return "Ocupada";
   }
 
-  if (status === "waiting-payment") {
-    return "Aguardando pagamento";
+  if (
+    status ===
+    "waiting-payment"
+  ) {
+    return "Fechamento";
   }
 
   return "Livre";
@@ -55,35 +68,69 @@ export function TableCard({
   table,
   onOpen,
 }: TableCardProps) {
+  const totalItems =
+    table.commandItems?.reduce(
+      (total, item) =>
+        total + item.quantity,
+      0,
+    ) ?? 0;
+
+  const isFree =
+    table.status === "free";
+
+  const isWaitingPayment =
+    table.status ===
+    "waiting-payment";
+
   return (
     <article
       className={`table-card table-card--${table.status}`}
-      onClick={() => onOpen(table)}
+      onClick={() =>
+        onOpen(table)
+      }
     >
+      {isWaitingPayment && (
+        <div className="table-card__closing-alert">
+          Pagamento solicitado
+        </div>
+      )}
+
       <header className="table-card__header">
-        <div>
+        <div className="table-card__number">
           <span>Mesa</span>
 
           <strong>
-            {String(table.number).padStart(2, "0")}
+            {String(
+              table.number,
+            ).padStart(2, "0")}
           </strong>
         </div>
 
         <span
           className={`table-card__status table-card__status--${table.status}`}
         >
-          {getStatusLabel(table.status)}
+          {getStatusLabel(
+            table.status,
+          )}
         </span>
       </header>
 
-      {table.status === "free" ? (
+      {isFree ? (
         <div className="table-card__free">
-          <Plus size={26} weight="bold" />
+          <div className="table-card__free-icon">
+            <Plus
+              size={24}
+              weight="bold"
+            />
+          </div>
 
-          <strong>Abrir mesa</strong>
+          <strong>
+            Abrir mesa
+          </strong>
 
           <span>
-            Toque para iniciar um atendimento.
+            Toque para iniciar um
+            atendimento
           </span>
         </div>
       ) : (
@@ -91,14 +138,22 @@ export function TableCard({
           <div className="table-card__details">
             {table.customerName && (
               <div>
-                <Users size={17} />
-                <span>{table.customerName}</span>
+                <Users
+                  size={18}
+                  weight="bold"
+                />
+
+                <span>
+                  {
+                    table.customerName
+                  }
+                </span>
               </div>
             )}
 
             {table.people && (
               <div>
-                <Users size={17} />
+                <Users size={18} />
 
                 <span>
                   {table.people}{" "}
@@ -111,39 +166,44 @@ export function TableCard({
 
             {table.openedAt && (
               <div>
-                <Clock size={17} />
+                <Clock size={18} />
 
                 <span>
-                  Aberta {table.openedAt}
+                  Aberta{" "}
+                  {table.openedAt}
                 </span>
               </div>
             )}
 
-            {table.commandItems &&
-              table.commandItems.length > 0 && (
-                <div>
-                  <Receipt size={17} />
+            {totalItems > 0 && (
+              <div>
+                <Receipt size={18} />
 
-                  <span>
-                    {table.commandItems.reduce(
-                      (total, item) =>
-                        total + item.quantity,
-                      0,
-                    )}{" "}
-                    itens na comanda
-                  </span>
-                </div>
-              )}
+                <span>
+                  {totalItems}{" "}
+                  {totalItems === 1
+                    ? "item"
+                    : "itens"}{" "}
+                  na comanda
+                </span>
+              </div>
+            )}
           </div>
 
           <div className="table-card__total">
             <span>
-              <Receipt size={16} />
+              <Receipt
+                size={17}
+                weight="bold"
+              />
+
               Comanda
             </span>
 
             <strong>
-              {formatCurrency(table.total ?? 0)}
+              {formatCurrency(
+                table.total ?? 0,
+              )}
             </strong>
           </div>
         </>
