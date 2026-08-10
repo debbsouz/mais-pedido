@@ -26,10 +26,14 @@ interface OrdersBoardProps {
   onOrdersChange: (
     updater:
       | Order[]
-      | ((currentOrders: Order[]) => Order[]),
+      | ((
+          currentOrders: Order[],
+        ) => Order[]),
   ) => void;
 
-  onOrderHandled: (orderId: string) => void;
+  onOrderHandled: (
+    orderId: string,
+  ) => void;
 }
 
 export const initialOrders: Order[] = [
@@ -40,7 +44,8 @@ export const initialOrders: Order[] = [
     fulfillment: "Retirada",
     time: "há 7 min",
     total: "R$ 72,90",
-    items: "2 X-Burgers, 1 batata grande",
+    items:
+      "2 X-Burgers, 1 batata grande",
     status: "new",
     delayed: true,
   },
@@ -51,7 +56,8 @@ export const initialOrders: Order[] = [
     fulfillment: "Mesa",
     time: "há 4 min",
     total: "R$ 118,50",
-    items: "1 pizza grande, 2 refrigerantes",
+    items:
+      "1 pizza grande, 2 refrigerantes",
     status: "new",
   },
   {
@@ -71,7 +77,8 @@ export const initialOrders: Order[] = [
     fulfillment: "Mesa",
     time: "há 12 min",
     total: "R$ 96,50",
-    items: "2 hambúrgueres, 1 porção",
+    items:
+      "2 hambúrgueres, 1 porção",
     status: "preparing",
   },
   {
@@ -81,7 +88,8 @@ export const initialOrders: Order[] = [
     fulfillment: "Delivery",
     time: "há 15 min",
     total: "R$ 58,90",
-    items: "1 X-Salada, 1 refrigerante",
+    items:
+      "1 X-Salada, 1 refrigerante",
     status: "preparing",
   },
   {
@@ -91,7 +99,8 @@ export const initialOrders: Order[] = [
     fulfillment: "Balcão",
     time: "há 18 min",
     total: "R$ 38,00",
-    items: "1 cachorro-quente, 1 suco",
+    items:
+      "1 cachorro-quente, 1 suco",
     status: "preparing",
   },
   {
@@ -101,7 +110,8 @@ export const initialOrders: Order[] = [
     fulfillment: "Retirada",
     time: "pronto há 3 min",
     total: "R$ 64,00",
-    items: "2 combos tradicionais",
+    items:
+      "2 combos tradicionais",
     status: "ready",
   },
   {
@@ -111,7 +121,8 @@ export const initialOrders: Order[] = [
     fulfillment: "Mesa",
     time: "pronto há 5 min",
     total: "R$ 132,90",
-    items: "1 pizza família, bebidas",
+    items:
+      "1 pizza família, bebidas",
     status: "ready",
   },
   {
@@ -121,7 +132,8 @@ export const initialOrders: Order[] = [
     fulfillment: "Delivery",
     time: "saiu há 8 min",
     total: "R$ 84,50",
-    items: "2 hambúrgueres especiais",
+    items:
+      "2 hambúrgueres especiais",
     status: "delivery",
   },
   {
@@ -131,7 +143,8 @@ export const initialOrders: Order[] = [
     fulfillment: "Delivery",
     time: "aguardando entregador",
     total: "R$ 52,00",
-    items: "1 combo individual",
+    items:
+      "1 combo individual",
     status: "delivery",
   },
 ];
@@ -146,6 +159,30 @@ const statusSequence: Record<
   delivery: null,
 };
 
+const mobileStatusLabels: Record<
+  OrderStatus,
+  string
+> = {
+  new: "Novos",
+  preparing: "Preparo",
+  ready: "Prontos",
+  delivery: "Entrega",
+};
+
+function getColumnVariant(
+  status: OrderStatus,
+):
+  | "waiting"
+  | "preparing"
+  | "ready"
+  | "delivery" {
+  if (status === "new") {
+    return "waiting";
+  }
+
+  return status;
+}
+
 export function OrdersBoard({
   activeFilter,
   searchTerm,
@@ -153,102 +190,153 @@ export function OrdersBoard({
   onOrdersChange,
   onOrderHandled,
 }: OrdersBoardProps) {
-  const [selectedOrder, setSelectedOrder] =
-    useState<Order | null>(null);
+  const [
+    selectedOrder,
+    setSelectedOrder,
+  ] = useState<Order | null>(null);
+
+  const [
+    mobileStatus,
+    setMobileStatus,
+  ] = useState<OrderStatus>("new");
 
   function moveOrder(
     orderId: string,
     newStatus: OrderStatus,
   ) {
-    onOrdersChange((currentOrders) =>
-      currentOrders.map((order) =>
-        order.id === orderId
-          ? {
-              ...order,
-              status: newStatus,
-              delayed: false,
-            }
-          : order,
-      ),
+    onOrdersChange(
+      (currentOrders) =>
+        currentOrders.map(
+          (order) =>
+            order.id === orderId
+              ? {
+                  ...order,
+                  status: newStatus,
+                  delayed: false,
+                }
+              : order,
+        ),
     );
   }
 
-  function acceptOrder(orderId: string) {
-    moveOrder(orderId, "preparing");
+  function acceptOrder(
+    orderId: string,
+  ) {
+    moveOrder(
+      orderId,
+      "preparing",
+    );
+
     onOrderHandled(orderId);
   }
 
-  function rejectOrder(orderId: string) {
-    const shouldReject = window.confirm(
-      "Tem certeza de que deseja recusar este pedido?",
-    );
+  function rejectOrder(
+    orderId: string,
+  ) {
+    const shouldReject =
+      window.confirm(
+        "Tem certeza de que deseja recusar este pedido?",
+      );
 
     if (!shouldReject) {
       return;
     }
 
-    onOrdersChange((currentOrders) =>
-      currentOrders.filter(
-        (order) => order.id !== orderId,
-      ),
+    onOrdersChange(
+      (currentOrders) =>
+        currentOrders.filter(
+          (order) =>
+            order.id !== orderId,
+        ),
     );
 
     onOrderHandled(orderId);
 
-    if (selectedOrder?.id === orderId) {
+    if (
+      selectedOrder?.id ===
+      orderId
+    ) {
       setSelectedOrder(null);
     }
   }
 
-  function advanceOrder(orderId: string) {
-    onOrdersChange((currentOrders) =>
-      currentOrders.flatMap((order) => {
-        if (order.id !== orderId) {
-          return [order];
-        }
+  function advanceOrder(
+    orderId: string,
+  ) {
+    onOrdersChange(
+      (currentOrders) =>
+        currentOrders.flatMap(
+          (order) => {
+            if (
+              order.id !== orderId
+            ) {
+              return [order];
+            }
 
-        if (
-          order.status === "ready" &&
-          order.fulfillment !== "Delivery"
-        ) {
-          return [];
-        }
+            if (
+              order.status ===
+                "ready" &&
+              order.fulfillment !==
+                "Delivery"
+            ) {
+              return [];
+            }
 
-        const nextStatus =
-          statusSequence[order.status];
+            const nextStatus =
+              statusSequence[
+                order.status
+              ];
 
-        if (!nextStatus) {
-          return [];
-        }
+            if (!nextStatus) {
+              return [];
+            }
 
-        return [
-          {
-            ...order,
-            status: nextStatus,
+            return [
+              {
+                ...order,
+                status:
+                  nextStatus,
+              },
+            ];
           },
-        ];
-      }),
+        ),
     );
 
     setSelectedOrder(null);
   }
 
-  function matchesActiveFilter(order: Order) {
-    if (activeFilter === "Todos") {
+  function matchesActiveFilter(
+    order: Order,
+  ) {
+    if (
+      activeFilter === "Todos"
+    ) {
       return true;
     }
 
-    if (activeFilter === "WhatsApp") {
-      return order.origin === "WhatsApp";
+    if (
+      activeFilter ===
+      "WhatsApp"
+    ) {
+      return (
+        order.origin ===
+        "WhatsApp"
+      );
     }
 
-    return order.fulfillment === activeFilter;
+    return (
+      order.fulfillment ===
+      activeFilter
+    );
   }
 
-  function matchesSearch(order: Order) {
-    const normalizedSearch = searchTerm
-      .trim()
-      .toLowerCase();
+  function matchesSearch(
+    order: Order,
+  ) {
+    const normalizedSearch =
+      searchTerm
+        .trim()
+        .toLowerCase();
 
     if (!normalizedSearch) {
       return true;
@@ -261,11 +349,17 @@ export function OrdersBoard({
       order.origin,
       order.fulfillment,
     ].some((value) =>
-      value.toLowerCase().includes(normalizedSearch),
+      value
+        .toLowerCase()
+        .includes(
+          normalizedSearch,
+        ),
     );
   }
 
-  function ordersByStatus(status: OrderStatus) {
+  function ordersByStatus(
+    status: OrderStatus,
+  ) {
     return orders.filter(
       (order) =>
         order.status === status &&
@@ -274,32 +368,148 @@ export function OrdersBoard({
     );
   }
 
-  function renderCards(status: OrderStatus) {
-    return ordersByStatus(status).map((order) => (
+  function renderCards(
+    status: OrderStatus,
+  ) {
+    return ordersByStatus(
+      status,
+    ).map((order) => (
       <OrderCard
         key={order.id}
         order={order}
-        onAccept={acceptOrder}
-        onReject={rejectOrder}
-        onAdvance={advanceOrder}
-        onOpen={setSelectedOrder}
+        onOpen={() =>
+          setSelectedOrder(
+            order,
+          )
+        }
+        onAccept={
+          acceptOrder
+        }
+        onReject={
+          rejectOrder
+        }
+        onAdvance={
+          advanceOrder
+        }
       />
     ));
   }
 
-  const newOrders = ordersByStatus("new");
+  const newOrders =
+    ordersByStatus("new");
+
   const preparingOrders =
-    ordersByStatus("preparing");
-  const readyOrders = ordersByStatus("ready");
+    ordersByStatus(
+      "preparing",
+    );
+
+  const readyOrders =
+    ordersByStatus("ready");
+
   const deliveryOrders =
-    ordersByStatus("delivery");
+    ordersByStatus(
+      "delivery",
+    );
+
+  const statusCounts: Record<
+    OrderStatus,
+    number
+  > = {
+    new: newOrders.length,
+    preparing:
+      preparingOrders.length,
+    ready: readyOrders.length,
+    delivery:
+      deliveryOrders.length,
+  };
+
+  const mobileStatuses: OrderStatus[] =
+    [
+      "new",
+      "preparing",
+      "ready",
+      "delivery",
+    ];
 
   return (
     <>
-      <section className="orders-board">
+      {/* MOBILE */}
+
+      <div className="orders-mobile-status">
+        {mobileStatuses.map(
+          (status) => (
+            <button
+              key={status}
+              type="button"
+              className={
+                mobileStatus ===
+                status
+                  ? "orders-mobile-status__button orders-mobile-status__button--active"
+                  : "orders-mobile-status__button"
+              }
+              onClick={() =>
+                setMobileStatus(
+                  status,
+                )
+              }
+            >
+              <span>
+                {
+                  mobileStatusLabels[
+                    status
+                  ]
+                }
+              </span>
+
+              <strong>
+                {
+                  statusCounts[
+                    status
+                  ]
+                }
+              </strong>
+            </button>
+          ),
+        )}
+      </div>
+
+      <section className="orders-mobile-board">
+        <OrderColumn
+          title={
+            mobileStatus ===
+            "new"
+              ? "Novos pedidos"
+              : mobileStatus ===
+                  "preparing"
+                ? "Em preparo"
+                : mobileStatus ===
+                    "ready"
+                  ? "Prontos"
+                  : "Em entrega"
+          }
+          count={
+            statusCounts[
+              mobileStatus
+            ]
+          }
+          variant={getColumnVariant(
+            mobileStatus,
+          )}
+        >
+          {renderCards(
+            mobileStatus,
+          )}
+        </OrderColumn>
+      </section>
+
+      {/* DESKTOP */}
+
+      <section className="orders-board orders-board--desktop">
         <OrderColumn
           title="Novos pedidos"
-          count={newOrders.length}
+          count={
+            newOrders.length
+          }
           variant="waiting"
         >
           {renderCards("new")}
@@ -307,32 +517,46 @@ export function OrdersBoard({
 
         <OrderColumn
           title="Em preparo"
-          count={preparingOrders.length}
+          count={
+            preparingOrders.length
+          }
           variant="preparing"
         >
-          {renderCards("preparing")}
+          {renderCards(
+            "preparing",
+          )}
         </OrderColumn>
 
         <OrderColumn
           title="Prontos"
-          count={readyOrders.length}
+          count={
+            readyOrders.length
+          }
           variant="ready"
         >
-          {renderCards("ready")}
+          {renderCards(
+            "ready",
+          )}
         </OrderColumn>
 
         <OrderColumn
           title="Em entrega"
-          count={deliveryOrders.length}
+          count={
+            deliveryOrders.length
+          }
           variant="delivery"
         >
-          {renderCards("delivery")}
+          {renderCards(
+            "delivery",
+          )}
         </OrderColumn>
       </section>
 
       <OrderDrawer
         order={selectedOrder}
-        onClose={() => setSelectedOrder(null)}
+        onClose={() =>
+          setSelectedOrder(null)
+        }
       />
     </>
   );

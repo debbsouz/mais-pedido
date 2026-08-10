@@ -992,6 +992,16 @@ a {
   font-weight: 700;
 }
 
+.login-form__error {
+  padding: 12px 16px;
+  border-radius: var(--radius-md);
+  background: var(--danger-soft);
+  color: var(--danger);
+  font-size: 13px;
+  font-weight: 600;
+  text-align: center;
+}
+
 .login-form__submit {
   min-height: 50px;
   border: 0;
@@ -5683,4 +5693,2651 @@ html[data-theme="dark"]
 .table-preview__confirm-payment:disabled {
   cursor: not-allowed;
   opacity: 0.45;
+}
+
+/* =========================================
+   GARÇOM - APP MOBILE
+========================================= */
+
+.waiter-app {
+  min-height: 100vh;
+  background:
+    linear-gradient(
+      180deg,
+      rgb(249 115 22 / 0.08),
+      transparent 220px
+    ),
+    var(--background);
+  color: var(--foreground);
+}
+
+.waiter-header {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 18px 20px;
+  border-bottom: 1px solid var(--border);
+  background: rgb(255 255 255 / 0.92);
+  backdrop-filter: blur(14px);
+}
+
+.waiter-header > div:first-child {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.waiter-header__brand {
+  color: var(--brand-600);
+  font-size: 18px;
+  font-weight: 900;
+  letter-spacing: -0.04em;
+}
+
+.waiter-header > div:first-child > strong {
+  font-size: 11px;
+}
+
+.waiter-header__actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.waiter-header__actions > button {
+  display: grid;
+  width: 42px;
+  height: 42px;
+  place-items: center;
+  border: 1px solid var(--border);
+  border-radius: 13px;
+  background: var(--surface);
+  color: var(--foreground);
+  cursor: pointer;
+}
+
+.waiter-header__user {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.waiter-header__user > svg {
+  color: var(--brand-600);
+}
+
+.waiter-header__user > div {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.waiter-header__user strong {
+  font-size: 10px;
+}
+
+.waiter-header__user span {
+  color: var(--text-muted);
+  font-size: 8px;
+}
+
+.waiter-home {
+  width: min(100%, 760px);
+  margin: 0 auto;
+  padding: 24px 18px 100px;
+}
+
+.waiter-home__heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.waiter-home__heading > div:first-child > span {
+  color: var(--brand-600);
+  font-size: 9px;
+  font-weight: 850;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.waiter-home__heading h1 {
+  margin: 5px 0 0;
+  font-size: 28px;
+}
+
+.waiter-home__heading p {
+  max-width: 360px;
+  margin: 6px 0 0;
+  color: var(--text-secondary);
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.waiter-home__counter {
+  display: flex;
+  min-width: 82px;
+  flex-direction: column;
+  gap: 2px;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 13px;
+  background: var(--surface);
+  text-align: center;
+}
+
+.waiter-home__counter span {
+  color: var(--text-muted);
+  font-size: 8px;
+  text-transform: uppercase;
+}
+
+.waiter-home__counter strong {
+  font-size: 15px;
+}
+
+.waiter-home__grid {
+  display: grid;
+  grid-template-columns:
+    repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.waiter-table-card {
+  display: flex;
+  min-height: 190px;
+  flex-direction: column;
+  overflow: hidden;
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  background: var(--surface);
+  color: var(--foreground);
+  text-align: left;
+  box-shadow: var(--shadow-sm);
+  cursor: pointer;
+}
+
+.waiter-table-card--free {
+  border-top: 4px solid #22c55e;
+}
+
+.waiter-table-card--occupied {
+  border-top: 4px solid var(--brand-600);
+}
+
+.waiter-table-card--waiting-payment {
+  border-top: 4px solid #f59e0b;
+}
+
+.waiter-table-card__top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 14px;
+  border-bottom: 1px solid var(--border);
+}
+
+.waiter-table-card__top > div {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.waiter-table-card__top > div span {
+  color: var(--text-muted);
+  font-size: 8px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.waiter-table-card__top > div strong {
+  font-size: 25px;
+  line-height: 1;
+}
+
+.waiter-table-card__status {
+  padding: 5px 7px;
+  border-radius: 999px;
+  background: var(--background);
+  color: var(--text-secondary);
+  font-size: 7px;
+  font-weight: 850;
+  text-transform: uppercase;
+}
+
+.waiter-table-card--free
+  .waiter-table-card__status {
+  background: #dcfce7;
+  color: #15803d;
+}
+
+.waiter-table-card--occupied
+  .waiter-table-card__status {
+  background: rgb(249 115 22 / 0.1);
+  color: var(--brand-700);
+}
+
+.waiter-table-card--waiting-payment
+  .waiter-table-card__status {
+  background: #fef3c7;
+  color: #b45309;
+}
+
+.waiter-table-card__free {
+  display: grid;
+  flex: 1;
+  place-content: center;
+  justify-items: center;
+  gap: 7px;
+  padding: 16px;
+  color: #16a34a;
+}
+
+.waiter-table-card__free span {
+  color: var(--foreground);
+  font-size: 10px;
+  font-weight: 800;
+}
+
+.waiter-table-card__content {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 8px;
+  padding: 13px;
+}
+
+.waiter-table-card__content > div:not(
+    .waiter-table-card__total,
+    .waiter-table-card__payment
+  ) {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--text-secondary);
+  font-size: 9px;
+}
+
+.waiter-table-card__total {
+  display: flex;
+  margin-top: auto;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--border);
+}
+
+.waiter-table-card__total > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--text-muted);
+  font-size: 8px;
+}
+
+.waiter-table-card__total strong {
+  font-size: 11px;
+}
+
+.waiter-table-card__payment {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 8px;
+  border-radius: 8px;
+  background: rgb(245 158 11 / 0.09);
+  color: #b45309;
+  font-size: 8px;
+  font-weight: 800;
+}
+
+/* =========================================
+   GARÇOM - PREVIEW DA MESA
+========================================= */
+
+.waiter-table-preview {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+.waiter-table-preview__backdrop {
+  position: absolute;
+  inset: 0;
+  border: 0;
+  background: rgb(15 23 42 / 0.52);
+  backdrop-filter: blur(3px);
+}
+
+.waiter-table-preview__panel {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  width: min(100%, 620px);
+  min-height: 310px;
+  max-height: 88vh;
+  flex-direction: column;
+  gap: 16px;
+  padding: 24px 20px;
+  overflow-y: auto;
+  border-radius: 24px 24px 0 0;
+  background: var(--surface);
+  box-shadow: 0 -20px 60px rgb(15 23 42 / 0.24);
+}
+
+.waiter-table-preview__close {
+  position: absolute;
+  top: 18px;
+  right: 18px;
+  display: grid;
+  width: 38px;
+  height: 38px;
+  place-items: center;
+  border: 1px solid var(--border);
+  border-radius: 11px;
+  background: var(--background);
+  color: var(--foreground);
+  font-size: 20px;
+  cursor: pointer;
+}
+
+.waiter-table-preview__panel > span {
+  color: var(--brand-600);
+  font-size: 8px;
+  font-weight: 850;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.waiter-table-preview__panel h2 {
+  margin: -8px 0 0;
+  font-size: 36px;
+  line-height: 1;
+}
+
+.waiter-table-preview__panel > p {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 11px;
+}
+
+.waiter-table-preview__info {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 14px;
+  border: 1px solid var(--border);
+  border-radius: 13px;
+  background: var(--background);
+}
+
+.waiter-table-preview__info strong {
+  font-size: 13px;
+}
+
+.waiter-table-preview__info span {
+  color: var(--text-muted);
+  font-size: 9px;
+}
+
+.waiter-table-preview__total {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 16px;
+  border-radius: 14px;
+  background: rgb(249 115 22 / 0.07);
+}
+
+.waiter-table-preview__total span {
+  color: var(--text-secondary);
+  font-size: 9px;
+}
+
+.waiter-table-preview__total strong {
+  color: var(--brand-600);
+  font-size: 18px;
+}
+
+.waiter-table-preview__primary {
+  min-height: 50px;
+  border: 0;
+  border-radius: 13px;
+  background: var(--brand-600);
+  color: #ffffff;
+  font-size: 11px;
+  font-weight: 850;
+  cursor: pointer;
+}
+
+/* =========================================
+   GARÇOM - DARK MODE
+========================================= */
+
+html[data-theme="dark"]
+  .waiter-header {
+  background: rgb(20 22 28 / 0.94);
+}
+
+html[data-theme="dark"]
+  .waiter-table-card,
+html[data-theme="dark"]
+  .waiter-table-preview__panel {
+  background: var(--surface);
+  border-color: var(--border);
+}
+
+html[data-theme="dark"]
+  .waiter-table-preview__info {
+  background: #1d2028;
+}
+
+html[data-theme="dark"]
+  .waiter-table-card--free
+  .waiter-table-card__status {
+  background: rgb(34 197 94 / 0.14);
+  color: #86efac;
+}
+
+html[data-theme="dark"]
+  .waiter-table-card--occupied
+  .waiter-table-card__status {
+  background: rgb(249 115 22 / 0.12);
+  color: #fdba74;
+}
+
+html[data-theme="dark"]
+  .waiter-table-card--waiting-payment
+  .waiter-table-card__status {
+  background: rgb(245 158 11 / 0.14);
+  color: #fbbf24;
+}
+
+/* =========================================
+   GARÇOM - RESPONSIVIDADE
+========================================= */
+
+@media (min-width: 700px) {
+  .waiter-home__grid {
+    grid-template-columns:
+      repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 480px) {
+  .waiter-header {
+    padding: 14px 15px;
+  }
+
+  .waiter-header__user > div {
+    display: none;
+  }
+
+  .waiter-home {
+    padding: 20px 14px 90px;
+  }
+
+  .waiter-home__heading h1 {
+    font-size: 25px;
+  }
+
+  .waiter-home__heading p {
+    font-size: 10px;
+  }
+
+  .waiter-table-card {
+    min-height: 175px;
+  }
+}
+
+@media (max-width: 360px) {
+  .waiter-home__grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* =========================================
+   GARÇOM - COMANDA / ABERTURA
+========================================= */
+
+.waiter-table-preview__primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+}
+
+.waiter-table-preview__primary:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+.waiter-open-table {
+  display: grid;
+  gap: 16px;
+}
+
+.waiter-open-table__heading {
+  display: grid;
+  gap: 4px;
+}
+
+.waiter-open-table__heading > span {
+  color: var(--brand-600);
+  font-size: 8px;
+  font-weight: 850;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+}
+
+.waiter-open-table__heading h3 {
+  margin: 0;
+  font-size: 19px;
+}
+
+.waiter-form-field {
+  display: grid;
+  gap: 7px;
+}
+
+.waiter-form-field > span {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 9px;
+  font-weight: 750;
+}
+
+.waiter-form-field small {
+  color: var(--text-muted);
+  font-size: 7px;
+  font-weight: 500;
+}
+
+.waiter-form-field input {
+  width: 100%;
+  min-height: 48px;
+  padding: 0 13px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  outline: none;
+  background: var(--background);
+  color: var(--foreground);
+  font-size: 16px;
+}
+
+.waiter-form-field input:focus {
+  border-color: var(--brand-600);
+  box-shadow:
+    0 0 0 3px
+    rgb(249 115 22 / 0.08);
+}
+
+.waiter-back-button {
+  display: inline-flex;
+  width: fit-content;
+  align-items: center;
+  gap: 6px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 9px;
+  font-weight: 750;
+  cursor: pointer;
+}
+
+.waiter-table-preview__command {
+  display: grid;
+  gap: 10px;
+  padding: 14px;
+  border: 1px solid var(--border);
+  border-radius: 13px;
+  background: var(--background);
+}
+
+.waiter-table-preview__command-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.waiter-table-preview__command-heading span {
+  color: var(--text-muted);
+  font-size: 8px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.waiter-table-preview__command-heading strong {
+  font-size: 14px;
+}
+
+.waiter-command-list {
+  display: grid;
+  gap: 7px;
+}
+
+.waiter-command-list > div {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 9px 10px;
+  border-radius: 9px;
+  background: var(--surface);
+}
+
+.waiter-command-list span {
+  font-size: 9px;
+}
+
+.waiter-command-list strong {
+  font-size: 9px;
+}
+
+.waiter-command-empty {
+  margin: 0;
+  padding: 12px;
+  border: 1px dashed var(--border);
+  border-radius: 9px;
+  color: var(--text-muted);
+  text-align: center;
+  font-size: 9px;
+}
+
+.waiter-payment-warning {
+  padding: 12px;
+  border: 1px solid
+    rgb(245 158 11 / 0.35);
+  border-radius: 11px;
+  background:
+    rgb(245 158 11 / 0.08);
+  color: #b45309;
+  text-align: center;
+  font-size: 9px;
+  font-weight: 800;
+}
+
+/* =========================================
+   GARÇOM - PRODUTOS
+========================================= */
+
+.waiter-add-items {
+  display: grid;
+  gap: 15px;
+}
+
+.waiter-add-items
+  .order-items-form__products {
+  grid-template-columns: 1fr;
+}
+
+.waiter-add-items
+  .order-product-card {
+  display: grid;
+  grid-template-columns:
+    72px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+}
+
+.waiter-add-items
+  .order-product-card__image {
+  width: 72px;
+  height: 78px;
+  min-width: 72px;
+}
+
+.waiter-add-items
+  .order-items-form__categories {
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  padding-bottom: 5px;
+}
+
+.waiter-add-items
+  .order-items-category {
+  flex-shrink: 0;
+}
+
+.waiter-send-round {
+  position: sticky;
+  bottom: -24px;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin: 4px -20px -24px;
+  padding: 13px 20px;
+  border-top: 1px solid var(--border);
+  background: var(--surface);
+  box-shadow:
+    0 -10px 30px
+    rgb(15 23 42 / 0.08);
+}
+
+.waiter-send-round > div {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.waiter-send-round span {
+  color: var(--text-muted);
+  font-size: 7px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.waiter-send-round strong {
+  font-size: 13px;
+}
+
+.waiter-send-round > button {
+  display: inline-flex;
+  min-height: 42px;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: 10px;
+  background: var(--brand-600);
+  color: #ffffff;
+  font-size: 9px;
+  font-weight: 850;
+  cursor: pointer;
+}
+
+.waiter-send-round > button:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+html[data-theme="dark"]
+  .waiter-form-field input,
+html[data-theme="dark"]
+  .waiter-table-preview__command {
+  background: #1d2028;
+}
+
+html[data-theme="dark"]
+  .waiter-payment-warning {
+  color: #fbbf24;
+}
+
+/* Celular pequeno */
+
+@media (max-width: 480px) {
+  .waiter-add-items
+    .order-product-card {
+    grid-template-columns:
+      62px minmax(0, 1fr);
+  }
+
+  .waiter-add-items
+    .order-product-card__image {
+    width: 62px;
+    height: 70px;
+    min-width: 62px;
+  }
+
+  .waiter-add-items
+    .order-product-card__actions {
+    grid-column: 1 / -1;
+    justify-self: end;
+  }
+}
+
+/* =========================================
+   GARÇOM - AÇÕES DA MESA
+========================================= */
+
+.waiter-table-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.waiter-table-preview__secondary {
+  display: inline-flex;
+  min-height: 50px;
+  align-items: center;
+  justify-content: center;
+  padding: 0 14px;
+  border: 1px solid var(--brand-600);
+  border-radius: 13px;
+  background: transparent;
+  color: var(--brand-600);
+  font-size: 10px;
+  font-weight: 850;
+  cursor: pointer;
+}
+
+.waiter-table-preview__secondary:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+@media (max-width: 380px) {
+  .waiter-table-actions {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* =========================================
+   GARÇOM - CONFIRMAÇÃO DE FECHAMENTO
+========================================= */
+
+.waiter-confirm {
+  position: fixed;
+  inset: 0;
+  z-index: 180;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+.waiter-confirm__backdrop {
+  position: absolute;
+  inset: 0;
+  border: 0;
+  background: rgb(15 23 42 / 0.58);
+  backdrop-filter: blur(4px);
+}
+
+.waiter-confirm__card {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  width: min(100%, 520px);
+  gap: 18px;
+  padding: 24px 20px calc(24px + env(safe-area-inset-bottom));
+  border-radius: 24px 24px 0 0;
+  background: var(--surface);
+  box-shadow:
+    0 -20px 60px
+    rgb(15 23 42 / 0.26);
+}
+
+.waiter-confirm__icon {
+  display: grid;
+  width: 44px;
+  height: 44px;
+  place-items: center;
+  border-radius: 50%;
+  background: rgb(245 158 11 / 0.12);
+  color: #d97706;
+  font-size: 21px;
+  font-weight: 900;
+}
+
+.waiter-confirm__heading {
+  display: grid;
+  gap: 5px;
+}
+
+.waiter-confirm__heading > span {
+  color: var(--brand-600);
+  font-size: 8px;
+  font-weight: 850;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.waiter-confirm__heading h3 {
+  margin: 0;
+  font-size: 20px;
+}
+
+.waiter-confirm__heading p {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 10px;
+  line-height: 1.55;
+}
+
+.waiter-confirm__summary {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.waiter-confirm__summary > div {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 13px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--background);
+}
+
+.waiter-confirm__summary span {
+  color: var(--text-muted);
+  font-size: 8px;
+}
+
+.waiter-confirm__summary strong {
+  font-size: 13px;
+}
+
+.waiter-confirm__actions {
+  display: grid;
+  grid-template-columns: 1fr 1.35fr;
+  gap: 10px;
+}
+
+.waiter-confirm__cancel,
+.waiter-confirm__confirm {
+  min-height: 50px;
+  border-radius: 13px;
+  font-size: 10px;
+  font-weight: 850;
+  cursor: pointer;
+}
+
+.waiter-confirm__cancel {
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--foreground);
+}
+
+.waiter-confirm__confirm {
+  border: 0;
+  background: var(--brand-600);
+  color: #ffffff;
+}
+
+html[data-theme="dark"]
+  .waiter-confirm__summary > div {
+  background: #1d2028;
+}
+
+@media (min-width: 700px) {
+  .waiter-confirm {
+    align-items: center;
+    padding: 20px;
+  }
+
+  .waiter-confirm__card {
+    border-radius: 22px;
+  }
+}
+
+/* =========================================
+   GARÇOM - PEDIDO RÁPIDO MOBILE
+========================================= */
+
+.waiter-order-form {
+  display: grid;
+  gap: 14px;
+}
+
+.waiter-order-form__heading {
+  display: grid;
+  gap: 4px;
+}
+
+.waiter-order-form__heading > span {
+  color: var(--brand-600);
+  font-size: 8px;
+  font-weight: 850;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.waiter-order-form__heading h3 {
+  margin: 0;
+  font-size: 18px;
+}
+
+.waiter-order-form__heading p {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 9px;
+  line-height: 1.5;
+}
+
+.waiter-order-search {
+  display: flex;
+  min-height: 48px;
+  align-items: center;
+  gap: 9px;
+  padding: 0 13px;
+  border: 1px solid var(--border);
+  border-radius: 13px;
+  background: var(--background);
+}
+
+.waiter-order-search svg {
+  flex-shrink: 0;
+  color: var(--text-muted);
+}
+
+.waiter-order-search input {
+  width: 100%;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: var(--foreground);
+  font-size: 16px;
+}
+
+.waiter-order-categories {
+  display: flex;
+  gap: 7px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+  scrollbar-width: none;
+}
+
+.waiter-order-categories::-webkit-scrollbar {
+  display: none;
+}
+
+.waiter-order-category {
+  flex-shrink: 0;
+  min-height: 36px;
+  padding: 0 12px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--text-secondary);
+  font-size: 9px;
+  font-weight: 750;
+  cursor: pointer;
+}
+
+.waiter-order-category--active {
+  border-color: var(--brand-600);
+  background: var(--brand-600);
+  color: #ffffff;
+}
+
+.waiter-order-products {
+  display: grid;
+  gap: 9px;
+}
+
+.waiter-product {
+  display: grid;
+  grid-template-columns:
+    minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--surface);
+}
+
+.waiter-product--selected {
+  border-color:
+    rgb(249 115 22 / 0.55);
+  box-shadow:
+    0 0 0 2px
+    rgb(249 115 22 / 0.06);
+}
+
+.waiter-product__main {
+  display: grid;
+  min-width: 0;
+  grid-template-columns:
+    56px minmax(0, 1fr);
+  gap: 10px;
+  align-items: center;
+  padding: 10px;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.waiter-product__image {
+  display: grid;
+  width: 56px;
+  height: 56px;
+  place-items: center;
+  border-radius: 11px;
+  background: var(--background);
+  font-size: 26px;
+}
+
+.waiter-product__content {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.waiter-product__content small {
+  color: var(--brand-600);
+  font-size: 7px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.waiter-product__content > strong {
+  overflow: hidden;
+  font-size: 11px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.waiter-product__content > span {
+  overflow: hidden;
+  color: var(--text-muted);
+  font-size: 8px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.waiter-product__content b {
+  margin-top: 2px;
+  font-size: 10px;
+}
+
+.waiter-product__quantity {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding-right: 10px;
+}
+
+.waiter-product__quantity button {
+  display: grid;
+  width: 34px;
+  height: 34px;
+  place-items: center;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--background);
+  color: var(--foreground);
+  cursor: pointer;
+}
+
+.waiter-product__quantity
+  button:last-child {
+  border-color: var(--brand-600);
+  background: var(--brand-600);
+  color: #ffffff;
+}
+
+.waiter-product__quantity strong {
+  min-width: 15px;
+  text-align: center;
+  font-size: 10px;
+}
+
+.waiter-order-summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 13px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--background);
+}
+
+.waiter-order-summary > div {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--text-secondary);
+  font-size: 9px;
+}
+
+.waiter-order-summary > strong {
+  color: var(--brand-600);
+  font-size: 13px;
+}
+
+.waiter-order-empty {
+  display: grid;
+  min-height: 140px;
+  place-content: center;
+  justify-items: center;
+  gap: 5px;
+  color: var(--text-muted);
+  text-align: center;
+}
+
+.waiter-order-empty strong {
+  color: var(--foreground);
+  font-size: 10px;
+}
+
+.waiter-order-empty span {
+  font-size: 8px;
+}
+
+html[data-theme="dark"]
+  .waiter-product__image,
+html[data-theme="dark"]
+  .waiter-product__quantity button,
+html[data-theme="dark"]
+  .waiter-order-search,
+html[data-theme="dark"]
+  .waiter-order-summary {
+  background: #1d2028;
+}
+
+@media (max-width: 380px) {
+  .waiter-product__main {
+    grid-template-columns:
+      46px minmax(0, 1fr);
+    gap: 8px;
+  }
+
+  .waiter-product__image {
+    width: 46px;
+    height: 50px;
+    font-size: 22px;
+  }
+
+  .waiter-product__quantity {
+    gap: 4px;
+    padding-right: 7px;
+  }
+
+  .waiter-product__quantity button {
+    width: 30px;
+    height: 32px;
+  }
+}
+
+/* =========================================
+   GARÇOM - OBSERVAÇÃO DA RODADA
+========================================= */
+
+.waiter-round-observation {
+  display: grid;
+  gap: 7px;
+}
+
+.waiter-round-observation > span {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  font-size: 9px;
+  font-weight: 800;
+}
+
+.waiter-round-observation > span small {
+  color: var(--text-muted);
+  font-size: 7px;
+  font-weight: 500;
+}
+
+.waiter-round-observation textarea {
+  width: 100%;
+  min-height: 92px;
+  resize: vertical;
+  padding: 12px 13px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  outline: none;
+  background: var(--background);
+  color: var(--foreground);
+  font: inherit;
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+.waiter-round-observation textarea:focus {
+  border-color: var(--brand-600);
+  box-shadow:
+    0 0 0 3px
+    rgb(249 115 22 / 0.08);
+}
+
+.waiter-round-observation > small {
+  justify-self: end;
+  color: var(--text-muted);
+  font-size: 7px;
+}
+
+html[data-theme="dark"]
+  .waiter-round-observation textarea {
+  background: #1d2028;
+}
+
+/* =========================================
+   COZINHA - OBSERVAÇÃO DO PEDIDO
+========================================= */
+
+.kitchen-card__observation {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  padding: 11px 12px;
+  border: 1px solid rgb(245 158 11 / 0.35);
+  border-radius: 11px;
+  background: rgb(245 158 11 / 0.08);
+}
+
+.kitchen-card__observation > svg {
+  flex-shrink: 0;
+  color: #d97706;
+}
+
+.kitchen-card__observation > div {
+  display: grid;
+  gap: 3px;
+}
+
+.kitchen-card__observation span {
+  color: #b45309;
+  font-size: 8px;
+  font-weight: 850;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.kitchen-card__observation strong {
+  color: var(--foreground);
+  font-size: 10px;
+  line-height: 1.45;
+}
+
+html[data-theme="dark"]
+  .kitchen-card__observation span {
+  color: #fbbf24;
+}
+
+/* =========================================
+   GARÇOM - FILTROS DE MESAS
+========================================= */
+
+.waiter-table-filters {
+  display: grid;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.waiter-table-filters__search {
+  display: flex;
+  min-height: 48px;
+  align-items: center;
+  gap: 9px;
+  padding: 0 13px;
+  border: 1px solid var(--border);
+  border-radius: 13px;
+  background: var(--surface);
+}
+
+.waiter-table-filters__search svg {
+  flex-shrink: 0;
+  color: var(--text-muted);
+}
+
+.waiter-table-filters__search input {
+  width: 100%;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: var(--foreground);
+  font-size: 16px;
+}
+
+.waiter-table-filters__tabs {
+  display: flex;
+  gap: 7px;
+  overflow-x: auto;
+  padding-bottom: 3px;
+  scrollbar-width: none;
+}
+
+.waiter-table-filters__tabs::-webkit-scrollbar {
+  display: none;
+}
+
+.waiter-table-filter {
+  display: inline-flex;
+  min-height: 38px;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 7px;
+  padding: 0 11px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--text-secondary);
+  font-size: 9px;
+  font-weight: 750;
+  cursor: pointer;
+}
+
+.waiter-table-filter strong {
+  display: grid;
+  min-width: 20px;
+  height: 20px;
+  place-items: center;
+  padding: 0 5px;
+  border-radius: 999px;
+  background: var(--background);
+  color: var(--foreground);
+  font-size: 8px;
+}
+
+.waiter-table-filter--active {
+  border-color: var(--brand-600);
+  background: var(--brand-600);
+  color: #ffffff;
+}
+
+.waiter-table-filter--active strong {
+  background: rgb(255 255 255 / 0.18);
+  color: #ffffff;
+}
+
+.waiter-tables-empty {
+  display: grid;
+  min-height: 180px;
+  place-content: center;
+  justify-items: center;
+  gap: 5px;
+  margin-top: 12px;
+  border: 1px dashed var(--border);
+  border-radius: 16px;
+  color: var(--text-muted);
+  text-align: center;
+}
+
+.waiter-tables-empty strong {
+  color: var(--foreground);
+  font-size: 11px;
+}
+
+.waiter-tables-empty span {
+  font-size: 9px;
+}
+
+html[data-theme="dark"]
+  .waiter-table-filters__search {
+  background: #1d2028;
+}
+
+/* =========================================
+   GARÇOM - PRIORIDADE DE FECHAMENTO
+========================================= */
+
+.waiter-table-card--waiting-payment {
+  position: relative;
+  border-color:
+    rgb(245 158 11 / 0.65);
+  box-shadow:
+    0 8px 24px
+    rgb(245 158 11 / 0.09);
+}
+
+.waiter-table-card__priority {
+  display: flex;
+  min-height: 32px;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 6px 10px;
+  background:
+    rgb(245 158 11 / 0.11);
+  color: #b45309;
+  font-size: 8px;
+  font-weight: 850;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.waiter-table-card__priority svg {
+  flex-shrink: 0;
+}
+
+.waiter-table-card--waiting-payment
+  .waiter-table-card__status {
+  animation:
+    waiter-closing-pulse
+    2s ease-in-out infinite;
+}
+
+@keyframes waiter-closing-pulse {
+  0%,
+  100% {
+    box-shadow:
+      0 0 0 0
+      rgb(245 158 11 / 0);
+  }
+
+  50% {
+    box-shadow:
+      0 0 0 4px
+      rgb(245 158 11 / 0.12);
+  }
+}
+
+html[data-theme="dark"]
+  .waiter-table-card__priority {
+  background:
+    rgb(245 158 11 / 0.12);
+  color: #fbbf24;
+}
+
+@media (
+  prefers-reduced-motion:
+    reduce
+) {
+  .waiter-table-card--waiting-payment
+    .waiter-table-card__status {
+    animation: none;
+  }
+}
+
+/* =========================================
+   ATENDENTE / CAIXA
+========================================= */
+
+.attendant-app {
+  min-height: 100vh;
+  background:
+    linear-gradient(
+      180deg,
+      rgb(249 115 22 / 0.07),
+      transparent 240px
+    ),
+    var(--background);
+  color: var(--foreground);
+}
+
+.attendant-header {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 17px 22px;
+  border-bottom: 1px solid var(--border);
+  background: rgb(255 255 255 / 0.93);
+  backdrop-filter: blur(14px);
+}
+
+.attendant-header > div {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.attendant-header > div:first-child > span {
+  color: var(--brand-600);
+  font-size: 18px;
+  font-weight: 900;
+}
+
+.attendant-header strong {
+  font-size: 11px;
+}
+
+.attendant-header > div:last-child {
+  align-items: flex-end;
+}
+
+.attendant-header > div:last-child span {
+  color: var(--text-muted);
+  font-size: 8px;
+}
+
+.attendant-home {
+  width: min(100%, 1100px);
+  margin: 0 auto;
+  padding: 26px 20px 70px;
+}
+
+.attendant-home__heading {
+  margin-bottom: 20px;
+}
+
+.attendant-home__heading span {
+  color: var(--brand-600);
+  font-size: 9px;
+  font-weight: 850;
+  text-transform: uppercase;
+}
+
+.attendant-home__heading h1 {
+  margin: 5px 0 0;
+  font-size: 29px;
+}
+
+.attendant-home__heading p {
+  max-width: 520px;
+  margin: 7px 0 0;
+  color: var(--text-secondary);
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.attendant-stats {
+  display: grid;
+  grid-template-columns:
+    repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin-bottom: 22px;
+}
+
+.attendant-stats article {
+  display: grid;
+  gap: 7px;
+  padding: 16px;
+  border: 1px solid var(--border);
+  border-radius: 15px;
+  background: var(--surface);
+}
+
+.attendant-stats article > div {
+  display: grid;
+  width: 38px;
+  height: 38px;
+  place-items: center;
+  border-radius: 11px;
+  background: rgb(249 115 22 / 0.08);
+  color: var(--brand-600);
+}
+
+.attendant-stats span {
+  color: var(--text-muted);
+  font-size: 8px;
+}
+
+.attendant-stats strong {
+  font-size: 17px;
+}
+
+.attendant-section {
+  display: grid;
+  gap: 12px;
+  margin-top: 18px;
+}
+
+.attendant-section__heading {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.attendant-section__heading > div > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--brand-600);
+  font-size: 8px;
+  font-weight: 850;
+  text-transform: uppercase;
+}
+
+.attendant-section__heading h2 {
+  margin: 5px 0 0;
+  font-size: 17px;
+}
+
+.attendant-section__heading > strong {
+  display: grid;
+  min-width: 30px;
+  height: 30px;
+  place-items: center;
+  border-radius: 999px;
+  background: var(--brand-600);
+  color: #ffffff;
+  font-size: 9px;
+}
+
+.attendant-table-list,
+.attendant-orders {
+  display: grid;
+  gap: 9px;
+}
+
+.attendant-table-payment {
+  display: grid;
+  grid-template-columns:
+    78px minmax(0, 1fr)
+    auto auto;
+  align-items: center;
+  gap: 14px;
+  padding: 14px;
+  border: 1px solid
+    rgb(245 158 11 / 0.3);
+  border-radius: 14px;
+  background: var(--surface);
+}
+
+.attendant-table-payment__number {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.attendant-table-payment__number span,
+.attendant-table-payment__total span {
+  color: var(--text-muted);
+  font-size: 7px;
+  text-transform: uppercase;
+}
+
+.attendant-table-payment__number strong {
+  font-size: 22px;
+}
+
+.attendant-table-payment__info {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.attendant-table-payment__info strong {
+  font-size: 11px;
+}
+
+.attendant-table-payment__info span {
+  color: var(--text-muted);
+  font-size: 8px;
+}
+
+.attendant-table-payment__total {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  text-align: right;
+}
+
+.attendant-table-payment__total strong {
+  font-size: 13px;
+}
+
+.attendant-table-payment__button {
+  display: inline-flex;
+  min-height: 42px;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: 11px;
+  background: var(--brand-600);
+  color: #ffffff;
+  font-size: 9px;
+  font-weight: 850;
+  cursor: pointer;
+}
+
+.attendant-order-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 14px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--surface);
+}
+
+.attendant-order-card > div {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.attendant-order-card > div:last-child {
+  align-items: flex-end;
+  text-align: right;
+}
+
+.attendant-order-card span,
+.attendant-order-card small {
+  color: var(--text-muted);
+  font-size: 8px;
+}
+
+.attendant-order-card strong {
+  font-size: 11px;
+}
+
+.attendant-empty {
+  display: grid;
+  min-height: 160px;
+  place-content: center;
+  justify-items: center;
+  gap: 6px;
+  border: 1px dashed var(--border);
+  border-radius: 15px;
+  color: var(--text-muted);
+  text-align: center;
+}
+
+.attendant-empty > span {
+  display: grid;
+  width: 38px;
+  height: 38px;
+  place-items: center;
+  border-radius: 50%;
+  background: rgb(34 197 94 / 0.1);
+  color: #16a34a;
+  font-weight: 900;
+}
+
+.attendant-empty strong {
+  color: var(--foreground);
+  font-size: 10px;
+}
+
+.attendant-empty p {
+  margin: 0;
+  font-size: 8px;
+}
+
+html[data-theme="dark"]
+  .attendant-header {
+  background: rgb(20 22 28 / 0.94);
+}
+
+@media (max-width: 760px) {
+  .attendant-stats {
+    grid-template-columns: 1fr;
+  }
+
+  .attendant-table-payment {
+    grid-template-columns:
+      60px minmax(0, 1fr);
+  }
+
+  .attendant-table-payment__total {
+    align-items: flex-start;
+    text-align: left;
+  }
+
+  .attendant-table-payment__button {
+    width: 100%;
+  }
+}
+
+@media (max-width: 500px) {
+  .attendant-header {
+    padding: 14px 15px;
+  }
+
+  .attendant-home {
+    padding: 20px 14px 60px;
+  }
+
+  .attendant-order-card {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .attendant-order-card
+    > div:last-child {
+    align-items: flex-start;
+    text-align: left;
+  }
+}
+
+/* =========================================
+   ATENDENTE - MELHORIA DE LEGIBILIDADE
+========================================= */
+
+.attendant-header > div:first-child > span {
+  font-size: 21px;
+}
+
+.attendant-header strong {
+  font-size: 15px;
+}
+
+.attendant-header > div:last-child span {
+  font-size: 12px;
+}
+
+.attendant-home__heading span {
+  font-size: 12px;
+}
+
+.attendant-home__heading h1 {
+  font-size: 32px;
+}
+
+.attendant-home__heading p {
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+.attendant-stats span {
+  font-size: 13px;
+}
+
+.attendant-stats strong {
+  font-size: 22px;
+}
+
+.attendant-section__heading > div > span {
+  font-size: 12px;
+}
+
+.attendant-section__heading h2 {
+  font-size: 20px;
+}
+
+.attendant-section__heading > strong {
+  min-width: 34px;
+  height: 34px;
+  font-size: 12px;
+}
+
+.attendant-table-payment__number span,
+.attendant-table-payment__total span {
+  font-size: 11px;
+}
+
+.attendant-table-payment__number strong {
+  font-size: 26px;
+}
+
+.attendant-table-payment__info strong {
+  font-size: 15px;
+}
+
+.attendant-table-payment__info span {
+  font-size: 12px;
+}
+
+.attendant-table-payment__total strong {
+  font-size: 17px;
+}
+
+.attendant-table-payment__button {
+  min-height: 46px;
+  padding: 0 18px;
+  font-size: 13px;
+}
+
+.attendant-order-card span,
+.attendant-order-card small {
+  font-size: 12px;
+}
+
+.attendant-order-card strong {
+  font-size: 15px;
+}
+
+.attendant-empty strong {
+  font-size: 14px;
+}
+
+.attendant-empty p {
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+/* =========================================
+   GARÇOM - MELHORIA DE LEGIBILIDADE
+========================================= */
+
+/* Cabeçalhos e informações gerais */
+
+.waiter-home__heading > span,
+.waiter-open-table__heading > span,
+.waiter-confirm__heading > span,
+.waiter-order-form__heading > span,
+.waiter-table-preview__panel > span {
+  font-size: 12px;
+}
+
+.waiter-home__heading p {
+  font-size: 14px;
+  line-height: 1.55;
+}
+
+/* Cards das mesas */
+
+.waiter-table-card__top > div span {
+  font-size: 11px;
+}
+
+.waiter-table-card__top > div strong {
+  font-size: 27px;
+}
+
+.waiter-table-card__status {
+  padding: 6px 9px;
+  font-size: 11px;
+}
+
+.waiter-table-card__free span {
+  font-size: 14px;
+}
+
+.waiter-table-card__content > div:not(
+    .waiter-table-card__total,
+    .waiter-table-card__payment
+  ) {
+  font-size: 13px;
+}
+
+.waiter-table-card__total > span {
+  font-size: 12px;
+}
+
+.waiter-table-card__total strong {
+  font-size: 16px;
+}
+
+.waiter-table-card__payment {
+  font-size: 12px;
+}
+
+/* Preview / comanda da mesa */
+
+.waiter-form-field > span {
+  font-size: 13px;
+}
+
+.waiter-form-field small {
+  font-size: 11px;
+}
+
+.waiter-back-button {
+  font-size: 13px;
+}
+
+.waiter-table-preview__command-heading span {
+  font-size: 11px;
+}
+
+.waiter-table-preview__command-heading strong {
+  font-size: 16px;
+}
+
+.waiter-command-list span,
+.waiter-command-list strong {
+  font-size: 13px;
+}
+
+.waiter-command-empty {
+  font-size: 13px;
+}
+
+.waiter-payment-warning {
+  font-size: 13px;
+}
+
+/* Botões principais da mesa */
+
+.waiter-table-preview__secondary {
+  font-size: 14px;
+}
+
+.waiter-send-round span {
+  font-size: 11px;
+}
+
+.waiter-send-round strong {
+  font-size: 16px;
+}
+
+.waiter-send-round > button {
+  min-height: 46px;
+  padding: 0 17px;
+  font-size: 14px;
+}
+
+/* Confirmações */
+
+.waiter-confirm__heading p {
+  font-size: 14px;
+}
+
+.waiter-confirm__summary span {
+  font-size: 12px;
+}
+
+.waiter-confirm__summary strong {
+  font-size: 16px;
+}
+
+.waiter-confirm__cancel,
+.waiter-confirm__confirm {
+  font-size: 14px;
+}
+
+/* Pedido rápido */
+
+.waiter-order-form__heading p {
+  font-size: 13px;
+}
+
+.waiter-product__content small {
+  font-size: 11px;
+}
+
+.waiter-product__content > strong {
+  font-size: 14px;
+}
+
+.waiter-product__content > span {
+  font-size: 12px;
+}
+
+.waiter-product__content b {
+  font-size: 14px;
+}
+
+.waiter-product__quantity strong {
+  min-width: 20px;
+  font-size: 14px;
+}
+
+.waiter-order-summary > div {
+  font-size: 13px;
+}
+
+.waiter-order-summary > strong {
+  font-size: 17px;
+}
+
+.waiter-order-empty strong {
+  font-size: 14px;
+}
+
+.waiter-order-empty span {
+  font-size: 12px;
+}
+
+/* Observação da rodada */
+
+.waiter-round-observation > span {
+  font-size: 13px;
+}
+
+.waiter-round-observation > span small {
+  font-size: 11px;
+}
+
+/* Mobile */
+
+@media (max-width: 480px) {
+  .waiter-home__heading p {
+    font-size: 13px;
+  }
+
+  .waiter-table-card__content > div:not(
+      .waiter-table-card__total,
+      .waiter-table-card__payment
+    ) {
+    font-size: 12px;
+  }
+
+  .waiter-product__content > strong {
+    font-size: 13px;
+  }
+
+  .waiter-product__content > span {
+    font-size: 11px;
+  }
+}
+
+/* =========================================
+   COZINHA - MELHORIA DE LEGIBILIDADE
+========================================= */
+
+.kitchen-board__summary p {
+  font-size: 14px;
+  line-height: 1.55;
+}
+
+.kitchen-board__metric span {
+  font-size: 12px;
+}
+
+.kitchen-board__metric strong {
+  font-size: 19px;
+}
+
+/* Cabeçalho do pedido */
+
+.kitchen-card__header span {
+  font-size: 12px;
+}
+
+.kitchen-card__header h2 {
+  font-size: 22px;
+}
+
+.kitchen-card__timer {
+  min-height: 38px;
+  padding: 0 11px;
+  font-size: 14px;
+}
+
+/* Origem / tipo */
+
+.kitchen-card__meta {
+  font-size: 13px;
+}
+
+/* Itens */
+
+.kitchen-card__item > div strong {
+  font-size: 18px;
+}
+
+.kitchen-card__item > div span {
+  font-size: 16px;
+}
+
+.kitchen-card__item p {
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+/* Observação geral */
+
+.kitchen-card__observation span {
+  font-size: 12px;
+}
+
+.kitchen-card__observation strong {
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+/* Botão de ação */
+
+.kitchen-card__ready {
+  min-height: 52px;
+  font-size: 15px;
+}
+
+/* Estado vazio */
+
+.kitchen-board__empty h2 {
+  font-size: 22px;
+}
+
+.kitchen-board__empty p {
+  font-size: 14px;
+}
+
+/* Tablet */
+
+@media (max-width: 1000px) {
+  .kitchen-card__header h2 {
+    font-size: 20px;
+  }
+
+  .kitchen-card__item > div span {
+    font-size: 15px;
+  }
+}
+
+/* Celular */
+
+@media (max-width: 600px) {
+  .kitchen-card__header h2 {
+    font-size: 19px;
+  }
+
+  .kitchen-card__item > div strong {
+    font-size: 16px;
+  }
+
+  .kitchen-card__item > div span {
+    font-size: 14px;
+  }
+
+  .kitchen-card__ready {
+    font-size: 14px;
+  }
+}
+
+/* =========================================
+   COZINHA - CARDS MAIS COMPACTOS
+========================================= */
+
+.kitchen-card {
+  min-height: 300px;
+}
+
+.kitchen-card__header {
+  padding: 14px 16px;
+}
+
+.kitchen-card__meta {
+  padding: 10px 16px;
+}
+
+.kitchen-card__items {
+  padding: 12px 16px;
+}
+
+.kitchen-card__item {
+  padding: 11px 12px;
+}
+
+.kitchen-card__ready {
+  margin: auto 16px 16px;
+}
+
+.kitchen-board__grid {
+  gap: 14px;
+}
+
+/* =========================================
+   PEDIDOS - MELHORIA DE LEGIBILIDADE
+   SEM AUMENTAR OS CARDS
+========================================= */
+
+/* Cabeçalho da área de pedidos */
+
+.orders-board__header span,
+.orders-board__eyebrow {
+  font-size: 12px;
+}
+
+.orders-board__header h1 {
+  font-size: 30px;
+}
+
+.orders-board__header p {
+  font-size: 14px;
+  line-height: 1.55;
+}
+
+/* Colunas */
+
+.orders-column__title span {
+  font-size: 14px;
+}
+
+.orders-column__title strong {
+  min-width: 28px;
+  height: 28px;
+  font-size: 12px;
+}
+
+/* Cards */
+
+.order-card {
+  min-height: auto;
+}
+
+.order-card__header {
+  padding: 14px 15px;
+}
+
+.order-card__header > div > span {
+  font-size: 11px;
+}
+
+.order-card__header h3 {
+  font-size: 17px;
+  line-height: 1.3;
+}
+
+.order-card__time {
+  font-size: 12px;
+}
+
+/* Informações de origem */
+
+.order-card__meta {
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+/* Itens */
+
+.order-card__items {
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+/* Total */
+
+.order-card__total span {
+  font-size: 12px;
+}
+
+.order-card__total strong {
+  font-size: 17px;
+}
+
+/* Observações */
+
+.order-card__observation {
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+/* Status */
+
+.order-card__status {
+  font-size: 11px;
+}
+
+/* Botões */
+
+.order-card button,
+.order-card__action {
+  min-height: 42px;
+  font-size: 13px;
+  font-weight: 750;
+}
+
+/* Filtros */
+
+.orders-filter,
+.orders-filter button {
+  font-size: 13px;
+}
+
+/* Busca */
+
+.orders-search input {
+  font-size: 14px;
+}
+
+/* Estado vazio */
+
+.orders-column__empty strong,
+.orders-empty strong {
+  font-size: 14px;
+}
+
+.orders-column__empty span,
+.orders-empty p {
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+/* =========================================
+   PEDIDOS - RESPONSIVO
+========================================= */
+
+@media (max-width: 768px) {
+  .orders-board__header h1 {
+    font-size: 26px;
+  }
+
+  .order-card__header h3 {
+    font-size: 16px;
+  }
+
+  .order-card__items {
+    font-size: 13px;
+  }
+
+  .order-card button,
+  .order-card__action {
+    font-size: 13px;
+  }
+}
+
+/* =========================================
+   PEDIDOS - ABAS MOBILE
+========================================= */
+
+.orders-mobile-status,
+.orders-mobile-board {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  /* Esconde o Kanban desktop */
+
+  .orders-board--desktop {
+    display: none;
+  }
+
+  /* Abas */
+
+  .orders-mobile-status {
+    display: grid;
+    grid-template-columns:
+      repeat(4, minmax(0, 1fr));
+    gap: 5px;
+    margin: 14px 0 10px;
+    padding: 5px;
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    background: var(--surface);
+  }
+
+  .orders-mobile-status__button {
+    display: flex;
+    min-width: 0;
+    min-height: 45px;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    padding: 5px;
+    border: 0;
+    border-radius: 10px;
+    background: transparent;
+    color: var(--text-secondary);
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+  }
+
+  .orders-mobile-status__button span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .orders-mobile-status__button strong {
+    display: grid;
+    min-width: 21px;
+    height: 21px;
+    flex-shrink: 0;
+    place-items: center;
+    padding: 0 5px;
+    border-radius: 999px;
+    background: var(--background);
+    color: var(--foreground);
+    font-size: 11px;
+  }
+
+  .orders-mobile-status__button--active {
+    background: var(--brand-600);
+    color: #ffffff;
+  }
+
+  .orders-mobile-status__button--active
+    strong {
+    background:
+      rgb(255 255 255 / 0.2);
+    color: #ffffff;
+  }
+
+  /* Uma única coluna no mobile */
+
+  .orders-mobile-board {
+    display: block;
+    width: 100%;
+    overflow: visible;
+  }
+
+  .orders-mobile-board
+    .order-column {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .orders-mobile-board
+    .order-column__content {
+    display: grid;
+    width: 100%;
+    gap: 12px;
+  }
+
+  .orders-mobile-board
+    .order-card {
+    width: 100%;
+    max-width: none;
+  }
+
+  /* Informações operacionais */
+
+  .orders-mobile-board
+    .order-card__header
+    > div
+    > span {
+    font-size: 12px;
+  }
+
+  .orders-mobile-board
+    .order-card__header h3 {
+    font-size: 17px;
+  }
+
+  .orders-mobile-board
+    .order-card__time {
+    font-size: 12px;
+  }
+
+  .orders-mobile-board
+    .order-card__meta {
+    font-size: 12px;
+  }
+
+  .orders-mobile-board
+    .order-card__items {
+    font-size: 14px;
+    line-height: 1.5;
+  }
+
+  .orders-mobile-board
+    .order-card__total strong {
+    font-size: 17px;
+  }
 }

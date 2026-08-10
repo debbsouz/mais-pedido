@@ -69,30 +69,62 @@ export interface OrderPaymentDetails {
 
 export interface Order {
   id: string;
+
   customer: string;
+
   origin: OrderOrigin;
+
   fulfillment: OrderFulfillment;
+
   time: string;
+
   total: string;
+
   items: string;
+
   status: OrderStatus;
+
   delayed?: boolean;
 
   createdAt?: number;
-  phone?: string;
+
   tableNumber?: string;
-  pickupName?: string;
-  address?: OrderAddress;
+
   itemDetails?: OrderItemDetail[];
+
+  observation?: string;
+
+  /*
+   * Dados usados pelos fluxos de
+   * delivery, retirada e balcão.
+   */
+  phone?: string;
+
+  address?: OrderAddress;
+
+  pickupName?: string;
+
   payment?: OrderPaymentDetails;
 }
 
 interface OrderCardProps {
   order: Order;
-  onAccept: (orderId: string) => void;
-  onReject: (orderId: string) => void;
-  onAdvance: (orderId: string) => void;
-  onOpen: (order: Order) => void;
+
+  onAccept: (
+    orderId: string,
+  ) => void;
+
+  onReject: (
+    orderId: string,
+  ) => void;
+
+  onAdvance: (
+    orderId: string,
+  ) => void;
+
+  onOpen: (
+    order: Order,
+  ) => void;
 }
 
 function FulfillmentIcon({
@@ -101,14 +133,38 @@ function FulfillmentIcon({
   fulfillment: OrderFulfillment;
 }) {
   if (fulfillment === "Delivery") {
-    return <Motorcycle size={15} weight="bold" />;
+    return (
+      <Motorcycle
+        size={14}
+        weight="bold"
+      />
+    );
   }
 
   if (fulfillment === "Mesa") {
-    return <Table size={15} weight="bold" />;
+    return (
+      <Table
+        size={14}
+        weight="bold"
+      />
+    );
   }
 
-  return <Storefront size={15} weight="bold" />;
+  if (fulfillment === "Retirada") {
+    return (
+      <Package
+        size={14}
+        weight="bold"
+      />
+    );
+  }
+
+  return (
+    <Storefront
+      size={14}
+      weight="bold"
+    />
+  );
 }
 
 function AdvanceIcon({
@@ -119,17 +175,32 @@ function AdvanceIcon({
   fulfillment: OrderFulfillment;
 }) {
   if (status === "preparing") {
-    return <Package size={17} weight="bold" />;
+    return (
+      <Check
+        size={16}
+        weight="bold"
+      />
+    );
   }
 
   if (
     status === "ready" &&
     fulfillment === "Delivery"
   ) {
-    return <Motorcycle size={17} weight="bold" />;
+    return (
+      <Motorcycle
+        size={16}
+        weight="bold"
+      />
+    );
   }
 
-  return <Check size={17} weight="bold" />;
+  return (
+    <Check
+      size={16}
+      weight="bold"
+    />
+  );
 }
 
 function getAdvanceLabel(
@@ -153,11 +224,18 @@ function getAdvanceLabel(
   return null;
 }
 
-function formatElapsedTime(seconds: number) {
-  const minutes = Math.floor(seconds / 60);
-  const remainingSeconds = seconds % 60;
+function formatElapsedTime(
+  seconds: number,
+) {
+  const minutes =
+    Math.floor(seconds / 60);
 
-  return `${String(minutes).padStart(2, "0")}:${String(
+  const remainingSeconds =
+    seconds % 60;
+
+  return `${String(
+    minutes,
+  ).padStart(2, "0")}:${String(
     remainingSeconds,
   ).padStart(2, "0")}`;
 }
@@ -182,60 +260,81 @@ export function OrderCard({
     createdAt,
   } = order;
 
-  const [elapsedSeconds, setElapsedSeconds] =
-    useState(() => {
-      if (!createdAt) {
-        return 0;
-      }
+  const [
+    elapsedSeconds,
+    setElapsedSeconds,
+  ] = useState(() => {
+    if (!createdAt) {
+      return 0;
+    }
 
-      return Math.max(
-        0,
-        Math.floor((Date.now() - createdAt) / 1000),
-      );
-    });
+    return Math.max(
+      0,
+      Math.floor(
+        (Date.now() -
+          createdAt) /
+          1000,
+      ),
+    );
+  });
 
   useEffect(() => {
-    if (!createdAt || status !== "new") {
+    if (
+      !createdAt ||
+      status !== "new"
+    ) {
       return;
     }
 
-    const updateElapsedTime = () => {
-      setElapsedSeconds(
-        Math.max(
-          0,
-          Math.floor(
-            (Date.now() - createdAt) / 1000,
+    const updateElapsedTime =
+      () => {
+        setElapsedSeconds(
+          Math.max(
+            0,
+            Math.floor(
+              (Date.now() -
+                createdAt) /
+                1000,
+            ),
           ),
-        ),
-      );
-    };
+        );
+      };
 
     updateElapsedTime();
 
-    const interval = window.setInterval(
-      updateElapsedTime,
-      1000,
-    );
+    const interval =
+      window.setInterval(
+        updateElapsedTime,
+        1000,
+      );
 
     return () => {
-      window.clearInterval(interval);
+      window.clearInterval(
+        interval,
+      );
     };
   }, [createdAt, status]);
 
   const originClass = origin
     .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
+    .replace(
+      /[\u0300-\u036f]/g,
+      "",
+    )
     .toLowerCase();
 
-  const advanceLabel = getAdvanceLabel(
-    status,
-    fulfillment,
-  );
+  const advanceLabel =
+    getAdvanceLabel(
+      status,
+      fulfillment,
+    );
 
-  const waitingMinutes = elapsedSeconds / 60;
+  const waitingMinutes =
+    elapsedSeconds / 60;
 
   const urgencyClass =
-    status !== "new" || !createdAt
+    status !== "new" ||
+    !createdAt
       ? ""
       : waitingMinutes >= 10
         ? "order-card--critical"
@@ -246,15 +345,22 @@ export function OrderCard({
   return (
     <article
       className={`order-card ${
-        delayed ? "order-card--delayed" : ""
+        delayed
+          ? "order-card--delayed"
+          : ""
       } ${
-        status === "new" ? "order-card--new" : ""
+        status === "new"
+          ? "order-card--new"
+          : ""
       } ${urgencyClass}`}
-      onClick={() => onOpen(order)}
+      onClick={() =>
+        onOpen(order)
+      }
     >
       {status === "new" && (
         <div className="order-card__new-label">
           <span />
+
           Novo pedido
         </div>
       )}
@@ -265,7 +371,9 @@ export function OrderCard({
             #{id}
           </span>
 
-          <strong>{customer}</strong>
+          <strong>
+            {customer}
+          </strong>
         </div>
 
         <span
@@ -277,25 +385,40 @@ export function OrderCard({
 
       <div className="order-card__fulfillment">
         <FulfillmentIcon
-          fulfillment={fulfillment}
+          fulfillment={
+            fulfillment
+          }
         />
 
-        <span>{fulfillment}</span>
+        <span>
+          {fulfillment}
+        </span>
       </div>
 
-      <p className="order-card__items">{items}</p>
+      <p className="order-card__items">
+        {items}
+      </p>
 
       <div className="order-card__footer">
-        {createdAt && status === "new" ? (
+        {createdAt &&
+        status === "new" ? (
           <span className="order-card__timer">
-            <Clock size={14} weight="bold" />
-            {formatElapsedTime(elapsedSeconds)}
+            <Clock
+              size={14}
+              weight="bold"
+            />
+
+            {formatElapsedTime(
+              elapsedSeconds,
+            )}
           </span>
         ) : (
           <span>{time}</span>
         )}
 
-        <strong>{total}</strong>
+        <strong>
+          {total}
+        </strong>
       </div>
 
       {status === "new" && (
@@ -305,10 +428,15 @@ export function OrderCard({
             className="order-card__action order-card__action--reject"
             onClick={(event) => {
               event.stopPropagation();
+
               onReject(id);
             }}
           >
-            <X size={16} weight="bold" />
+            <X
+              size={16}
+              weight="bold"
+            />
+
             Recusar
           </button>
 
@@ -317,36 +445,49 @@ export function OrderCard({
             className="order-card__action order-card__action--accept"
             onClick={(event) => {
               event.stopPropagation();
+
               onAccept(id);
             }}
           >
-            <Check size={16} weight="bold" />
+            <Check
+              size={16}
+              weight="bold"
+            />
+
             Aceitar
           </button>
         </div>
       )}
 
-      {status !== "new" && advanceLabel && (
-        <button
-          type="button"
-          className="order-card__advance"
-          onClick={(event) => {
-            event.stopPropagation();
-            onAdvance(id);
-          }}
-        >
-          <AdvanceIcon
-            status={status}
-            fulfillment={fulfillment}
+      {status !== "new" &&
+        advanceLabel && (
+          <button
+            type="button"
+            className="order-card__advance"
+            onClick={(event) => {
+              event.stopPropagation();
+
+              onAdvance(id);
+            }}
+          >
+            <AdvanceIcon
+              status={status}
+              fulfillment={
+                fulfillment
+              }
+            />
+
+            {advanceLabel}
+          </button>
+        )}
+
+      {status ===
+        "preparing" && (
+        <div className="order-card__preparing-note">
+          <CookingPot
+            size={15}
           />
 
-          {advanceLabel}
-        </button>
-      )}
-
-      {status === "preparing" && (
-        <div className="order-card__preparing-note">
-          <CookingPot size={15} />
           Pedido em produção
         </div>
       )}

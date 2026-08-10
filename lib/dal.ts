@@ -41,6 +41,7 @@ export const getCurrentUser = cache(
       !process.env.NEXT_PUBLIC_SUPABASE_URL ||
       !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
     ) {
+      console.log('[DAL] env vars ausentes → null')
       return null
     }
 
@@ -51,19 +52,23 @@ export const getCurrentUser = cache(
       error,
     } = await supabase.auth.getUser()
 
+    console.log('[DAL] getUser →', { userId: user?.id, error: error?.message })
+
     if (error || !user) {
       return null
     }
 
     // Busca o perfil do usuario
-    const { data: profile } = await supabase
+    const { data: profile, error: profileError } = await supabase
       .from('profiles')
       .select('full_name')
       .eq('id', user.id)
       .maybeSingle()
 
+    console.log('[DAL] profile →', { profile, error: profileError?.message })
+
     // Busca o vinculo mais recente (organizacao + cargo)
-    const { data: membership } = await supabase
+    const { data: membership, error: memberError } = await supabase
       .from('organization_members')
       .select('role')
       .eq('user_id', user.id)
@@ -72,11 +77,16 @@ export const getCurrentUser = cache(
       .limit(1)
       .maybeSingle()
 
+    console.log('[DAL] membership →', { membership, error: memberError?.message })
+
     // Usuario autenticado sem vinculo a nenhuma organizacao
     // NAO recebe acesso ao painel (seguranca: sem cargo = sem acesso).
     if (!membership) {
+      console.log('[DAL] sem membership → null')
       return null
     }
+
+    console.log('[DAL] OK →', { id: user.id, name: profile?.full_name, role: membership.role })
 
     return {
       id: user.id,

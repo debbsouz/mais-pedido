@@ -39,16 +39,19 @@ export function KitchenBoard() {
   const kitchenOrders = useMemo(() => {
     return orders
       .filter(
-        (order) => order.status === "preparing",
+        (order) =>
+          order.status === "preparing",
       )
-      .map<KitchenOrder>((order) => {
+      .map((order): KitchenOrder => {
         const items =
           order.itemDetails?.length
-            ? order.itemDetails.map((item) => ({
-                id: item.productId,
-                quantity: item.quantity,
-                name: item.name,
-              }))
+            ? order.itemDetails.map(
+                (item) => ({
+                  id: item.productId,
+                  quantity: item.quantity,
+                  name: item.name,
+                }),
+              )
             : [
                 {
                   id: `${order.id}-summary`,
@@ -59,22 +62,39 @@ export function KitchenBoard() {
 
         return {
           id: order.id,
+
           customer: order.customer,
+
           origin: order.origin,
-          fulfillment: order.fulfillment,
-          elapsedMinutes: getElapsedMinutes(
-            order.createdAt,
-            order.time,
-          ),
+
+          fulfillment:
+            order.fulfillment,
+
+          elapsedMinutes:
+            getElapsedMinutes(
+              order.createdAt,
+              order.time,
+            ),
+
           items,
-          observation:
-            order.payment?.observation ||
-            undefined,
+
+          /*
+           * Observação enviada pelo
+           * garçom na nova rodada.
+           *
+           * Mantemos também a observação
+           * antiga do pagamento como
+           * fallback para pedidos criados
+           * pelo fluxo administrativo.
+           */
+observation: order.observation || undefined,
         };
       });
   }, [orders]);
 
-  function markAsReady(orderId: string) {
+  function markAsReady(
+    orderId: string,
+  ) {
     moveOrder(orderId, "ready");
   }
 
@@ -92,7 +112,8 @@ export function KitchenBoard() {
               total +
               order.elapsedMinutes,
             0,
-          ) / kitchenOrders.length,
+          ) /
+            kitchenOrders.length,
         )
       : 0;
 
@@ -102,6 +123,7 @@ export function KitchenBoard() {
         <div className="kitchen-board__metrics">
           <div className="kitchen-board__metric">
             <span>Em preparo</span>
+
             <strong>
               {kitchenOrders.length}
             </strong>
@@ -109,6 +131,7 @@ export function KitchenBoard() {
 
           <div className="kitchen-board__metric">
             <span>Atrasados</span>
+
             <strong>
               {delayedOrders}
             </strong>
@@ -116,6 +139,7 @@ export function KitchenBoard() {
 
           <div className="kitchen-board__metric">
             <span>Tempo médio</span>
+
             <strong>
               {averageTime} min
             </strong>
@@ -131,19 +155,25 @@ export function KitchenBoard() {
 
       {kitchenOrders.length > 0 ? (
         <div className="kitchen-board__grid">
-          {kitchenOrders.map((order) => (
-            <KitchenCard
-              key={order.id}
-              order={order}
-              onReady={markAsReady}
-            />
-          ))}
+          {kitchenOrders.map(
+            (order) => (
+              <KitchenCard
+                key={order.id}
+                order={order}
+                onReady={
+                  markAsReady
+                }
+              />
+            ),
+          )}
         </div>
       ) : (
         <div className="kitchen-board__empty">
           <span>✓</span>
 
-          <h2>Produção em dia!</h2>
+          <h2>
+            Produção em dia!
+          </h2>
 
           <p>
             Nenhum pedido aguardando
