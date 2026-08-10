@@ -6,20 +6,28 @@ import {
   Plus,
   Receipt,
   Users,
+  WarningCircle,
 } from "@phosphor-icons/react";
 
 import type { RestaurantTable } from "@/components/mesas/TableCard";
 
 interface WaiterTableCardProps {
   table: RestaurantTable;
-  onOpen: (table: RestaurantTable) => void;
+  onOpen: (
+    table: RestaurantTable,
+  ) => void;
 }
 
-function formatCurrency(value: number) {
-  return new Intl.NumberFormat("pt-BR", {
-    style: "currency",
-    currency: "BRL",
-  }).format(value);
+function formatCurrency(
+  value: number,
+) {
+  return new Intl.NumberFormat(
+    "pt-BR",
+    {
+      style: "currency",
+      currency: "BRL",
+    },
+  ).format(value);
 }
 
 function getStatusLabel(
@@ -29,7 +37,9 @@ function getStatusLabel(
     return "Ocupada";
   }
 
-  if (status === "waiting-payment") {
+  if (
+    status === "waiting-payment"
+  ) {
     return "Fechamento";
   }
 
@@ -43,31 +53,57 @@ export function WaiterTableCard({
   const isFree =
     table.status === "free";
 
+  const isWaitingPayment =
+    table.status ===
+    "waiting-payment";
+
   return (
     <button
       type="button"
       className={`waiter-table-card waiter-table-card--${table.status}`}
-      onClick={() => onOpen(table)}
+      onClick={() =>
+        onOpen(table)
+      }
     >
+      {isWaitingPayment && (
+        <div className="waiter-table-card__priority">
+          <WarningCircle
+            size={15}
+            weight="fill"
+          />
+
+          Fechamento solicitado
+        </div>
+      )}
+
       <div className="waiter-table-card__top">
         <div>
           <span>Mesa</span>
 
           <strong>
-            {String(table.number).padStart(2, "0")}
+            {String(
+              table.number,
+            ).padStart(2, "0")}
           </strong>
         </div>
 
         <span className="waiter-table-card__status">
-          {getStatusLabel(table.status)}
+          {getStatusLabel(
+            table.status,
+          )}
         </span>
       </div>
 
       {isFree ? (
         <div className="waiter-table-card__free">
-          <Plus size={26} weight="bold" />
+          <Plus
+            size={26}
+            weight="bold"
+          />
 
-          <span>Abrir atendimento</span>
+          <span>
+            Abrir atendimento
+          </span>
         </div>
       ) : (
         <div className="waiter-table-card__content">
@@ -76,7 +112,9 @@ export function WaiterTableCard({
               <Users size={16} />
 
               <span>
-                {table.customerName}
+                {
+                  table.customerName
+                }
               </span>
             </div>
           )}
@@ -117,8 +155,7 @@ export function WaiterTableCard({
             </strong>
           </div>
 
-          {table.status ===
-            "waiting-payment" && (
+          {isWaitingPayment && (
             <div className="waiter-table-card__payment">
               <CheckCircle
                 size={16}

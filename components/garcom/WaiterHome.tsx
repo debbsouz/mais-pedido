@@ -12,10 +12,14 @@ import type { NewOrderItem } from "@/components/pedidos/OrderItemsForm";
 import type { Order } from "@/components/pedidos/OrderCard";
 import { useOrders } from "@/components/providers/OrdersProvider";
 import { useTables } from "@/components/providers/TablesProvider";
-import { WaiterOrderForm } from "./WaiterOrderForm";
 
 import { WaiterHeader } from "./WaiterHeader";
+import { WaiterOrderForm } from "./WaiterOrderForm";
 import { WaiterTableCard } from "./WaiterTableCard";
+import {
+  WaiterTableFilters,
+  type WaiterTableFilter,
+} from "./WaiterTableFilters";
 
 function formatCurrency(value: number) {
   return new Intl.NumberFormat("pt-BR", {
@@ -44,7 +48,8 @@ function mergeCommandItems(
     const existingItemIndex =
       mergedItems.findIndex(
         (item) =>
-          item.productId === newItem.productId,
+          item.productId ===
+          newItem.productId,
       );
 
     if (existingItemIndex >= 0) {
@@ -52,7 +57,8 @@ function mergeCommandItems(
         ...mergedItems[existingItemIndex],
 
         quantity:
-          mergedItems[existingItemIndex].quantity +
+          mergedItems[existingItemIndex]
+            .quantity +
           newItem.quantity,
       };
 
@@ -94,10 +100,68 @@ export function WaiterHome() {
   const [newItems, setNewItems] =
     useState<NewOrderItem[]>([]);
 
+  const [
+    roundObservation,
+    setRoundObservation,
+  ] = useState("");
+
+  const [
+    activeTableFilter,
+    setActiveTableFilter,
+  ] =
+    useState<WaiterTableFilter>("all");
+
+  const [
+    tableSearchTerm,
+    setTableSearchTerm,
+  ] = useState("");
+
   const occupiedCount =
     tables.filter(
-      (table) => table.status !== "free",
+      (table) =>
+        table.status !== "free",
     ).length;
+
+  const filteredTables =
+    tables.filter((table) => {
+      const matchesFilter =
+        activeTableFilter === "all" ||
+        table.status ===
+          activeTableFilter;
+
+      const normalizedSearch =
+        tableSearchTerm
+          .trim()
+          .toLowerCase();
+
+      if (!normalizedSearch) {
+        return matchesFilter;
+      }
+
+      const tableNumber =
+        String(table.number).padStart(
+          2,
+          "0",
+        );
+
+      const matchesSearch =
+        tableNumber.includes(
+          normalizedSearch,
+        ) ||
+        `mesa ${tableNumber}`.includes(
+          normalizedSearch,
+        ) ||
+        table.customerName
+          ?.toLowerCase()
+          .includes(
+            normalizedSearch,
+          );
+
+      return (
+        matchesFilter &&
+        Boolean(matchesSearch)
+      );
+    });
 
   function openTablePreview(
     table: RestaurantTable,
@@ -115,7 +179,9 @@ export function WaiterHome() {
     setIsOpeningTable(false);
     setIsAddingItems(false);
     setIsClosingConfirmOpen(false);
+
     setNewItems([]);
+    setRoundObservation("");
   }
 
   function closeTablePreview() {
@@ -129,6 +195,7 @@ export function WaiterHome() {
     setIsClosingConfirmOpen(false);
 
     setNewItems([]);
+    setRoundObservation("");
   }
 
   function startOpeningTable() {
@@ -180,16 +247,19 @@ export function WaiterHome() {
     );
 
     setSelectedTable(updatedTable);
+
     setIsOpeningTable(false);
   }
 
   function startAddingItems() {
     setNewItems([]);
+    setRoundObservation("");
     setIsAddingItems(true);
   }
 
   function cancelAddingItems() {
     setNewItems([]);
+    setRoundObservation("");
     setIsAddingItems(false);
   }
 
@@ -222,7 +292,8 @@ export function WaiterHome() {
 
       status: "occupied",
 
-      commandItems: updatedCommand,
+      commandItems:
+        updatedCommand,
 
       total: updatedTotal,
     };
@@ -239,16 +310,18 @@ export function WaiterHome() {
       .toString()
       .slice(-6);
 
-    const tableLabel = `Mesa ${String(
-      selectedTable.number,
-    ).padStart(2, "0")}`;
+    const tableLabel =
+      `Mesa ${String(
+        selectedTable.number,
+      ).padStart(2, "0")}`;
 
-    const itemsDescription = newItems
-      .map(
-        (item) =>
-          `${item.quantity}x ${item.name}`,
-      )
-      .join(", ");
+    const itemsDescription =
+      newItems
+        .map(
+          (item) =>
+            `${item.quantity}x ${item.name}`,
+        )
+        .join(", ");
 
     const kitchenOrder: Order = {
       id: orderId,
@@ -263,7 +336,8 @@ export function WaiterHome() {
 
       createdAt: Date.now(),
 
-      total: formatCurrency(roundTotal),
+      total:
+        formatCurrency(roundTotal),
 
       items: itemsDescription,
 
@@ -277,19 +351,27 @@ export function WaiterHome() {
 
       itemDetails: newItems.map(
         (item) => ({
-          productId: item.productId,
+          productId:
+            item.productId,
           name: item.name,
           price: item.price,
           quantity: item.quantity,
         }),
       ),
+
+      observation:
+        roundObservation.trim() ||
+        undefined,
     };
 
     addOrder(kitchenOrder);
 
-    setSelectedTable(updatedTable);
+    setSelectedTable(
+      updatedTable,
+    );
 
     setNewItems([]);
+    setRoundObservation("");
 
     setIsAddingItems(false);
   }
@@ -299,15 +381,22 @@ export function WaiterHome() {
       return;
     }
 
-    if ((selectedTable.total ?? 0) <= 0) {
+    if (
+      (selectedTable.total ?? 0) <=
+      0
+    ) {
       return;
     }
 
-    setIsClosingConfirmOpen(true);
+    setIsClosingConfirmOpen(
+      true,
+    );
   }
 
   function cancelTableClosing() {
-    setIsClosingConfirmOpen(false);
+    setIsClosingConfirmOpen(
+      false,
+    );
   }
 
   function confirmTableClosing() {
@@ -318,7 +407,8 @@ export function WaiterHome() {
     const updatedTable: RestaurantTable = {
       ...selectedTable,
 
-      status: "waiting-payment",
+      status:
+        "waiting-payment",
     };
 
     setTables((currentTables) =>
@@ -329,9 +419,13 @@ export function WaiterHome() {
       ),
     );
 
-    setSelectedTable(updatedTable);
+    setSelectedTable(
+      updatedTable,
+    );
 
-    setIsClosingConfirmOpen(false);
+    setIsClosingConfirmOpen(
+      false,
+    );
   }
 
   return (
@@ -346,8 +440,9 @@ export function WaiterHome() {
             <h1>Mesas</h1>
 
             <p>
-              Toque em uma mesa para abrir
-              ou acompanhar a comanda.
+              Toque em uma mesa para
+              abrir ou acompanhar a
+              comanda.
             </p>
           </div>
 
@@ -355,20 +450,56 @@ export function WaiterHome() {
             <span>Ocupadas</span>
 
             <strong>
-              {occupiedCount}/{tables.length}
+              {occupiedCount}/
+              {tables.length}
             </strong>
           </div>
         </div>
 
+        <WaiterTableFilters
+          tables={tables}
+          activeFilter={
+            activeTableFilter
+          }
+          searchTerm={
+            tableSearchTerm
+          }
+          onFilterChange={
+            setActiveTableFilter
+          }
+          onSearchChange={
+            setTableSearchTerm
+          }
+        />
+
         <div className="waiter-home__grid">
-          {tables.map((table) => (
-            <WaiterTableCard
-              key={table.id}
-              table={table}
-              onOpen={openTablePreview}
-            />
-          ))}
+          {filteredTables.map(
+            (table) => (
+              <WaiterTableCard
+                key={table.id}
+                table={table}
+                onOpen={
+                  openTablePreview
+                }
+              />
+            ),
+          )}
         </div>
+
+        {filteredTables.length ===
+          0 && (
+          <div className="waiter-tables-empty">
+            <strong>
+              Nenhuma mesa
+              encontrada
+            </strong>
+
+            <span>
+              Tente outro filtro ou
+              termo de busca.
+            </span>
+          </div>
+        )}
       </section>
 
       {selectedTable && (
@@ -376,7 +507,9 @@ export function WaiterHome() {
           <button
             type="button"
             className="waiter-table-preview__backdrop"
-            onClick={closeTablePreview}
+            onClick={
+              closeTablePreview
+            }
             aria-label="Fechar"
           />
 
@@ -384,7 +517,9 @@ export function WaiterHome() {
             <button
               type="button"
               className="waiter-table-preview__close"
-              onClick={closeTablePreview}
+              onClick={
+                closeTablePreview
+              }
               aria-label="Fechar"
             >
               ×
@@ -403,8 +538,9 @@ export function WaiterHome() {
               !isOpeningTable && (
                 <>
                   <p>
-                    Mesa livre para iniciar
-                    um novo atendimento.
+                    Mesa livre para
+                    iniciar um novo
+                    atendimento.
                   </p>
 
                   <button
@@ -454,7 +590,10 @@ export function WaiterHome() {
                       Abrir Mesa{" "}
                       {String(
                         selectedTable.number,
-                      ).padStart(2, "0")}
+                      ).padStart(
+                        2,
+                        "0",
+                      )}
                     </h3>
                   </div>
 
@@ -469,10 +608,15 @@ export function WaiterHome() {
 
                     <input
                       type="text"
-                      value={customerName}
-                      onChange={(event) =>
+                      value={
+                        customerName
+                      }
+                      onChange={(
+                        event,
+                      ) =>
                         setCustomerName(
-                          event.target.value,
+                          event.target
+                            .value,
                         )
                       }
                       placeholder="Ex.: Carlos"
@@ -481,21 +625,28 @@ export function WaiterHome() {
 
                   <label className="waiter-form-field">
                     <span>
-                      Quantidade de pessoas
+                      Quantidade de
+                      pessoas
                     </span>
 
                     <input
                       type="text"
                       inputMode="numeric"
                       value={people}
-                      onChange={(event) =>
+                      onChange={(
+                        event,
+                      ) =>
                         setPeople(
-                          event.target.value
+                          event.target
+                            .value
                             .replace(
                               /\D/g,
                               "",
                             )
-                            .slice(0, 2),
+                            .slice(
+                              0,
+                              2,
+                            ),
                         )
                       }
                     />
@@ -508,7 +659,8 @@ export function WaiterHome() {
                       confirmOpenTable
                     }
                     disabled={
-                      Number(people) < 1
+                      Number(people) <
+                      1
                     }
                   >
                     Abrir atendimento
@@ -575,7 +727,10 @@ export function WaiterHome() {
                                 {
                                   item.quantity
                                 }
-                                x {item.name}
+                                x{" "}
+                                {
+                                  item.name
+                                }
                               </span>
 
                               <strong>
@@ -611,7 +766,8 @@ export function WaiterHome() {
                           weight="bold"
                         />
 
-                        Adicionar itens
+                        Adicionar
+                        itens
                       </button>
 
                       <button
@@ -625,7 +781,8 @@ export function WaiterHome() {
                             0) <= 0
                         }
                       >
-                        Solicitar fechamento
+                        Solicitar
+                        fechamento
                       </button>
                     </div>
                   )}
@@ -633,8 +790,10 @@ export function WaiterHome() {
                   {selectedTable.status ===
                     "waiting-payment" && (
                     <div className="waiter-payment-warning">
-                      Fechamento solicitado.
-                      Aguardando pagamento.
+                      Fechamento
+                      solicitado.
+                      Aguardando
+                      pagamento.
                     </div>
                   )}
                 </>
@@ -656,13 +815,52 @@ export function WaiterHome() {
                       weight="bold"
                     />
 
-                    Voltar para comanda
+                    Voltar para
+                    comanda
                   </button>
 
-<WaiterOrderForm
-  items={newItems}
-  onChange={setNewItems}
-/>
+                  <WaiterOrderForm
+                    items={newItems}
+                    onChange={
+                      setNewItems
+                    }
+                  />
+
+                  <label className="waiter-round-observation">
+                    <span>
+                      Observação para
+                      cozinha
+
+                      <small>
+                        Opcional
+                      </small>
+                    </span>
+
+                    <textarea
+                      value={
+                        roundObservation
+                      }
+                      onChange={(
+                        event,
+                      ) =>
+                        setRoundObservation(
+                          event.target.value.slice(
+                            0,
+                            200,
+                          ),
+                        )
+                      }
+                      placeholder="Ex.: sem cebola, carne bem passada, molho separado..."
+                      maxLength={200}
+                    />
+
+                    <small>
+                      {
+                        roundObservation.length
+                      }
+                      /200
+                    </small>
+                  </label>
 
                   <div className="waiter-send-round">
                     <div>
@@ -731,18 +929,22 @@ export function WaiterHome() {
                 </span>
 
                 <h3 id="waiter-confirm-title">
-                  Solicitar fechamento?
+                  Solicitar
+                  fechamento?
                 </h3>
 
                 <p>
                   A Mesa{" "}
                   {String(
                     selectedTable.number,
-                  ).padStart(2, "0")}{" "}
+                  ).padStart(
+                    2,
+                    "0",
+                  )}{" "}
                   ficará aguardando
                   pagamento e não será
-                  possível adicionar novos
-                  itens.
+                  possível adicionar
+                  novos itens.
                 </p>
               </div>
 
@@ -753,7 +955,10 @@ export function WaiterHome() {
                   <strong>
                     {String(
                       selectedTable.number,
-                    ).padStart(2, "0")}
+                    ).padStart(
+                      2,
+                      "0",
+                    )}
                   </strong>
                 </div>
 
@@ -789,7 +994,8 @@ export function WaiterHome() {
                     confirmTableClosing
                   }
                 >
-                  Solicitar fechamento
+                  Solicitar
+                  fechamento
                 </button>
               </div>
             </section>
