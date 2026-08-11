@@ -15,7 +15,6 @@ import {
   House,
   LockKey,
   Motorcycle,
-  Plus,
   SignOut,
   Table,
   Users,
@@ -127,12 +126,6 @@ export function Sidebar() {
   const currentRole =
     roles[currentUser.role];
 
-  const canCreateOrders =
-    roleHasPermission(
-      currentUser.role,
-      "createOrders",
-    );
-
   const canViewSettings =
     roleHasPermission(
       currentUser.role,
@@ -238,9 +231,10 @@ export function Sidebar() {
         <Image
           src="/logo-mais-pedido.png"
           alt="+Pedido"
-          width={150}
-          height={44}
+          width={180}
+          height={58}
           priority
+          className="sidebar__brand-image"
         />
       </div>
 
@@ -250,7 +244,9 @@ export function Sidebar() {
         </div>
 
         <div className="sidebar__restaurant-info">
-          <strong>Burger House</strong>
+          <strong>
+            Burger House
+          </strong>
 
           <span>
             Unidade Centro
@@ -265,20 +261,6 @@ export function Sidebar() {
           </small>
         </div>
       </div>
-
-      {canCreateOrders && (
-        <Link
-          href="/pedidos"
-          className="sidebar__new-order"
-        >
-          <Plus
-            size={20}
-            weight="bold"
-          />
-
-          <span>Novo pedido</span>
-        </Link>
-      )}
 
       <nav className="sidebar__navigation">
         <div className="sidebar__group">
@@ -315,7 +297,9 @@ export function Sidebar() {
             }`}
           >
             <Gear size={21} />
-            <span>Configurações</span>
+            <span>
+              Configurações
+            </span>
           </Link>
         )}
 

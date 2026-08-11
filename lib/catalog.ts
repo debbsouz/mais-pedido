@@ -1,9 +1,4 @@
-export type ProductCategory =
-  | "Hambúrgueres"
-  | "Pizzas"
-  | "Bebidas"
-  | "Porções"
-  | "Sobremesas";
+export type ProductCategory = string;
 
 export interface CatalogProduct {
   id: string;
@@ -11,7 +6,16 @@ export interface CatalogProduct {
   description: string;
   category: ProductCategory;
   price: number;
-  image: string;
+
+  /*
+   * Por enquanto pode receber uma imagem
+   * local/base64 ou ficar sem imagem.
+   *
+   * Depois, quando conectarmos ao Supabase
+   * Storage, este campo receberá a URL
+   * pública da foto do produto.
+   */
+  image: string | null;
 }
 
 export const catalogCategories = [
@@ -34,7 +38,7 @@ export const catalogProducts: CatalogProduct[] = [
       "Pão, carne, queijo e molho especial",
     category: "Hambúrgueres",
     price: 22,
-    image: "🍔",
+    image: null,
   },
   {
     id: "burger-02",
@@ -43,7 +47,7 @@ export const catalogProducts: CatalogProduct[] = [
       "Carne, queijo, bacon e molho da casa",
     category: "Hambúrgueres",
     price: 28,
-    image: "🥓",
+    image: null,
   },
   {
     id: "burger-03",
@@ -52,7 +56,7 @@ export const catalogProducts: CatalogProduct[] = [
       "Carne, queijo, salada e maionese",
     category: "Hambúrgueres",
     price: 25,
-    image: "🥪",
+    image: null,
   },
   {
     id: "pizza-01",
@@ -61,7 +65,7 @@ export const catalogProducts: CatalogProduct[] = [
       "Calabresa, cebola e queijo",
     category: "Pizzas",
     price: 54.9,
-    image: "🍕",
+    image: null,
   },
   {
     id: "pizza-02",
@@ -70,7 +74,7 @@ export const catalogProducts: CatalogProduct[] = [
       "Frango, requeijão e queijo",
     category: "Pizzas",
     price: 59.9,
-    image: "🍕",
+    image: null,
   },
   {
     id: "drink-01",
@@ -79,7 +83,7 @@ export const catalogProducts: CatalogProduct[] = [
       "Refrigerante Coca-Cola de 2 litros",
     category: "Bebidas",
     price: 15,
-    image: "🥤",
+    image: null,
   },
   {
     id: "drink-02",
@@ -88,7 +92,7 @@ export const catalogProducts: CatalogProduct[] = [
       "Suco natural de laranja, 500 ml",
     category: "Bebidas",
     price: 12,
-    image: "🍊",
+    image: null,
   },
   {
     id: "portion-01",
@@ -97,7 +101,7 @@ export const catalogProducts: CatalogProduct[] = [
       "Porção grande de batata frita",
     category: "Porções",
     price: 24.9,
-    image: "🍟",
+    image: null,
   },
   {
     id: "portion-02",
@@ -106,7 +110,7 @@ export const catalogProducts: CatalogProduct[] = [
       "Porção crocante com molho especial",
     category: "Porções",
     price: 26,
-    image: "🧅",
+    image: null,
   },
   {
     id: "dessert-01",
@@ -115,6 +119,6 @@ export const catalogProducts: CatalogProduct[] = [
       "Brownie de chocolate com cobertura",
     category: "Sobremesas",
     price: 14,
-    image: "🍫",
+    image: null,
   },
 ];
