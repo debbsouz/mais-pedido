@@ -16,6 +16,10 @@ import {
   type ProductCategory,
 } from "@/lib/catalog";
 
+import {
+  createClient,
+} from "@/lib/supabase/client";
+
 export interface ProductFormData {
   id: string;
   name: string;
@@ -117,7 +121,7 @@ function ProductFormContent({
     );
   }
 
-  function handleImageChange(
+  async function handleImageChange(
     event: ChangeEvent<HTMLInputElement>,
   ) {
     const file =
@@ -135,6 +139,7 @@ function ProductFormContent({
       return;
     }
 
+    // Preview local imediato via base64
     const reader =
       new FileReader();
 
@@ -150,6 +155,37 @@ function ProductFormContent({
     };
 
     reader.readAsDataURL(file);
+
+    // Upload para Supabase Storage
+    const supabase =
+      createClient();
+
+    const fileExt =
+      file.name.split(".").pop();
+
+    const filePath =
+      `products/${crypto.randomUUID()}.${fileExt}`;
+
+    const { error } =
+      await supabase.storage
+        .from("product-images")
+        .upload(filePath, file);
+
+    if (error) {
+      window.alert(
+        "Erro ao fazer upload da imagem.",
+      );
+      return;
+    }
+
+    const { data } =
+      supabase.storage
+        .from("product-images")
+        .getPublicUrl(filePath);
+
+    setImage(
+      data.publicUrl,
+    );
   }
 
   function removeImage() {
