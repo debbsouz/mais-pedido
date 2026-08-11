@@ -130,7 +130,7 @@ async function categoryBelongsToOrg(
 
 export async function createCategory(
   name: string,
-): Promise<CatalogActionResult> {
+): Promise<CatalogActionResult<{ id: string }>> {
   const context = await requireCatalogWrite()
 
   if (!context) {
@@ -146,13 +146,15 @@ export async function createCategory(
   const supabase = await createClient()
   const sortOrder = await nextSortOrder(supabase, 'categories', context.organizationId)
 
-  const { error } = await supabase
+  const { data, error } = await supabase
     .from('categories')
     .insert({
       organization_id: context.organizationId,
       name: normalizedName,
       sort_order: sortOrder,
     })
+    .select('id')
+    .single()
 
   if (error) {
     return {
@@ -162,7 +164,7 @@ export async function createCategory(
   }
 
   revalidatePath('/cardapio')
-  return { success: true }
+  return { success: true, data: { id: data.id } }
 }
 
 export async function renameCategory(
@@ -243,7 +245,7 @@ export async function deleteCategory(
 
 export async function createProduct(
   input: CreateProductInput,
-): Promise<CatalogActionResult> {
+): Promise<CatalogActionResult<{ id: string }>> {
   const context = await requireCatalogWrite()
 
   if (!context) {
@@ -278,7 +280,7 @@ export async function createProduct(
 
   const sortOrder = await nextSortOrder(supabase, 'products', context.organizationId)
 
-  const { error } = await supabase
+  const { data, error } = await supabase
     .from('products')
     .insert({
       organization_id: context.organizationId,
@@ -290,6 +292,8 @@ export async function createProduct(
       is_available: input.isAvailable ?? true,
       sort_order: sortOrder,
     })
+    .select('id')
+    .single()
 
   if (error) {
     return {
@@ -299,7 +303,7 @@ export async function createProduct(
   }
 
   revalidatePath('/cardapio')
-  return { success: true }
+  return { success: true, data: { id: data.id } }
 }
 
 export async function updateProduct(
@@ -452,7 +456,7 @@ export async function deleteProduct(
 
 export async function duplicateProduct(
   productId: string,
-): Promise<CatalogActionResult> {
+): Promise<CatalogActionResult<{ id: string }>> {
   const context = await requireCatalogWrite()
 
   if (!context) {
@@ -474,7 +478,7 @@ export async function duplicateProduct(
 
   const sortOrder = await nextSortOrder(supabase, 'products', context.organizationId)
 
-  const { error } = await supabase
+  const { data, error } = await supabase
     .from('products')
     .insert({
       organization_id: context.organizationId,
@@ -486,6 +490,8 @@ export async function duplicateProduct(
       is_available: original.is_available,
       sort_order: sortOrder,
     })
+    .select('id')
+    .single()
 
   if (error) {
     return {
@@ -495,7 +501,7 @@ export async function duplicateProduct(
   }
 
   revalidatePath('/cardapio')
-  return { success: true }
+  return { success: true, data: { id: data.id } }
 }
 
 export async function updateProductsOrder(

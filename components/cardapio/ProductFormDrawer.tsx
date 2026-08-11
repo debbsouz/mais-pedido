@@ -13,7 +13,6 @@ import {
 } from "react";
 
 import {
-  catalogCategories,
   type ProductCategory,
 } from "@/lib/catalog";
 
@@ -30,6 +29,7 @@ export interface ProductFormData {
 interface ProductFormDrawerProps {
   open: boolean;
   product?: ProductFormData | null;
+  categories: ProductCategory[];
   onClose: () => void;
   onSave: (
     product: ProductFormData,
@@ -38,17 +38,12 @@ interface ProductFormDrawerProps {
 
 interface ProductFormContentProps {
   product?: ProductFormData | null;
+  categories: ProductCategory[];
   onClose: () => void;
   onSave: (
     product: ProductFormData,
   ) => void;
 }
-
-const categoryOptions =
-  catalogCategories.filter(
-    (category) =>
-      category !== "Todos",
-  ) as ProductCategory[];
 
 function formatInitialPrice(
   value?: number,
@@ -68,6 +63,7 @@ function formatInitialPrice(
 
 function ProductFormContent({
   product,
+  categories: categoryOptions,
   onClose,
   onSave,
 }: ProductFormContentProps) {
@@ -475,6 +471,7 @@ function ProductFormContent({
 export function ProductFormDrawer({
   open,
   product,
+  categories,
   onClose,
   onSave,
 }: ProductFormDrawerProps) {
@@ -489,6 +486,7 @@ export function ProductFormDrawer({
         "new-product"
       }
       product={product}
+      categories={categories}
       onClose={onClose}
       onSave={onSave}
     />
