@@ -6,7 +6,12 @@ import {
   Plus,
   ShoppingCart,
 } from "@phosphor-icons/react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+
+import {
+  getProductsForOrder,
+  type ProductForOrder,
+} from "@/app/actions/catalog";
 
 type ProductCategory =
   | "Hambúrgueres"
@@ -19,7 +24,7 @@ interface Product {
   id: string;
   name: string;
   description: string;
-  category: ProductCategory;
+  category: string;
   price: number;
   image: string;
 }
@@ -47,89 +52,6 @@ const categories = [
 
 type ActiveCategory = (typeof categories)[number];
 
-const products: Product[] = [
-  {
-    id: "burger-01",
-    name: "X-Burger",
-    description: "Pão, carne, queijo e molho especial",
-    category: "Hambúrgueres",
-    price: 22,
-    image: "🍔",
-  },
-  {
-    id: "burger-02",
-    name: "X-Bacon",
-    description: "Carne, queijo, bacon e molho da casa",
-    category: "Hambúrgueres",
-    price: 28,
-    image: "🥓",
-  },
-  {
-    id: "burger-03",
-    name: "X-Salada",
-    description: "Carne, queijo, salada e maionese",
-    category: "Hambúrgueres",
-    price: 25,
-    image: "🥪",
-  },
-  {
-    id: "pizza-01",
-    name: "Pizza Calabresa",
-    description: "Calabresa, cebola e queijo",
-    category: "Pizzas",
-    price: 54.9,
-    image: "🍕",
-  },
-  {
-    id: "pizza-02",
-    name: "Pizza Frango",
-    description: "Frango, requeijão e queijo",
-    category: "Pizzas",
-    price: 59.9,
-    image: "🍕",
-  },
-  {
-    id: "drink-01",
-    name: "Coca-Cola 2L",
-    description: "Refrigerante Coca-Cola de 2 litros",
-    category: "Bebidas",
-    price: 15,
-    image: "🥤",
-  },
-  {
-    id: "drink-02",
-    name: "Suco de Laranja",
-    description: "Suco natural de laranja, 500 ml",
-    category: "Bebidas",
-    price: 12,
-    image: "🍊",
-  },
-  {
-    id: "portion-01",
-    name: "Batata Grande",
-    description: "Porção grande de batata frita",
-    category: "Porções",
-    price: 24.9,
-    image: "🍟",
-  },
-  {
-    id: "portion-02",
-    name: "Anéis de Cebola",
-    description: "Porção crocante com molho especial",
-    category: "Porções",
-    price: 26,
-    image: "🧅",
-  },
-  {
-    id: "dessert-01",
-    name: "Brownie",
-    description: "Brownie de chocolate com cobertura",
-    category: "Sobremesas",
-    price: 14,
-    image: "🍫",
-  },
-];
-
 function formatCurrency(value: number) {
   return new Intl.NumberFormat("pt-BR", {
     style: "currency",
@@ -141,10 +63,19 @@ export function OrderItemsForm({
   items,
   onChange,
 }: OrderItemsFormProps) {
+  const [products, setProducts] =
+    useState<ProductForOrder[]>([]);
+
   const [activeCategory, setActiveCategory] =
     useState<ActiveCategory>("Todos");
 
   const [searchTerm, setSearchTerm] = useState("");
+
+  useEffect(() => {
+    void getProductsForOrder().then(
+      (data) => setProducts(data),
+    );
+  }, []);
 
   const filteredProducts = useMemo(() => {
     const normalizedSearch = searchTerm
@@ -170,7 +101,7 @@ export function OrderItemsForm({
 
       return matchesCategory && matchesSearch;
     });
-  }, [activeCategory, searchTerm]);
+  }, [activeCategory, searchTerm, products]);
 
   const subtotal = items.reduce(
     (total, item) =>

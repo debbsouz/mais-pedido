@@ -560,3 +560,50 @@ export async function updateProductsOrder(
   revalidatePath('/cardapio')
   return { success: true }
 }
+
+// ============================================================
+// Leitura — produtos para seleção em pedidos
+// ============================================================
+
+export interface ProductForOrder {
+  id: string
+  name: string
+  description: string
+  category: string
+  price: number
+  image: string
+}
+
+/**
+ * Retorna produtos reais do banco para uso no formulário de pedidos.
+ * Server Action chamável diretamente por Client Components.
+ */
+export async function getProductsForOrder(): Promise<ProductForOrder[]> {
+  const context = await getCatalogContext()
+
+  if (!context) {
+    return []
+  }
+
+  const supabase = await createClient()
+
+  const { data } = await supabase
+    .from('products')
+    .select('id, name, description, price, image_url, categories(name)')
+    .eq('organization_id', context.organizationId)
+    .eq('is_available', true)
+    .order('sort_order', { ascending: true })
+
+  if (!data || data.length === 0) {
+    return []
+  }
+
+  return data.map((product: Record<string, unknown>) => ({
+    id: product.id as string,
+    name: product.name as string,
+    description: product.description as string,
+    category: (product.categories as { name: string } | null)?.name ?? 'Sem categoria',
+    price: (product.price as number) / 100,
+    image: (product.image_url as string) || '🍽️',
+  }))
+}
