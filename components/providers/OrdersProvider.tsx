@@ -187,35 +187,56 @@ export function OrdersProvider({
   }
 
   /**
-   * Refaz o mapeamento de uma linha do banco (vinda do Realtime)
-   * para o formato Order do frontend. Usado para INSERT/UPDATE.
+   * Busca um pedido completo (com itens) via browser client.
+   * Usado no Realtime porque o payload da tabela orders não
+   * inclui os order_items.
    */
-  function mapRealtimeRow(
-    row: Record<string, unknown>,
-  ): Order {
+  async function fetchOrderWithItems(
+    orderId: string,
+  ): Promise<Order | null> {
+    const supabase = createClient();
+
+    const { data } = await supabase
+      .from("orders")
+      .select("*, order_items(*)")
+      .eq("id", orderId)
+      .maybeSingle();
+
+    if (!data) {
+      return null;
+    }
+
     const items =
-      (row.item_details as
-        | Array<{
-            productId: string;
-            name: string;
-            price: number;
-            quantity: number;
-          }>
-        | null) ?? [];
+      (data.order_items as Array<{
+        product_id: string | null;
+        name: string;
+        price_cents: number;
+        quantity: number;
+      }>) ?? [];
 
-    const itemsSummary = items
-      .map(
-        (item) =>
-          `${item.quantity}x ${item.name}`,
-      )
-      .join(", ");
+    const itemDetails = items.map(
+      (item) => ({
+        productId:
+          item.product_id ??
+          `item-${item.name}`,
+        name: item.name,
+        price:
+          item.price_cents / 100,
+        quantity: item.quantity,
+      }),
+    );
 
-    const totalCents =
-      (row.total_cents as number) ?? 0;
+    const itemsSummary =
+      itemDetails
+        .map(
+          (item) =>
+            `${item.quantity}x ${item.name}`,
+        )
+        .join(", ");
 
-    const createdAt = row.created_at
+    const createdAt = data.created_at
       ? new Date(
-          row.created_at as string,
+          data.created_at as string,
         ).getTime()
       : Date.now();
 
@@ -231,45 +252,43 @@ export function OrdersProvider({
           : `há ${Math.floor(diffMin / 60)}h`;
 
     return {
-      id: row.id as string,
+      id: data.id as string,
       customer:
-        (row.customer_name as string) ||
+        (data.customer_name as string) ||
         "Cliente",
-      origin: row.origin as Order["origin"],
+      origin: data.origin as Order["origin"],
       fulfillment:
-        row.fulfillment as Order["fulfillment"],
-      status:
-        row.status as Order["status"],
+        data.fulfillment as Order["fulfillment"],
+      status: data.status as Order["status"],
       time,
-      total: new Intl.NumberFormat(
-        "pt-BR",
-        {
-          style: "currency",
-          currency: "BRL",
-        },
-      ).format(totalCents / 100),
-      items:
-        itemsSummary || "Sem itens",
+      total: new Intl.NumberFormat("pt-BR", {
+        style: "currency",
+        currency: "BRL",
+      }).format(
+        ((data.total_cents as number) ?? 0) /
+          100,
+      ),
+      items: itemsSummary || "Sem itens",
       createdAt,
       tableNumber:
-        (row.table_number as string) ??
+        (data.table_number as string) ??
         undefined,
       pickupName:
-        (row.pickup_name as string) ??
+        (data.pickup_name as string) ??
         undefined,
       phone:
-        (row.customer_phone as string) ??
+        (data.customer_phone as string) ??
         undefined,
       observation:
-        (row.observation as string) ??
+        (data.observation as string) ??
         undefined,
       address:
-        (row.address as Order["address"]) ??
+        (data.address as Order["address"]) ??
         undefined,
       payment:
-        (row.payment as Order["payment"]) ??
+        (data.payment as Order["payment"]) ??
         undefined,
-      itemDetails: items,
+      itemDetails,
     };
   }
 
@@ -291,29 +310,39 @@ export function OrdersProvider({
           table: "orders",
         },
         (payload) => {
-          const newOrder =
-            mapRealtimeRow(
-              payload.new as Record<
-                string,
-                unknown
-              >,
-            );
+          console.log("[orders-realtime] INSERT", payload.new);
+          const orderId = (
+            payload.new as Record<string, unknown>
+          )?.id as string;
 
-          setOrders((current) => {
-            if (
-              current.some(
-                (o) =>
-                  o.id === newOrder.id,
-              )
-            ) {
-              return current;
-            }
+          if (!orderId) {
+            return;
+          }
 
-            return [
-              newOrder,
-              ...current,
-            ];
-          });
+          void fetchOrderWithItems(orderId).then(
+            (newOrder) => {
+              if (!newOrder) {
+                return;
+              }
+
+              setOrders((current) => {
+                if (
+                  current.some(
+                    (o) =>
+                      o.id ===
+                      newOrder.id,
+                  )
+                ) {
+                  return current;
+                }
+
+                return [
+                  newOrder,
+                  ...current,
+                ];
+              });
+            },
+          );
         },
       )
       .on(
@@ -324,20 +353,29 @@ export function OrdersProvider({
           table: "orders",
         },
         (payload) => {
-          const updated =
-            mapRealtimeRow(
-              payload.new as Record<
-                string,
-                unknown
-              >,
-            );
+          console.log("[orders-realtime] UPDATE", payload.new);
+          const orderId = (
+            payload.new as Record<string, unknown>
+          )?.id as string;
 
-          setOrders((current) =>
-            current.map((o) =>
-              o.id === updated.id
-                ? updated
-                : o,
-            ),
+          if (!orderId) {
+            return;
+          }
+
+          void fetchOrderWithItems(orderId).then(
+            (updated) => {
+              if (!updated) {
+                return;
+              }
+
+              setOrders((current) =>
+                current.map((o) =>
+                  o.id === updated.id
+                    ? updated
+                    : o,
+                ),
+              );
+            },
           );
         },
       )
@@ -367,7 +405,9 @@ export function OrdersProvider({
           }
         },
       )
-      .subscribe();
+      .subscribe((status) => {
+        console.log("[orders-realtime] status:", status);
+      });
 
     return () => {
       void supabase.removeChannel(
