@@ -294,125 +294,153 @@ export function OrdersProvider({
 
   /**
    * Real-time: subscreve a mudanças na tabela orders.
-   * INSERT/UPDATE → refaz o mapeamento e atualiza o estado.
-   * DELETE → remove pelo id.
+   *
+   * IMPORTANTE: o subscribe so acontece DEPOIS que getSession()
+   * confirma a sessao do usuario no browser. Isso garante que o
+   * socket WebSocket conecta com o JWT do usuario (role
+   * authenticated), nao com a chave anon. Sem isso, o RLS
+   * (is_member_of) vê auth.uid() = NULL e filtra todos os eventos.
    */
   useEffect(() => {
     const supabase = createClient();
+    let cancelled = false;
+    let channel: ReturnType<typeof supabase.channel> | null = null;
 
-    const channel = supabase
-      .channel("orders-realtime")
-      .on(
-        "postgres_changes",
-        {
-          event: "INSERT",
-          schema: "public",
-          table: "orders",
-        },
-        (payload) => {
-          console.log("[orders-realtime] INSERT", payload.new);
-          const orderId = (
-            payload.new as Record<string, unknown>
-          )?.id as string;
+    void (async () => {
+      // Espera a sessao estar disponivel antes de subscrever.
+      // getSession() aguarda o _recoverAndRefresh() do supabase-js,
+      // que tambem dispara onAuthStateChange -> realtime.setAuth().
+      // Quando resolve, o token ja esta no socket.
+      const { data: { session } } = await supabase.auth.getSession();
 
-          if (!orderId) {
-            return;
-          }
+      if (cancelled || !session) {
+        console.log(
+          "[orders-realtime] sem sessao no browser — skip subscription",
+        );
+        return;
+      }
 
-          void fetchOrderWithItems(orderId).then(
-            (newOrder) => {
-              if (!newOrder) {
-                return;
-              }
+      console.log(
+        "[orders-realtime] sessao confirmada, user:",
+        session.user.id,
+        "— subscrevendo...",
+      );
 
-              setOrders((current) => {
-                if (
-                  current.some(
-                    (o) =>
-                      o.id ===
-                      newOrder.id,
-                  )
-                ) {
-                  return current;
-                }
-
-                return [
-                  newOrder,
-                  ...current,
-                ];
-              });
-            },
-          );
-        },
-      )
-      .on(
-        "postgres_changes",
-        {
-          event: "UPDATE",
-          schema: "public",
-          table: "orders",
-        },
-        (payload) => {
-          console.log("[orders-realtime] UPDATE", payload.new);
-          const orderId = (
-            payload.new as Record<string, unknown>
-          )?.id as string;
-
-          if (!orderId) {
-            return;
-          }
-
-          void fetchOrderWithItems(orderId).then(
-            (updated) => {
-              if (!updated) {
-                return;
-              }
-
-              setOrders((current) =>
-                current.map((o) =>
-                  o.id === updated.id
-                    ? updated
-                    : o,
-                ),
-              );
-            },
-          );
-        },
-      )
-      .on(
-        "postgres_changes",
-        {
-          event: "DELETE",
-          schema: "public",
-          table: "orders",
-        },
-        (payload) => {
-          const deletedId =
-            (
-              payload.old as Record<
-                string,
-                unknown
-              >
+      channel = supabase
+        .channel("orders-realtime")
+        .on(
+          "postgres_changes",
+          {
+            event: "INSERT",
+            schema: "public",
+            table: "orders",
+          },
+          (payload) => {
+            console.log("[orders-realtime] INSERT", payload.new);
+            const orderId = (
+              payload.new as Record<string, unknown>
             )?.id as string;
 
-          if (deletedId) {
-            setOrders((current) =>
-              current.filter(
-                (o) =>
-                  o.id !== deletedId,
-              ),
+            if (!orderId) {
+              return;
+            }
+
+            void fetchOrderWithItems(orderId).then(
+              (newOrder) => {
+                if (!newOrder) {
+                  return;
+                }
+
+                setOrders((current) => {
+                  if (
+                    current.some(
+                      (o) =>
+                        o.id ===
+                        newOrder.id,
+                    )
+                  ) {
+                    return current;
+                  }
+
+                  return [
+                    newOrder,
+                    ...current,
+                  ];
+                });
+              },
             );
-          }
-        },
-      )
-      .subscribe((status) => {
-        console.log("[orders-realtime] status:", status);
-      });
+          },
+        )
+        .on(
+          "postgres_changes",
+          {
+            event: "UPDATE",
+            schema: "public",
+            table: "orders",
+          },
+          (payload) => {
+            console.log("[orders-realtime] UPDATE", payload.new);
+            const orderId = (
+              payload.new as Record<string, unknown>
+            )?.id as string;
+
+            if (!orderId) {
+              return;
+            }
+
+            void fetchOrderWithItems(orderId).then(
+              (updated) => {
+                if (!updated) {
+                  return;
+                }
+
+                setOrders((current) =>
+                  current.map((o) =>
+                    o.id === updated.id
+                      ? updated
+                      : o,
+                  ),
+                );
+              },
+            );
+          },
+        )
+        .on(
+          "postgres_changes",
+          {
+            event: "DELETE",
+            schema: "public",
+            table: "orders",
+          },
+          (payload) => {
+            const deletedId =
+              (
+                payload.old as Record<
+                  string,
+                  unknown
+                >
+              )?.id as string;
+
+            if (deletedId) {
+              setOrders((current) =>
+                current.filter(
+                  (o) =>
+                    o.id !== deletedId,
+                ),
+              );
+            }
+          },
+        )
+        .subscribe((status) => {
+          console.log("[orders-realtime] status:", status);
+        });
+    })();
 
     return () => {
-      void supabase.removeChannel(
-        channel,
-      );
+      cancelled = true;
+      if (channel) {
+        void supabase.removeChannel(channel);
+      }
     };
   }, []);
 
