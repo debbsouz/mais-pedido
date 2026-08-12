@@ -23,131 +23,19 @@ interface OrdersBoardProps {
 
   orders: Order[];
 
-  onOrdersChange: (
-    updater:
-      | Order[]
-      | ((
-          currentOrders: Order[],
-        ) => Order[]),
-  ) => void;
+  onMoveOrder: (
+    orderId: string,
+    status: OrderStatus,
+  ) => Promise<void>;
+
+  onRemoveOrder: (
+    orderId: string,
+  ) => Promise<void>;
 
   onOrderHandled: (
     orderId: string,
   ) => void;
 }
-
-export const initialOrders: Order[] = [
-  {
-    id: "1052",
-    customer: "Amanda Rocha",
-    origin: "WhatsApp",
-    fulfillment: "Retirada",
-    time: "há 7 min",
-    total: "R$ 72,90",
-    items:
-      "2 X-Burgers, 1 batata grande",
-    status: "new",
-    delayed: true,
-  },
-  {
-    id: "1051",
-    customer: "Mesa 04",
-    origin: "Garçom",
-    fulfillment: "Mesa",
-    time: "há 4 min",
-    total: "R$ 118,50",
-    items:
-      "1 pizza grande, 2 refrigerantes",
-    status: "new",
-  },
-  {
-    id: "1050",
-    customer: "Carlos Lima",
-    origin: "Site",
-    fulfillment: "Delivery",
-    time: "há 2 min",
-    total: "R$ 46,00",
-    items: "1 combo família",
-    status: "new",
-  },
-  {
-    id: "1049",
-    customer: "Mesa 08",
-    origin: "Garçom",
-    fulfillment: "Mesa",
-    time: "há 12 min",
-    total: "R$ 96,50",
-    items:
-      "2 hambúrgueres, 1 porção",
-    status: "preparing",
-  },
-  {
-    id: "1048",
-    customer: "Mariana Alves",
-    origin: "Site",
-    fulfillment: "Delivery",
-    time: "há 15 min",
-    total: "R$ 58,90",
-    items:
-      "1 X-Salada, 1 refrigerante",
-    status: "preparing",
-  },
-  {
-    id: "1047",
-    customer: "João Pedro",
-    origin: "Atendente",
-    fulfillment: "Balcão",
-    time: "há 18 min",
-    total: "R$ 38,00",
-    items:
-      "1 cachorro-quente, 1 suco",
-    status: "preparing",
-  },
-  {
-    id: "1046",
-    customer: "Fernanda Souza",
-    origin: "WhatsApp",
-    fulfillment: "Retirada",
-    time: "pronto há 3 min",
-    total: "R$ 64,00",
-    items:
-      "2 combos tradicionais",
-    status: "ready",
-  },
-  {
-    id: "1045",
-    customer: "Mesa 12",
-    origin: "Garçom",
-    fulfillment: "Mesa",
-    time: "pronto há 5 min",
-    total: "R$ 132,90",
-    items:
-      "1 pizza família, bebidas",
-    status: "ready",
-  },
-  {
-    id: "1044",
-    customer: "Rafael Martins",
-    origin: "Site",
-    fulfillment: "Delivery",
-    time: "saiu há 8 min",
-    total: "R$ 84,50",
-    items:
-      "2 hambúrgueres especiais",
-    status: "delivery",
-  },
-  {
-    id: "1043",
-    customer: "Patrícia Lopes",
-    origin: "WhatsApp",
-    fulfillment: "Delivery",
-    time: "aguardando entregador",
-    total: "R$ 52,00",
-    items:
-      "1 combo individual",
-    status: "delivery",
-  },
-];
 
 const statusSequence: Record<
   OrderStatus,
@@ -187,7 +75,8 @@ export function OrdersBoard({
   activeFilter,
   searchTerm,
   orders,
-  onOrdersChange,
+  onMoveOrder,
+  onRemoveOrder,
   onOrderHandled,
 }: OrdersBoardProps) {
   const [
@@ -200,29 +89,10 @@ export function OrdersBoard({
     setMobileStatus,
   ] = useState<OrderStatus>("new");
 
-  function moveOrder(
-    orderId: string,
-    newStatus: OrderStatus,
-  ) {
-    onOrdersChange(
-      (currentOrders) =>
-        currentOrders.map(
-          (order) =>
-            order.id === orderId
-              ? {
-                  ...order,
-                  status: newStatus,
-                  delayed: false,
-                }
-              : order,
-        ),
-    );
-  }
-
-  function acceptOrder(
+  async function handleAcceptOrder(
     orderId: string,
   ) {
-    moveOrder(
+    await onMoveOrder(
       orderId,
       "preparing",
     );
@@ -230,7 +100,7 @@ export function OrdersBoard({
     onOrderHandled(orderId);
   }
 
-  function rejectOrder(
+  async function handleRejectOrder(
     orderId: string,
   ) {
     const shouldReject =
@@ -242,13 +112,7 @@ export function OrdersBoard({
       return;
     }
 
-    onOrdersChange(
-      (currentOrders) =>
-        currentOrders.filter(
-          (order) =>
-            order.id !== orderId,
-        ),
-    );
+    await onRemoveOrder(orderId);
 
     onOrderHandled(orderId);
 
@@ -260,47 +124,37 @@ export function OrdersBoard({
     }
   }
 
-  function advanceOrder(
+  async function handleAdvanceOrder(
     orderId: string,
   ) {
-    onOrdersChange(
-      (currentOrders) =>
-        currentOrders.flatMap(
-          (order) => {
-            if (
-              order.id !== orderId
-            ) {
-              return [order];
-            }
-
-            if (
-              order.status ===
-                "ready" &&
-              order.fulfillment !==
-                "Delivery"
-            ) {
-              return [];
-            }
-
-            const nextStatus =
-              statusSequence[
-                order.status
-              ];
-
-            if (!nextStatus) {
-              return [];
-            }
-
-            return [
-              {
-                ...order,
-                status:
-                  nextStatus,
-              },
-            ];
-          },
-        ),
+    const order = orders.find(
+      (o) => o.id === orderId,
     );
+
+    if (!order) {
+      return;
+    }
+
+    // Regra especial: ready + não-Delivery → finalizar (remover)
+    if (
+      order.status === "ready" &&
+      order.fulfillment !==
+        "Delivery"
+    ) {
+      await onRemoveOrder(orderId);
+      setSelectedOrder(null);
+      return;
+    }
+
+    const nextStatus =
+      statusSequence[order.status];
+
+    if (nextStatus) {
+      await onMoveOrder(
+        orderId,
+        nextStatus,
+      );
+    }
 
     setSelectedOrder(null);
   }
@@ -383,13 +237,13 @@ export function OrdersBoard({
           )
         }
         onAccept={
-          acceptOrder
+          handleAcceptOrder
         }
         onReject={
-          rejectOrder
+          handleRejectOrder
         }
         onAdvance={
-          advanceOrder
+          handleAdvanceOrder
         }
       />
     ));

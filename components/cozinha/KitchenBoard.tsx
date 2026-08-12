@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState, useEffect } from "react";
 
 import { useOrders } from "@/components/providers/OrdersProvider";
 
@@ -9,10 +9,29 @@ import {
   type KitchenOrder,
 } from "./KitchenCard";
 
-function getElapsedMinutes(
+/**
+ * Extrai minutos do texto "há X min" (estavel, sem Date.now()).
+ * Usado na primeira renderizacao (SSR + hidratacao) pra evitar
+ * hydration mismatch.
+ */
+function getElapsedFromTime(
+  time?: string,
+): number {
+  if (time) {
+    const match = time.match(/(\d+)/);
+    if (match) return Number(match[1]);
+  }
+  return 0;
+}
+
+/**
+ * Calcula minutos reais com Date.now().
+ * So chamado apos o componente montar no client.
+ */
+function getElapsedLive(
   createdAt?: number,
   time?: string,
-) {
+): number {
   if (createdAt) {
     return Math.max(
       0,
@@ -21,20 +40,16 @@ function getElapsedMinutes(
       ),
     );
   }
-
-  if (time) {
-    const match = time.match(/(\d+)/);
-
-    if (match) {
-      return Number(match[1]);
-    }
-  }
-
-  return 0;
+  return getElapsedFromTime(time);
 }
 
 export function KitchenBoard() {
   const { orders, moveOrder } = useOrders();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const kitchenOrders = useMemo(() => {
     return orders
@@ -70,11 +85,20 @@ export function KitchenBoard() {
           fulfillment:
             order.fulfillment,
 
-          elapsedMinutes:
-            getElapsedMinutes(
-              order.createdAt,
-              order.time,
-            ),
+          /*
+           * Antes de montar (SSR + hidratacao),
+           * usa o texto "há X min" (estavel).
+           * Depois de montar, usa Date.now()
+           * pra minutos reais.
+           */
+          elapsedMinutes: mounted
+            ? getElapsedLive(
+                order.createdAt,
+                order.time,
+              )
+            : getElapsedFromTime(
+                order.time,
+              ),
 
           items,
 
@@ -90,7 +114,7 @@ export function KitchenBoard() {
 observation: order.observation || undefined,
         };
       });
-  }, [orders]);
+  }, [orders, mounted]);
 
   function markAsReady(
     orderId: string,

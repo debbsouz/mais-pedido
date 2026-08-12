@@ -13,9 +13,12 @@ import {
 } from "react";
 
 import {
-  catalogCategories,
   type ProductCategory,
 } from "@/lib/catalog";
+
+import {
+  createClient,
+} from "@/lib/supabase/client";
 
 export interface ProductFormData {
   id: string;
@@ -30,6 +33,7 @@ export interface ProductFormData {
 interface ProductFormDrawerProps {
   open: boolean;
   product?: ProductFormData | null;
+  categories: ProductCategory[];
   onClose: () => void;
   onSave: (
     product: ProductFormData,
@@ -38,17 +42,12 @@ interface ProductFormDrawerProps {
 
 interface ProductFormContentProps {
   product?: ProductFormData | null;
+  categories: ProductCategory[];
   onClose: () => void;
   onSave: (
     product: ProductFormData,
   ) => void;
 }
-
-const categoryOptions =
-  catalogCategories.filter(
-    (category) =>
-      category !== "Todos",
-  ) as ProductCategory[];
 
 function formatInitialPrice(
   value?: number,
@@ -68,6 +67,7 @@ function formatInitialPrice(
 
 function ProductFormContent({
   product,
+  categories: categoryOptions,
   onClose,
   onSave,
 }: ProductFormContentProps) {
@@ -121,7 +121,7 @@ function ProductFormContent({
     );
   }
 
-  function handleImageChange(
+  async function handleImageChange(
     event: ChangeEvent<HTMLInputElement>,
   ) {
     const file =
@@ -139,6 +139,7 @@ function ProductFormContent({
       return;
     }
 
+    // Preview local imediato via base64
     const reader =
       new FileReader();
 
@@ -154,6 +155,37 @@ function ProductFormContent({
     };
 
     reader.readAsDataURL(file);
+
+    // Upload para Supabase Storage
+    const supabase =
+      createClient();
+
+    const fileExt =
+      file.name.split(".").pop();
+
+    const filePath =
+      `products/${crypto.randomUUID()}.${fileExt}`;
+
+    const { error } =
+      await supabase.storage
+        .from("product-images")
+        .upload(filePath, file);
+
+    if (error) {
+      window.alert(
+        "Erro ao fazer upload da imagem.",
+      );
+      return;
+    }
+
+    const { data } =
+      supabase.storage
+        .from("product-images")
+        .getPublicUrl(filePath);
+
+    setImage(
+      data.publicUrl,
+    );
   }
 
   function removeImage() {
@@ -475,6 +507,7 @@ function ProductFormContent({
 export function ProductFormDrawer({
   open,
   product,
+  categories,
   onClose,
   onSave,
 }: ProductFormDrawerProps) {
@@ -489,6 +522,7 @@ export function ProductFormDrawer({
         "new-product"
       }
       product={product}
+      categories={categories}
       onClose={onClose}
       onSave={onSave}
     />

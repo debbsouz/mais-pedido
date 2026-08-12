@@ -1,26 +1,44 @@
-import type { ReactNode } from "react";
+import {
+  getCurrentSubscription,
+  requireAuth,
+} from "@/lib/dal";
 
-import { PanelAccessGuard } from "@/components/auth/PanelAccessGuard";
-import { AppLayout } from "@/components/layout/AppLayout";
+import { AuthProvider } from "@/components/providers/AuthProvider";
 import { OrdersProvider } from "@/components/providers/OrdersProvider";
 import { TablesProvider } from "@/components/providers/TablesProvider";
+import { PanelAccessGuard } from "@/components/auth/PanelAccessGuard";
+import { AppLayout } from "@/components/layout/AppLayout";
+
+import { getOrders, toFrontendOrders } from "@/lib/orders-dal";
 
 interface PanelLayoutProps {
-  children: ReactNode;
+  children: React.ReactNode;
 }
 
-export default function PanelLayout({
+/**
+ * Layout do painel operacional.
+ *
+ * 1. requireAuth() — busca a sessao no servidor; sem sessao → redirect /login.
+ * 2. AuthProvider — hidrata os Client Components com dados reais do usuario.
+ * 3. OrdersProvider — hidrata com pedidos reais do banco.
+ * 4. PanelAccessGuard — redireciona por permissao de cargo (client-side).
+ */
+export default async function PanelLayout({
   children,
 }: PanelLayoutProps) {
+  const user = await requireAuth();
+  const subscription = await getCurrentSubscription();
+  const orders = toFrontendOrders(await getOrders());
+
   return (
-    <OrdersProvider>
-      <TablesProvider>
-        <PanelAccessGuard>
-          <AppLayout>
-            {children}
-          </AppLayout>
-        </PanelAccessGuard>
-      </TablesProvider>
-    </OrdersProvider>
+    <AuthProvider user={user} subscription={subscription}>
+      <OrdersProvider initialOrders={orders}>
+        <TablesProvider>
+          <PanelAccessGuard>
+            <AppLayout>{children}</AppLayout>
+          </PanelAccessGuard>
+        </TablesProvider>
+      </OrdersProvider>
+    </AuthProvider>
   );
 }

@@ -10,11 +10,21 @@ import {
   ToggleLeft,
   ToggleRight,
 } from "@phosphor-icons/react";
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 
 import {
-  catalogCategories,
-  catalogProducts,
+  createProduct as createProductAction,
+  updateProduct as updateProductAction,
+  deleteProduct as deleteProductAction,
+  toggleProductAvailability as toggleAvailabilityAction,
+  duplicateProduct as duplicateProductAction,
+  updateProductsOrder as updateOrderAction,
+  createCategory as createCategoryAction,
+  renameCategory as renameCategoryAction,
+  deleteCategory as deleteCategoryAction,
+} from "@/app/actions/catalog";
+
+import {
   type CatalogProduct,
   type ProductCategory,
 } from "@/lib/catalog";
@@ -30,9 +40,29 @@ import { ProductOrderDrawer } from "./ProductOrderDrawer";
 
 import { ProductActionsMenu } from "./ProductActionsMenu";
 
-type ManagedProduct = CatalogProduct & {
+export type ManagedProduct = CatalogProduct & {
   available: boolean;
 };
+
+export interface MenuManagementProps {
+  /**
+   * Categorias vindas do banco (apenas os nomes, sem "Todos").
+   * O "Todos" e adicionado como tab fixa no proprio componente.
+   */
+  categories: ProductCategory[];
+  /**
+   * Mapa nome → UUID das categorias vindas do banco. Usado para
+   * resolver o categoryId ao criar/editar produtos. O MenuManagement
+   * combina com categorias criadas localmente.
+   */
+  categoryMap: Record<string, string>;
+  /**
+   * Produtos vindos do banco, ja mapeados pelo Server Component
+   * para o formato esperado pelo frontend (preco decimal, category,
+   * image, available).
+   */
+  products: ManagedProduct[];
+}
 
 function formatCurrency(value: number) {
   return new Intl.NumberFormat("pt-BR", {
@@ -41,7 +71,11 @@ function formatCurrency(value: number) {
   }).format(value);
 }
 
-export function MenuManagement() {
+export function MenuManagement({
+  categories: initialCategories,
+  categoryMap: initialCategoryMap,
+  products: initialProducts,
+}: MenuManagementProps) {
   const [
     activeCategory,
     setActiveCategory,
@@ -56,23 +90,25 @@ export function MenuManagement() {
     categories,
     setCategories,
   ] = useState<ProductCategory[]>(
-    catalogCategories.filter(
-      (category) =>
-        category !== "Todos",
-    ) as ProductCategory[],
+    initialCategories,
+  );
+
+  const [
+    categoryMap,
+    setCategoryMap,
+  ] = useState<Record<string, string>>(
+    initialCategoryMap,
   );
 
   const [
     products,
     setProducts,
   ] = useState<ManagedProduct[]>(
-    catalogProducts.map(
-      (product) => ({
-        ...product,
-        available: true,
-      }),
-    ),
+    initialProducts,
   );
+
+  /** Flag para persistir a ordenacao ao fechar o drawer. */
+  const orderChangedRef = useRef(false);
 
   const [
     isProductDrawerOpen,
@@ -102,6 +138,16 @@ export function MenuManagement() {
 ] = useState<ManagedProduct | null>(
   null,
 );
+
+  /** Resolve nome de categoria → UUID do banco (ou null). */
+  function resolveCategoryId(
+    categoryName: string,
+  ): string | null {
+    if (!categoryName) {
+      return null;
+    }
+    return categoryMap[categoryName] ?? null;
+  }
 
   const filteredProducts = useMemo(() => {
     const normalizedSearch =
@@ -141,23 +187,57 @@ export function MenuManagement() {
     products,
   ]);
 
-  function toggleAvailability(
+  async function toggleAvailability(
     productId: string,
   ) {
+    const product = products.find(
+      (p) => p.id === productId,
+    );
+
+    if (!product) {
+      return;
+    }
+
+    const nextAvailable =
+      !product.available;
+
     setProducts(
       (currentProducts) =>
         currentProducts.map(
-          (product) =>
-            product.id ===
-            productId
+          (p) =>
+            p.id === productId
               ? {
-                  ...product,
+                  ...p,
                   available:
-                    !product.available,
+                    nextAvailable,
                 }
-              : product,
+              : p,
         ),
     );
+
+    const result =
+      await toggleAvailabilityAction(
+        productId,
+        nextAvailable,
+      );
+
+    if (!result.success) {
+      window.alert(result.error);
+
+      setProducts(
+        (currentProducts) =>
+          currentProducts.map(
+            (p) =>
+              p.id === productId
+                ? {
+                    ...p,
+                    available:
+                      product.available,
+                  }
+                : p,
+          ),
+      );
+    }
   }
 
   function getCategoryCount(
@@ -203,40 +283,63 @@ export function MenuManagement() {
     setIsProductDrawerOpen(false);
   }
 
-  function saveProduct(
+  async function saveProduct(
     product: ProductFormData,
   ) {
-    setProducts(
-      (currentProducts) => {
-        const exists =
-          currentProducts.some(
-            (currentProduct) =>
-              currentProduct.id ===
-              product.id,
-          );
-
-        if (exists) {
-          return currentProducts.map(
-            (currentProduct) =>
-              currentProduct.id ===
-              product.id
-                ? {
-                    ...currentProduct,
-                    ...product,
-                  }
-                : currentProduct,
-          );
-        }
-
-        return [
-          product,
-          ...currentProducts,
-        ];
-      },
+    const categoryId = resolveCategoryId(
+      product.category,
     );
+
+    const input = {
+      name: product.name,
+      description: product.description,
+      priceCents: Math.round(product.price * 100),
+      categoryId,
+      imageUrl: product.image,
+      isAvailable: product.available,
+    };
+
+    const isEditing =
+      products.some((p) => p.id === product.id) &&
+      !product.id.startsWith("product-");
+
+    if (isEditing) {
+      const result = await updateProductAction(
+        product.id,
+        input,
+      );
+
+      if (!result.success) {
+        window.alert(result.error);
+        return;
+      }
+
+      setProducts((currentProducts) =>
+        currentProducts.map((currentProduct) =>
+          currentProduct.id === product.id
+            ? { ...currentProduct, ...product }
+            : currentProduct,
+        ),
+      );
+    } else {
+      const result = await createProductAction(input);
+
+      if (!result.success) {
+        window.alert(result.error);
+        return;
+      }
+
+      const realId =
+        result.data?.id ?? product.id;
+
+      setProducts((currentProducts) => [
+        { ...product, id: realId },
+        ...currentProducts,
+      ]);
+    }
   }
 
-  function addCategory(
+  async function addCategory(
     name: string,
   ) {
     const normalizedName =
@@ -261,6 +364,27 @@ export function MenuManagement() {
       return;
     }
 
+    const result =
+      await createCategoryAction(
+        normalizedName,
+      );
+
+    if (!result.success) {
+      window.alert(result.error);
+      return;
+    }
+
+    const categoryId = result.data?.id;
+
+    if (categoryId) {
+      setCategoryMap(
+        (current) => ({
+          ...current,
+          [normalizedName]: categoryId,
+        }),
+      );
+    }
+
     setCategories(
       (currentCategories) => [
         ...currentCategories,
@@ -269,7 +393,7 @@ export function MenuManagement() {
     );
   }
 
-  function renameCategory(
+  async function renameCategory(
     oldName: ProductCategory,
     newName: string,
   ) {
@@ -295,6 +419,36 @@ export function MenuManagement() {
     ) {
       return;
     }
+
+    const categoryId =
+      resolveCategoryId(oldName);
+
+    if (!categoryId) {
+      window.alert(
+        "Não foi possível identificar a categoria.",
+      );
+      return;
+    }
+
+    const result =
+      await renameCategoryAction(
+        categoryId,
+        normalizedName,
+      );
+
+    if (!result.success) {
+      window.alert(result.error);
+      return;
+    }
+
+    setCategoryMap((current) => {
+      const { [oldName]: id, ...rest } =
+        current;
+      return {
+        ...rest,
+        [normalizedName]: id,
+      };
+    });
 
     setCategories(
       (currentCategories) =>
@@ -347,7 +501,7 @@ export function MenuManagement() {
     }
   }
 
-  function deleteCategory(
+  async function deleteCategory(
     category: ProductCategory,
   ) {
     const productCount =
@@ -358,6 +512,32 @@ export function MenuManagement() {
     if (productCount > 0) {
       return;
     }
+
+    const categoryId =
+      resolveCategoryId(category);
+
+    if (!categoryId) {
+      window.alert(
+        "Não foi possível identificar a categoria.",
+      );
+      return;
+    }
+
+    const result =
+      await deleteCategoryAction(
+        categoryId,
+      );
+
+    if (!result.success) {
+      window.alert(result.error);
+      return;
+    }
+
+    setCategoryMap((current) => {
+      const rest = { ...current };
+      delete rest[category];
+      return rest;
+    });
 
     setCategories(
       (currentCategories) =>
@@ -381,18 +561,28 @@ export function MenuManagement() {
   function moveProductUp(
     productId: string,
   ) {
+    const currentIndex =
+      products.findIndex(
+        (product) =>
+          product.id === productId,
+      );
+
+    if (currentIndex <= 0) {
+      return;
+    }
+
+    orderChangedRef.current = true;
+
     setProducts(
       (currentProducts) => {
-        const currentIndex =
+        const index =
           currentProducts.findIndex(
             (product) =>
               product.id ===
               productId,
           );
 
-        if (
-          currentIndex <= 0
-        ) {
+        if (index <= 0) {
           return currentProducts;
         }
 
@@ -402,17 +592,17 @@ export function MenuManagement() {
 
         [
           reorderedProducts[
-            currentIndex - 1
+            index - 1
           ],
           reorderedProducts[
-            currentIndex
+            index
           ],
         ] = [
           reorderedProducts[
-            currentIndex
+            index
           ],
           reorderedProducts[
-            currentIndex - 1
+            index - 1
           ],
         ];
 
@@ -424,9 +614,25 @@ export function MenuManagement() {
   function moveProductDown(
     productId: string,
   ) {
+    const currentIndex =
+      products.findIndex(
+        (product) =>
+          product.id === productId,
+      );
+
+    if (
+      currentIndex === -1 ||
+      currentIndex >=
+        products.length - 1
+    ) {
+      return;
+    }
+
+    orderChangedRef.current = true;
+
     setProducts(
       (currentProducts) => {
-        const currentIndex =
+        const index =
           currentProducts.findIndex(
             (product) =>
               product.id ===
@@ -434,8 +640,8 @@ export function MenuManagement() {
           );
 
         if (
-          currentIndex === -1 ||
-          currentIndex >=
+          index === -1 ||
+          index >=
             currentProducts.length -
               1
         ) {
@@ -448,17 +654,17 @@ export function MenuManagement() {
 
         [
           reorderedProducts[
-            currentIndex
+            index
           ],
           reorderedProducts[
-            currentIndex + 1
+            index + 1
           ],
         ] = [
           reorderedProducts[
-            currentIndex + 1
+            index + 1
           ],
           reorderedProducts[
-            currentIndex
+            index
           ],
         ];
 
@@ -468,12 +674,25 @@ export function MenuManagement() {
   }
 
 
-  function duplicateProduct(
+  async function duplicateProduct(
     product: ManagedProduct,
   ) {
+    const result =
+      await duplicateProductAction(
+        product.id,
+      );
+
+    if (!result.success) {
+      window.alert(result.error);
+      return;
+    }
+
+    const realId =
+      result.data?.id ?? `product-${Date.now()}`;
+
     const duplicatedProduct: ManagedProduct = {
       ...product,
-      id: `product-${Date.now()}`,
+      id: realId,
       name: `${product.name} - Cópia`,
     };
 
@@ -507,7 +726,7 @@ export function MenuManagement() {
     setSelectedActionProduct(null);
   }
 
-  function deleteProduct(
+  async function deleteProduct(
     productId: string,
   ) {
     const shouldDelete = window.confirm(
@@ -515,6 +734,14 @@ export function MenuManagement() {
     );
 
     if (!shouldDelete) {
+      return;
+    }
+
+    const result =
+      await deleteProductAction(productId);
+
+    if (!result.success) {
+      window.alert(result.error);
       return;
     }
 
@@ -531,7 +758,7 @@ export function MenuManagement() {
   function toggleProductFromActions(
     productId: string,
   ) {
-    toggleAvailability(productId);
+    void toggleAvailability(productId);
 
     setSelectedActionProduct(
       (currentProduct) =>
@@ -543,6 +770,31 @@ export function MenuManagement() {
             }
           : null,
     );
+  }
+
+  /** Fecha o drawer de ordenacao e persiste a ordem no banco. */
+  async function closeOrderDrawer() {
+    setIsOrderDrawerOpen(false);
+
+    if (!orderChangedRef.current) {
+      return;
+    }
+
+    orderChangedRef.current = false;
+
+    const items = products.map(
+      (product, index) => ({
+        id: product.id,
+        sortOrder: index,
+      }),
+    );
+
+    const result =
+      await updateOrderAction(items);
+
+    if (!result.success) {
+      window.alert(result.error);
+    }
   }
 
   return (
@@ -846,16 +1098,35 @@ export function MenuManagement() {
               size={28}
             />
 
-            <strong>
-              Nenhum produto
-              encontrado
-            </strong>
+            {products.length ===
+            0 ? (
+              <>
+                <strong>
+                  Seu cardápio está
+                  vazio
+                </strong>
 
-            <span>
-              Tente pesquisar por
-              outro produto ou
-              categoria.
-            </span>
+                <span>
+                  Cadastre o primeiro
+                  produto para
+                  exibi-lo no
+                  cardápio.
+                </span>
+              </>
+            ) : (
+              <>
+                <strong>
+                  Nenhum produto
+                  encontrado
+                </strong>
+
+                <span>
+                  Tente pesquisar por
+                  outro produto ou
+                  categoria.
+                </span>
+              </>
+            )}
           </div>
         )}
       </div>
@@ -866,6 +1137,9 @@ export function MenuManagement() {
         }
         product={
           editingProduct
+        }
+        categories={
+          categories
         }
         onClose={
           closeProductDrawer
@@ -908,10 +1182,8 @@ export function MenuManagement() {
         products={
           products
         }
-        onClose={() =>
-          setIsOrderDrawerOpen(
-            false,
-          )
+        onClose={
+          closeOrderDrawer
         }
         onMoveUp={
           moveProductUp

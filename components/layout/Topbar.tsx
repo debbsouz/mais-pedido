@@ -34,39 +34,39 @@ type StoreStatus =
 
 export function Topbar() {
   const [theme, setTheme] =
-    useState<Theme>(() => {
-      if (
-        typeof window ===
-        "undefined"
-      ) {
-        return "light";
-      }
+    useState<Theme>("light");
 
-      return localStorage.getItem(
-        THEME_STORAGE_KEY,
-      ) === "dark"
-        ? "dark"
-        : "light";
-    });
+  useEffect(() => {
+    const stored = localStorage.getItem(
+      THEME_STORAGE_KEY,
+    );
+
+    if (
+      stored === "dark" ||
+      stored === "light"
+    ) {
+      setTheme(stored);
+    }
+  }, []);
 
   const [
     storeStatus,
     setStoreStatus,
   ] =
-    useState<StoreStatus>(() => {
-      if (
-        typeof window ===
-        "undefined"
-      ) {
-        return "open";
-      }
+    useState<StoreStatus>("open");
 
-      return localStorage.getItem(
-        STORE_STATUS_STORAGE_KEY,
-      ) === "closed"
-        ? "closed"
-        : "open";
-    });
+  useEffect(() => {
+    const stored = localStorage.getItem(
+      STORE_STATUS_STORAGE_KEY,
+    );
+
+    if (
+      stored === "open" ||
+      stored === "closed"
+    ) {
+      setStoreStatus(stored);
+    }
+  }, []);
 
   const [
     isNotificationsOpen,

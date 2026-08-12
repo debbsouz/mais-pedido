@@ -3,10 +3,13 @@
 import Image from "next/image";
 import Link from "next/link";
 import { Eye, EyeSlash, Lock, User } from "@phosphor-icons/react";
-import { useState } from "react";
+import { useActionState, useState } from "react";
+
+import { signIn } from "@/app/actions/auth";
 
 export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
+  const [state, action, pending] = useActionState(signIn, undefined);
 
   return (
     <section className="login-page">
@@ -51,7 +54,7 @@ export default function LoginPage() {
             <p>Use os dados cadastrados pelo estabelecimento.</p>
           </div>
 
-          <form className="login-form">
+          <form className="login-form" action={action}>
             <label className="login-field">
               <span>E-mail</span>
 
@@ -103,8 +106,18 @@ export default function LoginPage() {
               <Link href="/recuperar-senha">Esqueci minha senha</Link>
             </div>
 
-            <button type="submit" className="login-form__submit">
-              Entrar no painel
+            {state?.error && (
+              <div className="login-form__error">
+                <span>{state.error}</span>
+              </div>
+            )}
+
+            <button
+              type="submit"
+              className="login-form__submit"
+              disabled={pending}
+            >
+              {pending ? "Entrando..." : "Entrar no painel"}
             </button>
           </form>
 

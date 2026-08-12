@@ -53,6 +53,14 @@ export const protectedRoutes: ProtectedRoute[] = [
     path: "/configuracoes",
     permission: "viewSettings",
   },
+  {
+    path: "/garcom",
+    permission: "viewTables",
+  },
+  {
+    path: "/atendente",
+    permission: "viewOrders",
+  },
 ];
 
 export const roleHomeRoutes: Record<

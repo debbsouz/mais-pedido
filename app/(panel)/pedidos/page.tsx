@@ -30,7 +30,7 @@ const notificationSettings = {
 };
 
 export default function PedidosPage() {
-  const { orders, setOrders, addOrder } =
+  const { orders, addOrder, moveOrder, removeOrder } =
     useOrders();
 
   const [activeFilter, setActiveFilter] =
@@ -298,15 +298,15 @@ export default function PedidosPage() {
     }, []);
 
   const handleCreateOrder = useCallback(
-    (order: Order) => {
-      addOrder(order);
+    async (order: Order) => {
+      const realId = await addOrder(order);
 
       setIsNewOrderOpen(false);
       setActiveFilter("Todos");
       setSearchTerm("");
 
-      startOrderAlarm(order.id);
-      showNewOrderNotification(order);
+      startOrderAlarm(realId ?? order.id);
+      showNewOrderNotification({ ...order, id: realId ?? order.id });
     },
     [
       addOrder,
@@ -346,7 +346,8 @@ export default function PedidosPage() {
         activeFilter={activeFilter}
         searchTerm={searchTerm}
         orders={orders}
-        onOrdersChange={setOrders}
+        onMoveOrder={moveOrder}
+        onRemoveOrder={removeOrder}
         onOrderHandled={handleOrderHandled}
       />
 

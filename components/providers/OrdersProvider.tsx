@@ -4,6 +4,7 @@ import {
   createContext,
   type ReactNode,
   useContext,
+  useEffect,
   useState,
 } from "react";
 
@@ -11,6 +12,15 @@ import type {
   Order,
   OrderStatus,
 } from "@/components/pedidos/OrderCard";
+
+import {
+  createOrder as createOrderAction,
+  updateOrderStatus as updateOrderStatusAction,
+  deleteOrder as deleteOrderAction,
+  type CreateOrderInput,
+} from "@/app/actions/orders";
+
+import { createClient } from "@/lib/supabase/client";
 
 interface OrdersContextValue {
   orders: Order[];
@@ -22,141 +32,91 @@ interface OrdersContextValue {
   moveOrder: (
     orderId: string,
     status: OrderStatus,
-  ) => void;
+  ) => Promise<void>;
 
-  addOrder: (order: Order) => void;
+  addOrder: (
+    order: Order,
+  ) => Promise<string | null>;
 
-  removeOrder: (orderId: string) => void;
+  removeOrder: (
+    orderId: string,
+  ) => Promise<void>;
 }
 
 const OrdersContext =
   createContext<OrdersContextValue | null>(null);
 
-const initialOrders: Order[] = [
-  {
-    id: "1052",
-    customer: "Amanda Rocha",
-    origin: "WhatsApp",
-    fulfillment: "Retirada",
-    time: "há 7 min",
-    total: "R$ 72,90",
-    items: "2 X-Burgers, 1 batata grande",
-    status: "new",
-    delayed: true,
-  },
-
-  {
-    id: "1051",
-    customer: "Mesa 04",
-    origin: "Garçom",
-    fulfillment: "Mesa",
-    time: "há 4 min",
-    total: "R$ 118,50",
-    items: "1 pizza grande, 2 refrigerantes",
-    status: "new",
-  },
-
-  {
-    id: "1050",
-    customer: "Carlos Lima",
-    origin: "Site",
-    fulfillment: "Delivery",
-    time: "há 2 min",
-    total: "R$ 46,00",
-    items: "1 combo família",
-    status: "new",
-  },
-
-  {
-    id: "1049",
-    customer: "Mesa 08",
-    origin: "Garçom",
-    fulfillment: "Mesa",
-    time: "há 12 min",
-    total: "R$ 96,50",
-    items: "2 hambúrgueres, 1 porção",
-    status: "preparing",
-  },
-
-  {
-    id: "1048",
-    customer: "Mariana Alves",
-    origin: "Site",
-    fulfillment: "Delivery",
-    time: "há 15 min",
-    total: "R$ 58,90",
-    items: "1 X-Salada, 1 refrigerante",
-    status: "preparing",
-  },
-
-  {
-    id: "1047",
-    customer: "João Pedro",
-    origin: "Atendente",
-    fulfillment: "Balcão",
-    time: "há 18 min",
-    total: "R$ 38,00",
-    items: "1 cachorro-quente, 1 suco",
-    status: "preparing",
-  },
-
-  {
-    id: "1046",
-    customer: "Fernanda Souza",
-    origin: "WhatsApp",
-    fulfillment: "Retirada",
-    time: "pronto há 3 min",
-    total: "R$ 64,00",
-    items: "2 combos tradicionais",
-    status: "ready",
-  },
-
-  {
-    id: "1045",
-    customer: "Mesa 12",
-    origin: "Garçom",
-    fulfillment: "Mesa",
-    time: "pronto há 5 min",
-    total: "R$ 132,90",
-    items: "1 pizza família, bebidas",
-    status: "ready",
-  },
-
-  {
-    id: "1044",
-    customer: "Rafael Martins",
-    origin: "Site",
-    fulfillment: "Delivery",
-    time: "saiu há 8 min",
-    total: "R$ 84,50",
-    items: "2 hambúrgueres especiais",
-    status: "delivery",
-  },
-
-  {
-    id: "1043",
-    customer: "Patrícia Lopes",
-    origin: "WhatsApp",
-    fulfillment: "Delivery",
-    time: "aguardando entregador",
-    total: "R$ 52,00",
-    items: "1 combo individual",
-    status: "delivery",
-  },
-];
+/**
+ * Converte um Order do frontend em CreateOrderInput
+ * para enviar ao server action.
+ *
+ * Conversao de cents → decimal: item.price (decimal) → priceCents.
+ */
+function toCreateOrderInput(
+  order: Order,
+): CreateOrderInput {
+  return {
+    customerName: order.customer,
+    customerPhone: order.phone,
+    origin: order.origin,
+    fulfillment: order.fulfillment,
+    tableNumber: order.tableNumber,
+    pickupName: order.pickupName,
+    observation:
+      order.observation ||
+      order.payment?.observation ||
+      undefined,
+    address: order.address,
+    payment: order.payment
+      ? {
+          method: order.payment.method,
+          cardBrand: order.payment.cardBrand,
+          needsCardMachine:
+            order.payment.needsCardMachine,
+          changeFor: order.payment.changeFor,
+          observation: order.payment.observation,
+        }
+      : undefined,
+    items: (order.itemDetails ?? []).map(
+      (item) => ({
+        productId: item.productId,
+        name: item.name,
+        priceCents: Math.round(
+          item.price * 100,
+        ),
+        quantity: item.quantity,
+      }),
+    ),
+  };
+}
 
 export function OrdersProvider({
   children,
+  initialOrders,
 }: {
   children: ReactNode;
+  initialOrders?: Order[];
 }) {
   const [orders, setOrders] =
-    useState<Order[]>(initialOrders);
+    useState<Order[]>(
+      initialOrders ?? [],
+    );
 
-  function moveOrder(
+  async function moveOrder(
     orderId: string,
     status: OrderStatus,
-  ) {
+  ): Promise<void> {
+    const result =
+      await updateOrderStatusAction(
+        orderId,
+        status,
+      );
+
+    if (!result.success) {
+      window.alert(result.error);
+      return;
+    }
+
     setOrders((currentOrders) =>
       currentOrders.map((order) =>
         order.id === orderId
@@ -170,29 +130,319 @@ export function OrdersProvider({
     );
   }
 
-  function addOrder(order: Order) {
+  async function addOrder(
+    order: Order,
+  ): Promise<string | null> {
+    const input =
+      toCreateOrderInput(order);
+
+    const result =
+      await createOrderAction(input);
+
+    if (!result.success) {
+      window.alert(result.error);
+      return null;
+    }
+
+    const realId =
+      result.data?.id ?? order.id;
+
     setOrders((currentOrders) => {
       const alreadyExists =
         currentOrders.some(
           (currentOrder) =>
-            currentOrder.id === order.id,
+            currentOrder.id === realId,
         );
 
       if (alreadyExists) {
         return currentOrders;
       }
 
-      return [order, ...currentOrders];
+      return [
+        { ...order, id: realId },
+        ...currentOrders,
+      ];
     });
+
+    return realId;
   }
 
-  function removeOrder(orderId: string) {
+  async function removeOrder(
+    orderId: string,
+  ): Promise<void> {
+    const result =
+      await deleteOrderAction(orderId);
+
+    if (!result.success) {
+      window.alert(result.error);
+      return;
+    }
+
     setOrders((currentOrders) =>
       currentOrders.filter(
-        (order) => order.id !== orderId,
+        (order) =>
+          order.id !== orderId,
       ),
     );
   }
+
+  /**
+   * Busca um pedido completo (com itens) via browser client.
+   * Usado no Realtime porque o payload da tabela orders não
+   * inclui os order_items.
+   */
+  async function fetchOrderWithItems(
+    orderId: string,
+  ): Promise<Order | null> {
+    const supabase = createClient();
+
+    const { data } = await supabase
+      .from("orders")
+      .select("*, order_items(*)")
+      .eq("id", orderId)
+      .maybeSingle();
+
+    if (!data) {
+      return null;
+    }
+
+    const items =
+      (data.order_items as Array<{
+        product_id: string | null;
+        name: string;
+        price_cents: number;
+        quantity: number;
+      }>) ?? [];
+
+    const itemDetails = items.map(
+      (item) => ({
+        productId:
+          item.product_id ??
+          `item-${item.name}`,
+        name: item.name,
+        price:
+          item.price_cents / 100,
+        quantity: item.quantity,
+      }),
+    );
+
+    const itemsSummary =
+      itemDetails
+        .map(
+          (item) =>
+            `${item.quantity}x ${item.name}`,
+        )
+        .join(", ");
+
+    const createdAt = data.created_at
+      ? new Date(
+          data.created_at as string,
+        ).getTime()
+      : Date.now();
+
+    const diffMin = Math.floor(
+      (Date.now() - createdAt) / 60000,
+    );
+
+    const time =
+      diffMin < 1
+        ? "agora"
+        : diffMin < 60
+          ? `há ${diffMin} min`
+          : `há ${Math.floor(diffMin / 60)}h`;
+
+    return {
+      id: data.id as string,
+      customer:
+        (data.customer_name as string) ||
+        "Cliente",
+      origin: data.origin as Order["origin"],
+      fulfillment:
+        data.fulfillment as Order["fulfillment"],
+      status: data.status as Order["status"],
+      time,
+      total: new Intl.NumberFormat("pt-BR", {
+        style: "currency",
+        currency: "BRL",
+      }).format(
+        ((data.total_cents as number) ?? 0) /
+          100,
+      ),
+      items: itemsSummary || "Sem itens",
+      createdAt,
+      tableNumber:
+        (data.table_number as string) ??
+        undefined,
+      pickupName:
+        (data.pickup_name as string) ??
+        undefined,
+      phone:
+        (data.customer_phone as string) ??
+        undefined,
+      observation:
+        (data.observation as string) ??
+        undefined,
+      address:
+        (data.address as Order["address"]) ??
+        undefined,
+      payment:
+        (data.payment as Order["payment"]) ??
+        undefined,
+      itemDetails,
+    };
+  }
+
+  /**
+   * Real-time: subscreve a mudanças na tabela orders.
+   *
+   * IMPORTANTE: o subscribe so acontece DEPOIS que getSession()
+   * confirma a sessao do usuario no browser. Isso garante que o
+   * socket WebSocket conecta com o JWT do usuario (role
+   * authenticated), nao com a chave anon. Sem isso, o RLS
+   * (is_member_of) vê auth.uid() = NULL e filtra todos os eventos.
+   */
+  useEffect(() => {
+    const supabase = createClient();
+    let cancelled = false;
+    let channel: ReturnType<typeof supabase.channel> | null = null;
+
+    void (async () => {
+      // Espera a sessao estar disponivel antes de subscrever.
+      // getSession() aguarda o _recoverAndRefresh() do supabase-js,
+      // que tambem dispara onAuthStateChange -> realtime.setAuth().
+      // Quando resolve, o token ja esta no socket.
+      const { data: { session } } = await supabase.auth.getSession();
+
+      if (cancelled || !session) {
+        console.log(
+          "[orders-realtime] sem sessao no browser — skip subscription",
+        );
+        return;
+      }
+
+      console.log(
+        "[orders-realtime] sessao confirmada, user:",
+        session.user.id,
+        "— subscrevendo...",
+      );
+
+      channel = supabase
+        .channel("orders-realtime")
+        .on(
+          "postgres_changes",
+          {
+            event: "INSERT",
+            schema: "public",
+            table: "orders",
+          },
+          (payload) => {
+            console.log("[orders-realtime] INSERT", payload.new);
+            const orderId = (
+              payload.new as Record<string, unknown>
+            )?.id as string;
+
+            if (!orderId) {
+              return;
+            }
+
+            void fetchOrderWithItems(orderId).then(
+              (newOrder) => {
+                if (!newOrder) {
+                  return;
+                }
+
+                setOrders((current) => {
+                  if (
+                    current.some(
+                      (o) =>
+                        o.id ===
+                        newOrder.id,
+                    )
+                  ) {
+                    return current;
+                  }
+
+                  return [
+                    newOrder,
+                    ...current,
+                  ];
+                });
+              },
+            );
+          },
+        )
+        .on(
+          "postgres_changes",
+          {
+            event: "UPDATE",
+            schema: "public",
+            table: "orders",
+          },
+          (payload) => {
+            console.log("[orders-realtime] UPDATE", payload.new);
+            const orderId = (
+              payload.new as Record<string, unknown>
+            )?.id as string;
+
+            if (!orderId) {
+              return;
+            }
+
+            void fetchOrderWithItems(orderId).then(
+              (updated) => {
+                if (!updated) {
+                  return;
+                }
+
+                setOrders((current) =>
+                  current.map((o) =>
+                    o.id === updated.id
+                      ? updated
+                      : o,
+                  ),
+                );
+              },
+            );
+          },
+        )
+        .on(
+          "postgres_changes",
+          {
+            event: "DELETE",
+            schema: "public",
+            table: "orders",
+          },
+          (payload) => {
+            const deletedId =
+              (
+                payload.old as Record<
+                  string,
+                  unknown
+                >
+              )?.id as string;
+
+            if (deletedId) {
+              setOrders((current) =>
+                current.filter(
+                  (o) =>
+                    o.id !== deletedId,
+                ),
+              );
+            }
+          },
+        )
+        .subscribe((status) => {
+          console.log("[orders-realtime] status:", status);
+        });
+    })();
+
+    return () => {
+      cancelled = true;
+      if (channel) {
+        void supabase.removeChannel(channel);
+      }
+    };
+  }, []);
 
   return (
     <OrdersContext.Provider
@@ -210,7 +460,8 @@ export function OrdersProvider({
 }
 
 export function useOrders() {
-  const context = useContext(OrdersContext);
+  const context =
+    useContext(OrdersContext);
 
   if (!context) {
     throw new Error(
