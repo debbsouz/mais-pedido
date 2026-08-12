@@ -13,13 +13,6 @@ import {
   type ProductForOrder,
 } from "@/app/actions/catalog";
 
-type ProductCategory =
-  | "Hambúrgueres"
-  | "Pizzas"
-  | "Bebidas"
-  | "Porções"
-  | "Sobremesas";
-
 interface Product {
   id: string;
   name: string;

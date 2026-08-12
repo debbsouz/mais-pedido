@@ -4,6 +4,7 @@ import {
   createContext,
   type ReactNode,
   useContext,
+  useEffect,
   useState,
 } from "react";
 
@@ -18,6 +19,8 @@ import {
   deleteOrder as deleteOrderAction,
   type CreateOrderInput,
 } from "@/app/actions/orders";
+
+import { createClient } from "@/lib/supabase/client";
 
 interface OrdersContextValue {
   orders: Order[];
@@ -182,6 +185,196 @@ export function OrdersProvider({
       ),
     );
   }
+
+  /**
+   * Refaz o mapeamento de uma linha do banco (vinda do Realtime)
+   * para o formato Order do frontend. Usado para INSERT/UPDATE.
+   */
+  function mapRealtimeRow(
+    row: Record<string, unknown>,
+  ): Order {
+    const items =
+      (row.item_details as
+        | Array<{
+            productId: string;
+            name: string;
+            price: number;
+            quantity: number;
+          }>
+        | null) ?? [];
+
+    const itemsSummary = items
+      .map(
+        (item) =>
+          `${item.quantity}x ${item.name}`,
+      )
+      .join(", ");
+
+    const totalCents =
+      (row.total_cents as number) ?? 0;
+
+    const createdAt = row.created_at
+      ? new Date(
+          row.created_at as string,
+        ).getTime()
+      : Date.now();
+
+    const diffMin = Math.floor(
+      (Date.now() - createdAt) / 60000,
+    );
+
+    const time =
+      diffMin < 1
+        ? "agora"
+        : diffMin < 60
+          ? `há ${diffMin} min`
+          : `há ${Math.floor(diffMin / 60)}h`;
+
+    return {
+      id: row.id as string,
+      customer:
+        (row.customer_name as string) ||
+        "Cliente",
+      origin: row.origin as Order["origin"],
+      fulfillment:
+        row.fulfillment as Order["fulfillment"],
+      status:
+        row.status as Order["status"],
+      time,
+      total: new Intl.NumberFormat(
+        "pt-BR",
+        {
+          style: "currency",
+          currency: "BRL",
+        },
+      ).format(totalCents / 100),
+      items:
+        itemsSummary || "Sem itens",
+      createdAt,
+      tableNumber:
+        (row.table_number as string) ??
+        undefined,
+      pickupName:
+        (row.pickup_name as string) ??
+        undefined,
+      phone:
+        (row.customer_phone as string) ??
+        undefined,
+      observation:
+        (row.observation as string) ??
+        undefined,
+      address:
+        (row.address as Order["address"]) ??
+        undefined,
+      payment:
+        (row.payment as Order["payment"]) ??
+        undefined,
+      itemDetails: items,
+    };
+  }
+
+  /**
+   * Real-time: subscreve a mudanças na tabela orders.
+   * INSERT/UPDATE → refaz o mapeamento e atualiza o estado.
+   * DELETE → remove pelo id.
+   */
+  useEffect(() => {
+    const supabase = createClient();
+
+    const channel = supabase
+      .channel("orders-realtime")
+      .on(
+        "postgres_changes",
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "orders",
+        },
+        (payload) => {
+          const newOrder =
+            mapRealtimeRow(
+              payload.new as Record<
+                string,
+                unknown
+              >,
+            );
+
+          setOrders((current) => {
+            if (
+              current.some(
+                (o) =>
+                  o.id === newOrder.id,
+              )
+            ) {
+              return current;
+            }
+
+            return [
+              newOrder,
+              ...current,
+            ];
+          });
+        },
+      )
+      .on(
+        "postgres_changes",
+        {
+          event: "UPDATE",
+          schema: "public",
+          table: "orders",
+        },
+        (payload) => {
+          const updated =
+            mapRealtimeRow(
+              payload.new as Record<
+                string,
+                unknown
+              >,
+            );
+
+          setOrders((current) =>
+            current.map((o) =>
+              o.id === updated.id
+                ? updated
+                : o,
+            ),
+          );
+        },
+      )
+      .on(
+        "postgres_changes",
+        {
+          event: "DELETE",
+          schema: "public",
+          table: "orders",
+        },
+        (payload) => {
+          const deletedId =
+            (
+              payload.old as Record<
+                string,
+                unknown
+              >
+            )?.id as string;
+
+          if (deletedId) {
+            setOrders((current) =>
+              current.filter(
+                (o) =>
+                  o.id !== deletedId,
+              ),
+            );
+          }
+        },
+      )
+      .subscribe();
+
+    return () => {
+      void supabase.removeChannel(
+        channel,
+      );
+    };
+  }, []);
 
   return (
     <OrdersContext.Provider
