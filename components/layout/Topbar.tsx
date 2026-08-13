@@ -12,10 +12,12 @@ import {
   UserCircle,
   X,
 } from "@phosphor-icons/react";
+
 import {
   useEffect,
   useRef,
   useState,
+  useSyncExternalStore,
 } from "react";
 
 const THEME_STORAGE_KEY =
@@ -24,49 +26,154 @@ const THEME_STORAGE_KEY =
 const STORE_STATUS_STORAGE_KEY =
   "mais-pedido-store-status";
 
-type Theme =
-  | "light"
-  | "dark";
+const THEME_CHANGE_EVENT =
+  "mais-pedido-theme-change";
+
+const STORE_STATUS_CHANGE_EVENT =
+  "mais-pedido-store-status-change";
+
+type Theme = "light" | "dark";
 
 type StoreStatus =
   | "open"
   | "closed";
 
-export function Topbar() {
-  const [theme, setTheme] =
-    useState<Theme>("light");
+/* =========================================
+   THEME STORAGE
+========================================= */
 
-  useEffect(() => {
-    const stored = localStorage.getItem(
+function getThemeSnapshot(): Theme {
+  if (typeof window === "undefined") {
+    return "light";
+  }
+
+  const stored =
+    localStorage.getItem(
       THEME_STORAGE_KEY,
     );
 
+  return stored === "dark"
+    ? "dark"
+    : "light";
+}
+
+function getThemeServerSnapshot(): Theme {
+  return "light";
+}
+
+function subscribeTheme(
+  callback: () => void,
+) {
+  function handleStorage(
+    event: StorageEvent,
+  ) {
     if (
-      stored === "dark" ||
-      stored === "light"
+      event.key ===
+      THEME_STORAGE_KEY
     ) {
-      setTheme(stored);
+      callback();
     }
-  }, []);
+  }
 
-  const [
-    storeStatus,
-    setStoreStatus,
-  ] =
-    useState<StoreStatus>("open");
+  window.addEventListener(
+    "storage",
+    handleStorage,
+  );
 
-  useEffect(() => {
-    const stored = localStorage.getItem(
+  window.addEventListener(
+    THEME_CHANGE_EVENT,
+    callback,
+  );
+
+  return () => {
+    window.removeEventListener(
+      "storage",
+      handleStorage,
+    );
+
+    window.removeEventListener(
+      THEME_CHANGE_EVENT,
+      callback,
+    );
+  };
+}
+
+/* =========================================
+   STORE STATUS STORAGE
+========================================= */
+
+function getStoreStatusSnapshot():
+  StoreStatus {
+  if (typeof window === "undefined") {
+    return "open";
+  }
+
+  const stored =
+    localStorage.getItem(
       STORE_STATUS_STORAGE_KEY,
     );
 
+  return stored === "closed"
+    ? "closed"
+    : "open";
+}
+
+function getStoreStatusServerSnapshot():
+  StoreStatus {
+  return "open";
+}
+
+function subscribeStoreStatus(
+  callback: () => void,
+) {
+  function handleStorage(
+    event: StorageEvent,
+  ) {
     if (
-      stored === "open" ||
-      stored === "closed"
+      event.key ===
+      STORE_STATUS_STORAGE_KEY
     ) {
-      setStoreStatus(stored);
+      callback();
     }
-  }, []);
+  }
+
+  window.addEventListener(
+    "storage",
+    handleStorage,
+  );
+
+  window.addEventListener(
+    STORE_STATUS_CHANGE_EVENT,
+    callback,
+  );
+
+  return () => {
+    window.removeEventListener(
+      "storage",
+      handleStorage,
+    );
+
+    window.removeEventListener(
+      STORE_STATUS_CHANGE_EVENT,
+      callback,
+    );
+  };
+}
+
+export function Topbar() {
+  const theme =
+    useSyncExternalStore(
+      subscribeTheme,
+      getThemeSnapshot,
+      getThemeServerSnapshot,
+    );
+
+  const storeStatus =
+    useSyncExternalStore(
+      subscribeStoreStatus,
+      getStoreStatusSnapshot,
+      getStoreStatusServerSnapshot,
+    );
 
   const [
     isNotificationsOpen,
@@ -83,10 +190,18 @@ export function Topbar() {
       null,
     );
 
+  /* =========================================
+     SINCRONIZA TEMA COM O HTML
+  ========================================= */
+
   useEffect(() => {
     document.documentElement.dataset.theme =
       theme;
   }, [theme]);
+
+  /* =========================================
+     FECHAR DROPDOWNS AO CLICAR FORA
+  ========================================= */
 
   useEffect(() => {
     function handleClickOutside(
@@ -119,17 +234,28 @@ export function Topbar() {
     };
   }, []);
 
+  /* =========================================
+     AÇÕES
+  ========================================= */
+
   function toggleTheme() {
     const nextTheme: Theme =
       theme === "dark"
         ? "light"
         : "dark";
 
-    setTheme(nextTheme);
-
     localStorage.setItem(
       THEME_STORAGE_KEY,
       nextTheme,
+    );
+
+    document.documentElement.dataset.theme =
+      nextTheme;
+
+    window.dispatchEvent(
+      new Event(
+        THEME_CHANGE_EVENT,
+      ),
     );
   }
 
@@ -139,11 +265,15 @@ export function Topbar() {
         ? "closed"
         : "open";
 
-    setStoreStatus(nextStatus);
-
     localStorage.setItem(
       STORE_STATUS_STORAGE_KEY,
       nextStatus,
+    );
+
+    window.dispatchEvent(
+      new Event(
+        STORE_STATUS_CHANGE_EVENT,
+      ),
     );
   }
 
@@ -236,8 +366,7 @@ export function Topbar() {
               <div className="topbar-dropdown__header">
                 <div>
                   <span>
-                    Central de
-                    alertas
+                    Central de alertas
                   </span>
 
                   <strong>
@@ -385,9 +514,7 @@ export function Topbar() {
 
               <div className="topbar-profile-menu__divider" />
 
-              <button
-                type="button"
-              >
+              <button type="button">
                 <UserCircle
                   size={18}
                 />
@@ -395,9 +522,7 @@ export function Topbar() {
                 Meu perfil
               </button>
 
-              <a
-                href="/configuracoes"
-              >
+              <a href="/configuracoes">
                 <Gear size={18} />
 
                 Configurações
