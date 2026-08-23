@@ -8,26 +8,38 @@ import {
 export function KitchenHeader() {
   return (
     <header className="kitchen-header">
-      <div>
+      <div className="kitchen-header__content">
         <span className="kitchen-header__eyebrow">
-          <CookingPot size={16} weight="bold" />
+          <CookingPot
+            size={16}
+            weight="bold"
+          />
+
           Produção
         </span>
 
         <h1>Cozinha</h1>
 
         <p>
-          Acompanhe e organize os pedidos em
-          preparo.
+          Acompanhe e organize os pedidos
+          em preparo.
         </p>
       </div>
 
       <div className="kitchen-header__status">
-        <Clock size={18} weight="bold" />
+        <span className="kitchen-header__status-icon">
+          <Clock
+            size={18}
+            weight="bold"
+          />
+        </span>
 
-        <div>
+        <div className="kitchen-header__status-content">
           <span>Operação</span>
-          <strong>Em andamento</strong>
+
+          <strong>
+            Em andamento
+          </strong>
         </div>
       </div>
     </header>
