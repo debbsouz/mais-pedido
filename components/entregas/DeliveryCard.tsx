@@ -7,12 +7,16 @@ import {
   Motorcycle,
   Phone,
   Receipt,
+  Warning,
 } from "@phosphor-icons/react";
 
 import type { Order } from "@/components/pedidos/OrderCard";
+import { getShortOrderCode } from "@/lib/format";
+import type { OrderUrgency } from "@/lib/order-timing";
 
 interface DeliveryCardProps {
   order: Order;
+  urgency: OrderUrgency;
   onComplete: (orderId: string) => void;
 }
 
@@ -60,13 +64,16 @@ function getPayment(order: Order) {
 
 export function DeliveryCard({
   order,
+  urgency,
   onComplete,
 }: DeliveryCardProps) {
   return (
-    <article className="delivery-card">
+    <article
+      className={`delivery-card delivery-card--${urgency}`}
+    >
       <header className="delivery-card__header">
         <div>
-          <span>Pedido #{order.id}</span>
+          <span>Pedido {getShortOrderCode(order.id)}</span>
 
           <h2>{order.customer}</h2>
         </div>
@@ -153,8 +160,14 @@ export function DeliveryCard({
         <p>{order.items}</p>
       </section>
 
-      <div className="delivery-card__time">
-        <Clock size={16} />
+      <div
+        className={`delivery-card__time delivery-card__time--${urgency}`}
+      >
+        {urgency === "critical" ? (
+          <Warning size={16} weight="fill" />
+        ) : (
+          <Clock size={16} />
+        )}
         <span>{order.time}</span>
       </div>
 

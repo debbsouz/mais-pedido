@@ -12,6 +12,13 @@ import {
 } from "@phosphor-icons/react";
 import { useEffect, useState } from "react";
 
+import { getShortOrderCode } from "@/lib/format";
+import {
+  formatElapsedLabel,
+  getElapsedMinutes,
+  getOrderUrgency,
+} from "@/lib/order-timing";
+
 export type OrderStatus =
   | "new"
   | "preparing"
@@ -260,52 +267,37 @@ export function OrderCard({
     createdAt,
   } = order;
 
-  const [
-    elapsedSeconds,
-    setElapsedSeconds,
-  ] = useState(() => {
-    if (!createdAt) {
-      return 0;
-    }
-
-    return Math.max(
-      0,
-      Math.floor(
-        (Date.now() -
-          createdAt) /
-          1000,
-      ),
+  const [now, setNow] =
+    useState<number | null>(
+      null,
     );
-  });
 
   useEffect(() => {
-    if (
-      !createdAt ||
-      status !== "new"
-    ) {
+    if (!createdAt) {
       return;
     }
 
-    const updateElapsedTime =
-      () => {
-        setElapsedSeconds(
-          Math.max(
-            0,
-            Math.floor(
-              (Date.now() -
-                createdAt) /
-                1000,
-            ),
-          ),
-        );
-      };
+    /*
+     * Pedidos novos mostram um
+     * cronômetro em segundos;
+     * os demais só precisam
+     * atualizar a cada minuto.
+     */
+    const tickMs =
+      status === "new"
+        ? 1000
+        : 60_000;
 
-    updateElapsedTime();
+    const updateNow = () => {
+      setNow(Date.now());
+    };
+
+    updateNow();
 
     const interval =
       window.setInterval(
-        updateElapsedTime,
-        1000,
+        updateNow,
+        tickMs,
       );
 
     return () => {
@@ -314,6 +306,24 @@ export function OrderCard({
       );
     };
   }, [createdAt, status]);
+
+  const elapsedSeconds =
+    now && createdAt
+      ? Math.max(
+          0,
+          Math.floor(
+            (now - createdAt) /
+              1000,
+          ),
+        )
+      : 0;
+
+  const elapsedMinutes =
+    getElapsedMinutes(
+      now,
+      createdAt,
+      time,
+    );
 
   const originClass = origin
     .normalize("NFD")
@@ -329,18 +339,20 @@ export function OrderCard({
       fulfillment,
     );
 
-  const waitingMinutes =
-    elapsedSeconds / 60;
+  const urgency =
+    status === "new" &&
+    createdAt
+      ? getOrderUrgency(
+          elapsedMinutes,
+        )
+      : "normal";
 
   const urgencyClass =
-    status !== "new" ||
-    !createdAt
-      ? ""
-      : waitingMinutes >= 10
-        ? "order-card--critical"
-        : waitingMinutes >= 5
-          ? "order-card--warning"
-          : "";
+    urgency === "critical"
+      ? "order-card--critical"
+      : urgency === "warning"
+        ? "order-card--warning"
+        : "";
 
   return (
     <article
@@ -368,7 +380,7 @@ export function OrderCard({
       <div className="order-card__header">
         <div>
           <span className="order-card__id">
-            #{id}
+            {getShortOrderCode(id)}
           </span>
 
           <strong>
@@ -413,7 +425,13 @@ export function OrderCard({
             )}
           </span>
         ) : (
-          <span>{time}</span>
+          <span>
+            {createdAt
+              ? formatElapsedLabel(
+                  elapsedMinutes,
+                )
+              : time}
+          </span>
         )}
 
         <strong>

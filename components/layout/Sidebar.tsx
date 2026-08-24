@@ -9,6 +9,7 @@ import {
   ChartPieSlice,
   ClipboardText,
   CookingPot,
+  Crown,
   CurrencyCircleDollar,
   ForkKnife,
   Gear,
@@ -249,15 +250,15 @@ export function Sidebar() {
           </strong>
 
           <span>
-            Unidade Centro
+            Unidade Centro · {currentRole.name}
           </span>
 
           <small className="sidebar__plan">
-            Plano {currentPlan.name}
-          </small>
-
-          <small className="sidebar__role">
-            {currentRole.name}
+            <Crown
+              size={10}
+              weight="fill"
+            />
+            {currentPlan.name}
           </small>
         </div>
       </div>

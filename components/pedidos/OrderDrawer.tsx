@@ -3,6 +3,7 @@
 import {
   CreditCard,
   MapPin,
+  NotePencil,
   Phone,
   Printer,
   Receipt,
@@ -11,37 +12,17 @@ import {
   X,
 } from "@phosphor-icons/react";
 
+import {
+  formatCurrency,
+  getPaymentLabel,
+  getShortOrderCode,
+} from "@/lib/format";
+
 import type { Order } from "./OrderCard";
 
 interface OrderDrawerProps {
   order: Order | null;
   onClose: () => void;
-}
-
-function formatCurrency(value: number) {
-  return new Intl.NumberFormat("pt-BR", {
-    style: "currency",
-    currency: "BRL",
-  }).format(value);
-}
-
-function getPaymentLabel(order: Order) {
-  if (!order.payment) {
-    return "Não informado";
-  }
-
-  const { method, cardBrand } = order.payment;
-
-  if (
-    method === "Crédito" ||
-    method === "Débito"
-  ) {
-    return `${method} · ${
-      cardBrand ?? "Bandeira não informada"
-    }`;
-  }
-
-  return method;
 }
 
 function getAddressLabel(order: Order) {
@@ -91,7 +72,7 @@ export function OrderDrawer({
       <aside className="order-drawer__panel">
         <div className="order-drawer__header">
           <div>
-            <span>Pedido #{order.id}</span>
+            <span>Pedido {getShortOrderCode(order.id)}</span>
             <h2>{order.customer}</h2>
           </div>
 
@@ -198,6 +179,16 @@ export function OrderDrawer({
             </div>
           </section>
 
+          {order.observation && (
+            <section className="order-drawer__section">
+              <h3>Observações</h3>
+
+              <p className="order-drawer__note">
+                {order.observation}
+              </p>
+            </section>
+          )}
+
           <section className="order-drawer__section">
             <h3>Pagamento</h3>
 
@@ -207,7 +198,7 @@ export function OrderDrawer({
               <div>
                 <span>Forma de pagamento</span>
                 <strong>
-                  {getPaymentLabel(order)}
+                  {getPaymentLabel(order.payment)}
                 </strong>
               </div>
             </div>
@@ -237,17 +228,20 @@ export function OrderDrawer({
                 </div>
               </div>
             )}
+
+            {order.payment?.observation && (
+              <div className="order-drawer__payment">
+                <NotePencil size={20} />
+
+                <div>
+                  <span>Observação do pagamento</span>
+                  <strong>
+                    {order.payment.observation}
+                  </strong>
+                </div>
+              </div>
+            )}
           </section>
-
-          {order.payment?.observation && (
-            <section className="order-drawer__section">
-              <h3>Observações</h3>
-
-              <p className="order-drawer__note">
-                {order.payment.observation}
-              </p>
-            </section>
-          )}
         </div>
 
         <div className="order-drawer__footer">
@@ -266,6 +260,88 @@ export function OrderDrawer({
           </button>
         </div>
       </aside>
+
+      <div className="order-print-ticket">
+        <div className="order-print-ticket__header">
+          <strong>
+            Pedido {getShortOrderCode(order.id)}
+          </strong>
+
+          <span>
+            {order.fulfillment}
+            {order.tableNumber
+              ? ` · Mesa ${order.tableNumber}`
+              : ""}
+          </span>
+        </div>
+
+        <div className="order-print-ticket__row">
+          <span>Cliente</span>
+          <strong>{order.customer}</strong>
+        </div>
+
+        {order.phone && (
+          <div className="order-print-ticket__row">
+            <span>Telefone</span>
+            <strong>{order.phone}</strong>
+          </div>
+        )}
+
+        {addressLabel && (
+          <div className="order-print-ticket__row">
+            <span>Endereço</span>
+            <strong>{addressLabel}</strong>
+          </div>
+        )}
+
+        <div className="order-print-ticket__divider" />
+
+        <div className="order-print-ticket__items">
+          {order.itemDetails?.length ? (
+            order.itemDetails.map((item) => (
+              <div key={item.productId}>
+                <span>
+                  {item.quantity}x {item.name}
+                </span>
+
+                <span>
+                  {formatCurrency(
+                    item.price * item.quantity,
+                  )}
+                </span>
+              </div>
+            ))
+          ) : (
+            <div>
+              <span>{order.items}</span>
+            </div>
+          )}
+        </div>
+
+        <div className="order-print-ticket__divider" />
+
+        {order.observation && (
+          <>
+            <p className="order-print-ticket__note">
+              Obs: {order.observation}
+            </p>
+
+            <div className="order-print-ticket__divider" />
+          </>
+        )}
+
+        <div className="order-print-ticket__row order-print-ticket__total">
+          <span>Total</span>
+          <strong>{order.total}</strong>
+        </div>
+
+        <div className="order-print-ticket__row">
+          <span>Pagamento</span>
+          <strong>
+            {getPaymentLabel(order.payment)}
+          </strong>
+        </div>
+      </div>
     </div>
   );
 }

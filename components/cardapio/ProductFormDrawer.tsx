@@ -89,7 +89,8 @@ function ProductFormContent({
   ] =
     useState<ProductCategory>(
       product?.category ??
-        "Hambúrgueres",
+        categoryOptions[0] ??
+        "",
     );
 
   const [price, setPrice] =

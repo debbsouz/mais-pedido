@@ -1,6 +1,16 @@
 "use client";
 
+import {
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
+
 import { useOrders } from "@/components/providers/OrdersProvider";
+import {
+  getElapsedMinutes,
+  getOrderUrgency,
+} from "@/lib/order-timing";
 
 import { DeliveryCard } from "./DeliveryCard";
 
@@ -10,11 +20,72 @@ export function DeliveryBoard() {
     removeOrder,
   } = useOrders();
 
-  const deliveryOrders = orders.filter(
-    (order) =>
-      order.status === "delivery" &&
-      order.fulfillment === "Delivery",
-  );
+  const [now, setNow] =
+    useState<number | null>(null);
+
+  useEffect(() => {
+    const initialTimer =
+      window.setTimeout(() => {
+        setNow(Date.now());
+      }, 0);
+
+    const interval =
+      window.setInterval(() => {
+        setNow(Date.now());
+      }, 60_000);
+
+    return () => {
+      window.clearTimeout(
+        initialTimer,
+      );
+
+      window.clearInterval(
+        interval,
+      );
+    };
+  }, []);
+
+  const deliveryOrders = useMemo(() => {
+    return orders
+      .filter(
+        (order) =>
+          order.status === "delivery" &&
+          order.fulfillment === "Delivery",
+      )
+      .map((order) => ({
+        order,
+        elapsedMinutes:
+          getElapsedMinutes(
+            now,
+            order.createdAt,
+            order.time,
+          ),
+      }))
+      .sort(
+        (a, b) =>
+          b.elapsedMinutes -
+          a.elapsedMinutes,
+      );
+  }, [orders, now]);
+
+  const delayedCount =
+    deliveryOrders.filter(
+      (entry) =>
+        entry.elapsedMinutes >= 20,
+    ).length;
+
+  const averageTime =
+    deliveryOrders.length > 0
+      ? Math.round(
+          deliveryOrders.reduce(
+            (total, entry) =>
+              total +
+              entry.elapsedMinutes,
+            0,
+          ) /
+            deliveryOrders.length,
+        )
+      : 0;
 
   function completeDelivery(
     orderId: string,
@@ -24,33 +95,77 @@ export function DeliveryBoard() {
 
   return (
     <section className="delivery-board">
-      <div className="delivery-board__summary">
-        <div>
-          <span>Em entrega</span>
+      <div className="delivery-board__metrics">
+        <article className="delivery-board__metric">
+          <span>Em rota</span>
 
           <strong>
             {deliveryOrders.length}
           </strong>
-        </div>
 
-        <p>
-          Pedidos aparecem aqui quando saem
-          para entrega.
-        </p>
+          <small>
+            pedidos em entrega
+          </small>
+        </article>
+
+        <article className="delivery-board__metric">
+          <span>Atrasadas</span>
+
+          <strong>
+            {delayedCount}
+          </strong>
+
+          <small>
+            acima de 20 min
+          </small>
+        </article>
+
+        <article className="delivery-board__metric">
+          <span>Tempo médio</span>
+
+          <strong>
+            {deliveryOrders.length > 0
+              ? `${averageTime} min`
+              : "—"}
+          </strong>
+
+          <small>em rota</small>
+        </article>
       </div>
 
       {deliveryOrders.length > 0 ? (
-        <div className="delivery-board__grid">
-          {deliveryOrders.map((order) => (
-            <DeliveryCard
-              key={order.id}
-              order={order}
-              onComplete={
-                completeDelivery
-              }
-            />
-          ))}
-        </div>
+        <>
+          <div className="delivery-board__toolbar">
+            <strong>
+              Pedidos em rota
+            </strong>
+
+            <span>
+              Pedidos mais antigos
+              aparecem primeiro.
+            </span>
+          </div>
+
+          <div className="delivery-board__grid">
+            {deliveryOrders.map(
+              ({
+                order,
+                elapsedMinutes,
+              }) => (
+                <DeliveryCard
+                  key={order.id}
+                  order={order}
+                  urgency={getOrderUrgency(
+                    elapsedMinutes,
+                  )}
+                  onComplete={
+                    completeDelivery
+                  }
+                />
+              ),
+            )}
+          </div>
+        </>
       ) : (
         <div className="delivery-board__empty">
           <span>✓</span>

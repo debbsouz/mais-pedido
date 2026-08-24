@@ -7,6 +7,7 @@ import {
 } from "react";
 
 import { useOrders } from "@/components/providers/OrdersProvider";
+import { getElapsedMinutes } from "@/lib/order-timing";
 
 import {
   KitchenCard,
@@ -20,42 +21,6 @@ type KitchenFilter =
   | "table";
 
 const MAX_OPERATION_TIME = 180;
-
-function getElapsedFromTime(
-  time?: string,
-): number {
-  if (!time) {
-    return 0;
-  }
-
-  const match = time.match(/(\d+)/);
-
-  return match
-    ? Number(match[1])
-    : 0;
-}
-
-function getElapsedMinutes(
-  now: number | null,
-  createdAt?: number,
-  time?: string,
-): number {
-  if (
-    now !== null &&
-    createdAt
-  ) {
-    return Math.max(
-      0,
-      Math.floor(
-        (now - createdAt) /
-          1000 /
-          60,
-      ),
-    );
-  }
-
-  return getElapsedFromTime(time);
-}
 
 function normalizeValue(
   value?: string,

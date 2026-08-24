@@ -13,6 +13,8 @@ import {
   type ProductForOrder,
 } from "@/app/actions/catalog";
 
+import { formatCurrency } from "@/lib/format";
+
 interface Product {
   id: string;
   name: string;
@@ -44,13 +46,6 @@ const categories = [
 ] as const;
 
 type ActiveCategory = (typeof categories)[number];
-
-function formatCurrency(value: number) {
-  return new Intl.NumberFormat("pt-BR", {
-    style: "currency",
-    currency: "BRL",
-  }).format(value);
-}
 
 export function OrderItemsForm({
   items,

@@ -2,6 +2,7 @@
 
 import { ReactNode } from "react";
 
+import { Footer } from "./Footer";
 import { Sidebar } from "./Sidebar";
 import { Topbar } from "./Topbar";
 
@@ -22,6 +23,8 @@ export function AppLayout({
         <main className="dashboard">
           {children}
         </main>
+
+        <Footer />
       </div>
     </div>
   );

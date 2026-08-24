@@ -20,6 +20,14 @@ import {
   useSyncExternalStore,
 } from "react";
 
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+
+import { useCurrentUser } from "@/components/providers/AuthProvider";
+import { roles } from "@/lib/roles";
+import { getInitials } from "@/lib/user-display";
+import { signOut } from "@/app/actions/auth";
+
 const THEME_STORAGE_KEY =
   "mais-pedido-theme";
 
@@ -161,6 +169,11 @@ function subscribeStoreStatus(
 }
 
 export function Topbar() {
+  const router = useRouter();
+  const currentUser = useCurrentUser();
+  const currentRole = roles[currentUser.role];
+  const initials = getInitials(currentUser.name);
+
   const theme =
     useSyncExternalStore(
       subscribeTheme,
@@ -179,6 +192,11 @@ export function Topbar() {
     isNotificationsOpen,
     setIsNotificationsOpen,
   ] = useState(false);
+
+  const [
+    hasUnreadNotifications,
+    setHasUnreadNotifications,
+  ] = useState(true);
 
   const [
     isProfileOpen,
@@ -282,6 +300,8 @@ export function Topbar() {
       (current) => !current,
     );
 
+    setHasUnreadNotifications(false);
+
     setIsProfileOpen(false);
   }
 
@@ -358,7 +378,9 @@ export function Topbar() {
           >
             <Bell size={20} />
 
-            <span className="topbar__notification-dot" />
+            {hasUnreadNotifications && (
+              <span className="topbar__notification-dot" />
+            )}
           </button>
 
           {isNotificationsOpen && (
@@ -471,16 +493,16 @@ export function Topbar() {
             }
           >
             <span className="topbar__avatar">
-              DS
+              {initials}
             </span>
 
             <span className="topbar__profile-info">
               <strong>
-                Débora Souza
+                {currentUser.name}
               </strong>
 
               <small>
-                Proprietária
+                {currentRole.name}
               </small>
             </span>
 
@@ -498,23 +520,28 @@ export function Topbar() {
             <div className="topbar-dropdown topbar-dropdown--profile">
               <div className="topbar-profile-menu__identity">
                 <span className="topbar__avatar">
-                  DS
+                  {initials}
                 </span>
 
                 <div>
                   <strong>
-                    Débora Souza
+                    {currentUser.name}
                   </strong>
 
                   <span>
-                    Proprietária
+                    {currentRole.name}
                   </span>
                 </div>
               </div>
 
               <div className="topbar-profile-menu__divider" />
 
-              <button type="button">
+              <button
+                type="button"
+                onClick={() =>
+                  router.push("/perfil")
+                }
+              >
                 <UserCircle
                   size={18}
                 />
@@ -522,24 +549,26 @@ export function Topbar() {
                 Meu perfil
               </button>
 
-              <a href="/configuracoes">
+              <Link href="/configuracoes">
                 <Gear size={18} />
 
                 Configurações
-              </a>
+              </Link>
 
               <div className="topbar-profile-menu__divider" />
 
-              <button
-                type="button"
-                className="topbar-profile-menu__logout"
-              >
-                <SignOut
-                  size={18}
-                />
+              <form action={signOut}>
+                <button
+                  type="submit"
+                  className="topbar-profile-menu__logout"
+                >
+                  <SignOut
+                    size={18}
+                  />
 
-                Sair
-              </button>
+                  Sair
+                </button>
+              </form>
             </div>
           )}
         </div>
