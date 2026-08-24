@@ -1,6 +1,6 @@
 # Loja pública (/loja/[slug]) — pendências de backend
 
-> **Fluxo de trabalho (Git)**: ver `docs/PENDENCIAS_JON.md`, seção 0 —
+> **Fluxo de trabalho (Git)**: ver `docs/PENDENCIAS_BACKEND.md`, seção 0 —
 > não commitar/push direto na `main`, trabalhar em branch própria com
 > PR, e avisar a Débora antes de qualquer ajuste que precise mexer no
 > front-end.
