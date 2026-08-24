@@ -115,10 +115,38 @@ function ProductFormContent({
   function parsePrice(
     value: string,
   ) {
+    const trimmed = value.trim();
+
+    if (!trimmed) {
+      return NaN;
+    }
+
+    // Trata o último separador digitado ("," ou ".")
+    // como decimal e descarta os anteriores como
+    // separador de milhar — funciona tanto com
+    // teclado numérico em pt-BR (vírgula) quanto com
+    // teclados que só oferecem ponto decimal.
+    const lastSeparatorIndex = Math.max(
+      trimmed.lastIndexOf(","),
+      trimmed.lastIndexOf("."),
+    );
+
+    if (lastSeparatorIndex === -1) {
+      return Number(
+        trimmed.replace(/\D/g, ""),
+      );
+    }
+
+    const integerPart = trimmed
+      .slice(0, lastSeparatorIndex)
+      .replace(/\D/g, "");
+
+    const decimalPart = trimmed
+      .slice(lastSeparatorIndex + 1)
+      .replace(/\D/g, "");
+
     return Number(
-      value
-        .replace(/\./g, "")
-        .replace(",", "."),
+      `${integerPart || "0"}.${decimalPart}`,
     );
   }
 

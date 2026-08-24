@@ -53,7 +53,7 @@ export function AttendantHome() {
   const {
     orders,
     moveOrder,
-    removeOrder,
+    completeOrder,
   } = useOrders();
 
   const {
@@ -280,7 +280,7 @@ export function AttendantHome() {
       return;
     }
 
-    removeOrder(
+    void completeOrder(
       selectedOrder.id,
     );
 

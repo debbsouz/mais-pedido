@@ -6,65 +6,74 @@ import {
   Plus,
   ShoppingCart,
 } from "@phosphor-icons/react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
-import type { NewOrderItem } from "@/components/pedidos/OrderItemsForm";
 import {
-  catalogCategories,
-  catalogProducts,
-  type CatalogProduct,
-  type CatalogCategory,
-} from "@/lib/catalog";
+  getProductsForOrder,
+  type ProductForOrder,
+} from "@/app/actions/catalog";
+import type { NewOrderItem } from "@/components/pedidos/OrderItemsForm";
+import { formatCurrency } from "@/lib/format";
 
 interface WaiterOrderFormProps {
   items: NewOrderItem[];
   onChange: (items: NewOrderItem[]) => void;
 }
 
-function formatCurrency(value: number) {
-  return new Intl.NumberFormat("pt-BR", {
-    style: "currency",
-    currency: "BRL",
-  }).format(value);
-}
+const categories = [
+  "Todos",
+  "Hambúrgueres",
+  "Pizzas",
+  "Bebidas",
+  "Porções",
+  "Sobremesas",
+] as const;
+
+type ActiveCategory = (typeof categories)[number];
 
 export function WaiterOrderForm({
   items,
   onChange,
 }: WaiterOrderFormProps) {
+  const [products, setProducts] =
+    useState<ProductForOrder[]>([]);
+
   const [activeCategory, setActiveCategory] =
-    useState<CatalogCategory>("Todos");
+    useState<ActiveCategory>("Todos");
 
   const [searchTerm, setSearchTerm] =
     useState("");
+
+  useEffect(() => {
+    void getProductsForOrder().then((data) =>
+      setProducts(data),
+    );
+  }, []);
 
   const filteredProducts = useMemo(() => {
     const normalizedSearch = searchTerm
       .trim()
       .toLowerCase();
 
-    return catalogProducts.filter(
-      (product) => {
-        const matchesCategory =
-          activeCategory === "Todos" ||
-          product.category === activeCategory;
+    return products.filter((product) => {
+      const matchesCategory =
+        activeCategory === "Todos" ||
+        product.category === activeCategory;
 
-        const matchesSearch =
-          !normalizedSearch ||
-          product.name
-            .toLowerCase()
-            .includes(normalizedSearch) ||
-          product.description
-            .toLowerCase()
-            .includes(normalizedSearch);
+      const matchesSearch =
+        !normalizedSearch ||
+        product.name
+          .toLowerCase()
+          .includes(normalizedSearch) ||
+        product.description
+          .toLowerCase()
+          .includes(normalizedSearch);
 
-        return (
-          matchesCategory &&
-          matchesSearch
-        );
-      },
-    );
-  }, [activeCategory, searchTerm]);
+      return (
+        matchesCategory && matchesSearch
+      );
+    });
+  }, [activeCategory, searchTerm, products]);
 
   const totalItems = items.reduce(
     (total, item) =>
@@ -91,7 +100,7 @@ export function WaiterOrderForm({
   }
 
   function addProduct(
-    product: CatalogProduct,
+    product: ProductForOrder,
   ) {
     const existingItem = items.find(
       (item) =>
@@ -186,11 +195,12 @@ export function WaiterOrderForm({
             )
           }
           placeholder="Buscar produto..."
+          aria-label="Buscar produto"
         />
       </div>
 
       <div className="waiter-order-categories">
-        {catalogCategories.map(
+        {categories.map(
           (category) => (
             <button
               key={category}

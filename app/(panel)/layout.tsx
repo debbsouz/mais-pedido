@@ -14,7 +14,6 @@ import { PanelAccessGuard } from "@/components/auth/PanelAccessGuard";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { AuthProvider } from "@/components/providers/AuthProvider";
 import { OrdersProvider } from "@/components/providers/OrdersProvider";
-import { TablesProvider } from "@/components/providers/TablesProvider";
 
 interface PanelLayoutProps {
   children: ReactNode;
@@ -40,13 +39,11 @@ export default async function PanelLayout({
       <OrdersProvider
         initialOrders={orders}
       >
-        <TablesProvider>
-          <PanelAccessGuard>
-            <AppLayout>
-              {children}
-            </AppLayout>
-          </PanelAccessGuard>
-        </TablesProvider>
+        <PanelAccessGuard>
+          <AppLayout>
+            {children}
+          </AppLayout>
+        </PanelAccessGuard>
       </OrdersProvider>
     </AuthProvider>
   );

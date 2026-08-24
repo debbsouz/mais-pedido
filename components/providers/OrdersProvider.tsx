@@ -16,7 +16,6 @@ import type {
 import {
   createOrder as createOrderAction,
   updateOrderStatus as updateOrderStatusAction,
-  deleteOrder as deleteOrderAction,
   type CreateOrderInput,
 } from "@/app/actions/orders";
 
@@ -38,7 +37,22 @@ interface OrdersContextValue {
     order: Order,
   ) => Promise<string | null>;
 
-  removeOrder: (
+  /*
+   * Marca o pedido como concluido (atendido/entregue de
+   * verdade) e o remove dos quadros ativos. Ao contrario do
+   * antigo removeOrder, o registro continua no banco — vira
+   * historico, nao e apagado.
+   */
+  completeOrder: (
+    orderId: string,
+  ) => Promise<void>;
+
+  /*
+   * Marca o pedido como cancelado/recusado. Mesma logica do
+   * completeOrder, mas com status diferente — permite distinguir
+   * um pedido atendido de um recusado em relatorios futuros.
+   */
+  cancelOrder: (
     orderId: string,
   ) => Promise<void>;
 }
@@ -167,11 +181,36 @@ export function OrdersProvider({
     return realId;
   }
 
-  async function removeOrder(
+  async function completeOrder(
     orderId: string,
   ): Promise<void> {
     const result =
-      await deleteOrderAction(orderId);
+      await updateOrderStatusAction(
+        orderId,
+        "completed",
+      );
+
+    if (!result.success) {
+      window.alert(result.error);
+      return;
+    }
+
+    setOrders((currentOrders) =>
+      currentOrders.filter(
+        (order) =>
+          order.id !== orderId,
+      ),
+    );
+  }
+
+  async function cancelOrder(
+    orderId: string,
+  ): Promise<void> {
+    const result =
+      await updateOrderStatusAction(
+        orderId,
+        "cancelled",
+      );
 
     if (!result.success) {
       window.alert(result.error);
@@ -451,7 +490,8 @@ export function OrdersProvider({
         setOrders,
         moveOrder,
         addOrder,
-        removeOrder,
+        completeOrder,
+        cancelOrder,
       }}
     >
       {children}

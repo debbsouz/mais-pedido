@@ -5,7 +5,6 @@ import {
 
 import { AuthProvider } from "@/components/providers/AuthProvider";
 import { OrdersProvider } from "@/components/providers/OrdersProvider";
-import { TablesProvider } from "@/components/providers/TablesProvider";
 import { PanelAccessGuard } from "@/components/auth/PanelAccessGuard";
 
 import { getOrders, toFrontendOrders } from "@/lib/orders-dal";
@@ -27,11 +26,9 @@ export default async function AttendantLayout({
       subscription={subscription}
     >
       <OrdersProvider initialOrders={orders}>
-        <TablesProvider>
-          <PanelAccessGuard>
-            {children}
-          </PanelAccessGuard>
-        </TablesProvider>
+        <PanelAccessGuard>
+          {children}
+        </PanelAccessGuard>
       </OrdersProvider>
     </AuthProvider>
   );

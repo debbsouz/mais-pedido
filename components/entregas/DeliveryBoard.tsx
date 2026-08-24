@@ -17,7 +17,7 @@ import { DeliveryCard } from "./DeliveryCard";
 export function DeliveryBoard() {
   const {
     orders,
-    removeOrder,
+    completeOrder,
   } = useOrders();
 
   const [now, setNow] =
@@ -90,7 +90,7 @@ export function DeliveryBoard() {
   function completeDelivery(
     orderId: string,
   ) {
-    removeOrder(orderId);
+    void completeOrder(orderId);
   }
 
   return (
