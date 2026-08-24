@@ -1,5 +1,10 @@
 # Loja pública (/loja/[slug]) — pendências de backend
 
+> **Fluxo de trabalho (Git)**: ver `docs/PENDENCIAS_JON.md`, seção 0 —
+> não commitar/push direto na `main`, trabalhar em branch própria com
+> PR, e avisar a Débora antes de qualquer ajuste que precise mexer no
+> front-end.
+
 ## 1. Contexto
 
 O front-end da loja pública já está pronto (rota `app/loja/[slug]/page.tsx`,

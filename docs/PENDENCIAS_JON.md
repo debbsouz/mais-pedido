@@ -5,6 +5,20 @@ pública), este documento junta pendências de backend encontradas numa
 revisão completa do painel de gestão (login, pedidos, cozinha, mesas,
 garçom, atendente, cardápio, clientes, configurações).
 
+## 0. Fluxo de trabalho — Git
+
+- **Não commitar nem fazer push direto na `main`.** Trabalhar em uma
+  branch própria (padrão já usado no projeto: `backend/nome-da-etapa`,
+  igual à `backend/fundacao-identidade` que virou a PR #10) e abrir
+  Pull Request para revisão antes do merge. É assim que o front-end
+  também está sendo conduzido (branch `frontend/desenvolvimento`) —
+  queremos manter essa estrutura dos dois lados.
+- **Se uma mudança de backend exigir ajuste no front-end** (troca de
+  formato de dado, novo campo, nome de coluna diferente do que o
+  front já espera, etc.), avisar a Débora antes de meter a mão no
+  front-end diretamente. Ela e a IA que ajuda no front mantêm esse
+  lado do código; qualquer ajuste lá deve passar por ela primeiro.
+
 ## 1. Migration de status terminais de pedido — CONFIRMAR SE JÁ FOI APLICADA
 
 Arquivo: `supabase/migrations/20260824_011_orders_terminal_status.sql`
