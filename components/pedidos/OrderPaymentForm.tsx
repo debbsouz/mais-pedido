@@ -9,6 +9,8 @@ import {
   Receipt,
 } from "@phosphor-icons/react";
 
+import { formatCurrency } from "@/lib/format";
+
 import type { NewOrderFulfillment } from "./OrderTypeSelector";
 
 export type PaymentMethod =
@@ -64,13 +66,6 @@ const enabledDebitBrands: CardBrand[] = [
   "Mastercard",
   "Elo",
 ];
-
-function formatCurrency(value: number) {
-  return new Intl.NumberFormat("pt-BR", {
-    style: "currency",
-    currency: "BRL",
-  }).format(value);
-}
 
 function onlyNumbers(value: string) {
   return value.replace(/\D/g, "");

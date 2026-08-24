@@ -30,8 +30,13 @@ const notificationSettings = {
 };
 
 export default function PedidosPage() {
-  const { orders, addOrder, moveOrder, removeOrder } =
-    useOrders();
+  const {
+    orders,
+    addOrder,
+    moveOrder,
+    completeOrder,
+    cancelOrder,
+  } = useOrders();
 
   const [activeFilter, setActiveFilter] =
     useState<OrderFilter>("Todos");
@@ -347,7 +352,8 @@ export default function PedidosPage() {
         searchTerm={searchTerm}
         orders={orders}
         onMoveOrder={moveOrder}
-        onRemoveOrder={removeOrder}
+        onCompleteOrder={completeOrder}
+        onCancelOrder={cancelOrder}
         onOrderHandled={handleOrderHandled}
       />
 

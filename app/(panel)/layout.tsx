@@ -5,29 +5,46 @@ import {
   requireAuth,
 } from "@/lib/dal";
 
-import { AuthProvider } from "@/components/providers/AuthProvider";
+import {
+  getOrders,
+  toFrontendOrders,
+} from "@/lib/orders-dal";
+
 import { PanelAccessGuard } from "@/components/auth/PanelAccessGuard";
 import { AppLayout } from "@/components/layout/AppLayout";
+import { AuthProvider } from "@/components/providers/AuthProvider";
+import { OrdersProvider } from "@/components/providers/OrdersProvider";
 
-export default async function ClientesLayout({
-  children,
-}: {
+interface PanelLayoutProps {
   children: ReactNode;
-}) {
+}
+
+export default async function PanelLayout({
+  children,
+}: PanelLayoutProps) {
   const user = await requireAuth();
+
   const subscription =
     await getCurrentSubscription();
+
+  const orders = toFrontendOrders(
+    await getOrders(),
+  );
 
   return (
     <AuthProvider
       user={user}
       subscription={subscription}
     >
-      <PanelAccessGuard>
-        <AppLayout>
-          {children}
-        </AppLayout>
-      </PanelAccessGuard>
+      <OrdersProvider
+        initialOrders={orders}
+      >
+        <PanelAccessGuard>
+          <AppLayout>
+            {children}
+          </AppLayout>
+        </PanelAccessGuard>
+      </OrdersProvider>
     </AuthProvider>
   );
 }

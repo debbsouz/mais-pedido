@@ -7,92 +7,103 @@ import {
 } from "react";
 
 import { useOrders } from "@/components/providers/OrdersProvider";
+import { getElapsedMinutes } from "@/lib/order-timing";
 
 import {
   KitchenCard,
   type KitchenOrder,
 } from "./KitchenCard";
 
-/**
- * Extrai minutos do texto "há X min".
- *
- * Esse valor é estável e pode ser usado
- * tanto no SSR quanto na primeira
- * hidratação do client.
- */
-function getElapsedFromTime(
-  time?: string,
-): number {
-  if (!time) {
-    return 0;
-  }
+type KitchenFilter =
+  | "all"
+  | "delivery"
+  | "pickup"
+  | "table";
 
-  const match = time.match(/(\d+)/);
+const MAX_OPERATION_TIME = 180;
 
-  return match
-    ? Number(match[1])
-    : 0;
+function normalizeValue(
+  value?: string,
+) {
+  return (
+    value
+      ?.trim()
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(
+        /[\u0300-\u036f]/g,
+        "",
+      ) ?? ""
+  );
 }
 
-/**
- * Calcula o tempo real usando um timestamp
- * fornecido pelo relógio do client.
- *
- * Se ainda não houver relógio disponível,
- * mantém o valor textual estável.
- */
-function getElapsedMinutes(
-  now: number | null,
-  createdAt?: number,
-  time?: string,
-): number {
-  if (
-    now !== null &&
-    createdAt
-  ) {
-    return Math.max(
-      0,
-      Math.floor(
-        (now - createdAt) /
-          1000 /
-          60,
-      ),
+function getOrderFilter(
+  order: KitchenOrder,
+): KitchenFilter {
+  const fulfillment =
+    normalizeValue(
+      order.fulfillment,
     );
+
+  const origin =
+    normalizeValue(
+      order.origin,
+    );
+
+  if (
+    fulfillment.includes(
+      "delivery",
+    ) ||
+    fulfillment.includes(
+      "entrega",
+    )
+  ) {
+    return "delivery";
   }
 
-  return getElapsedFromTime(time);
+  if (
+    fulfillment.includes(
+      "retirada",
+    ) ||
+    fulfillment.includes(
+      "pickup",
+    )
+  ) {
+    return "pickup";
+  }
+
+  if (
+    fulfillment.includes("mesa") ||
+    fulfillment.includes(
+      "salao",
+    ) ||
+    origin.includes("mesa")
+  ) {
+    return "table";
+  }
+
+  return "all";
 }
 
 export function KitchenBoard() {
   const { orders, moveOrder } =
     useOrders();
 
-  /*
-   * null durante SSR e primeira hidratação.
-   *
-   * Depois que o componente já está no
-   * navegador, o relógio começa a atualizar.
-   */
   const [now, setNow] =
     useState<number | null>(null);
 
+  const [
+    activeFilter,
+    setActiveFilter,
+  ] =
+    useState<KitchenFilter>("all");
+
   useEffect(() => {
-    /*
-     * O primeiro update acontece de forma
-     * assíncrona, evitando setState direto
-     * dentro do corpo do effect.
-     */
     const initialTimer =
       window.setTimeout(() => {
         setNow(Date.now());
       }, 0);
 
-    /*
-     * Atualiza uma vez por minuto.
-     * Não precisamos recalcular segundos
-     * em uma tela operacional que exibe
-     * apenas minutos.
-     */
     const interval =
       window.setInterval(() => {
         setNow(Date.now());
@@ -136,7 +147,8 @@ export function KitchenBoard() {
                     {
                       id: `${order.id}-summary`,
                       quantity: 1,
-                      name: order.items,
+                      name:
+                        order.items,
                     },
                   ];
 
@@ -161,22 +173,98 @@ export function KitchenBoard() {
 
               items,
 
-              /*
-               * Observação enviada pelo
-               * garçom na nova rodada.
-               *
-               * Mantém a observação antiga
-               * como fallback para pedidos
-               * criados pelo fluxo
-               * administrativo.
-               */
               observation:
                 order.observation ||
                 undefined,
             };
           },
+        )
+        .sort(
+          (a, b) =>
+            b.elapsedMinutes -
+            a.elapsedMinutes,
         );
     }, [orders, now]);
+
+  const operationOrders =
+    useMemo(
+      () =>
+        kitchenOrders.filter(
+          (order) =>
+            order.elapsedMinutes <
+            MAX_OPERATION_TIME,
+        ),
+      [kitchenOrders],
+    );
+
+  const visibleOrders =
+    useMemo(() => {
+      if (
+        activeFilter === "all"
+      ) {
+        return kitchenOrders;
+      }
+
+      return kitchenOrders.filter(
+        (order) =>
+          getOrderFilter(order) ===
+          activeFilter,
+      );
+    }, [
+      kitchenOrders,
+      activeFilter,
+    ]);
+
+  const counts = useMemo(
+    () => ({
+      all: kitchenOrders.length,
+
+      delivery:
+        kitchenOrders.filter(
+          (order) =>
+            getOrderFilter(
+              order,
+            ) === "delivery",
+        ).length,
+
+      pickup:
+        kitchenOrders.filter(
+          (order) =>
+            getOrderFilter(
+              order,
+            ) === "pickup",
+        ).length,
+
+      table:
+        kitchenOrders.filter(
+          (order) =>
+            getOrderFilter(
+              order,
+            ) === "table",
+        ).length,
+    }),
+    [kitchenOrders],
+  );
+
+  const delayedOrders =
+    operationOrders.filter(
+      (order) =>
+        order.elapsedMinutes >=
+        20,
+    ).length;
+
+  const averageTime =
+    operationOrders.length > 0
+      ? Math.round(
+          operationOrders.reduce(
+            (total, order) =>
+              total +
+              order.elapsedMinutes,
+            0,
+          ) /
+            operationOrders.length,
+        )
+      : 0;
 
   function markAsReady(
     orderId: string,
@@ -187,31 +275,11 @@ export function KitchenBoard() {
     );
   }
 
-  const delayedOrders =
-    kitchenOrders.filter(
-      (order) =>
-        order.elapsedMinutes >=
-        20,
-    ).length;
-
-  const averageTime =
-    kitchenOrders.length > 0
-      ? Math.round(
-          kitchenOrders.reduce(
-            (total, order) =>
-              total +
-              order.elapsedMinutes,
-            0,
-          ) /
-            kitchenOrders.length,
-        )
-      : 0;
-
   return (
     <section className="kitchen-board">
-      <div className="kitchen-board__summary">
+      <div className="kitchen-board__overview">
         <div className="kitchen-board__metrics">
-          <div className="kitchen-board__metric">
+          <article className="kitchen-board__metric">
             <span>
               Em preparo
             </span>
@@ -221,9 +289,13 @@ export function KitchenBoard() {
                 kitchenOrders.length
               }
             </strong>
-          </div>
 
-          <div className="kitchen-board__metric">
+            <small>
+              pedidos ativos
+            </small>
+          </article>
+
+          <article className="kitchen-board__metric">
             <span>
               Atrasados
             </span>
@@ -231,30 +303,132 @@ export function KitchenBoard() {
             <strong>
               {delayedOrders}
             </strong>
-          </div>
 
-          <div className="kitchen-board__metric">
+            <small>
+              acima de 20 min
+            </small>
+          </article>
+
+          <article className="kitchen-board__metric">
             <span>
               Tempo médio
             </span>
 
             <strong>
-              {averageTime} min
+              {operationOrders.length >
+              0
+                ? `${averageTime} min`
+                : "—"}
             </strong>
-          </div>
-        </div>
 
-        <p>
-          Pedidos aparecem aqui
-          automaticamente após serem
-          aceitos.
-        </p>
+            <small>
+              produção atual
+            </small>
+          </article>
+        </div>
       </div>
 
-      {kitchenOrders.length >
+      <div className="kitchen-board__toolbar">
+        <div>
+          <strong>
+            Fila de produção
+          </strong>
+
+          <span>
+            Pedidos mais antigos
+            aparecem primeiro.
+          </span>
+        </div>
+
+        <div className="kitchen-board__filters">
+          <button
+            type="button"
+            className={
+              activeFilter ===
+              "all"
+                ? "is-active"
+                : ""
+            }
+            onClick={() =>
+              setActiveFilter(
+                "all",
+              )
+            }
+          >
+            Todos
+            <span>
+              {counts.all}
+            </span>
+          </button>
+
+          <button
+            type="button"
+            className={
+              activeFilter ===
+              "delivery"
+                ? "is-active"
+                : ""
+            }
+            onClick={() =>
+              setActiveFilter(
+                "delivery",
+              )
+            }
+          >
+            Delivery
+            <span>
+              {
+                counts.delivery
+              }
+            </span>
+          </button>
+
+          <button
+            type="button"
+            className={
+              activeFilter ===
+              "pickup"
+                ? "is-active"
+                : ""
+            }
+            onClick={() =>
+              setActiveFilter(
+                "pickup",
+              )
+            }
+          >
+            Retirada
+            <span>
+              {counts.pickup}
+            </span>
+          </button>
+
+          <button
+            type="button"
+            className={
+              activeFilter ===
+              "table"
+                ? "is-active"
+                : ""
+            }
+            onClick={() =>
+              setActiveFilter(
+                "table",
+              )
+            }
+          >
+            Salão
+            <span>
+              {counts.table}
+            </span>
+          </button>
+        </div>
+      </div>
+
+      {visibleOrders.length >
       0 ? (
         <div className="kitchen-board__grid">
-          {kitchenOrders.map(
+          {visibleOrders.map(
             (order) => (
               <KitchenCard
                 key={order.id}
@@ -271,12 +445,17 @@ export function KitchenBoard() {
           <span>✓</span>
 
           <h2>
-            Produção em dia!
+            {kitchenOrders.length ===
+            0
+              ? "Produção em dia!"
+              : "Nenhum pedido neste filtro"}
           </h2>
 
           <p>
-            Nenhum pedido
-            aguardando preparo.
+            {kitchenOrders.length ===
+            0
+              ? "Nenhum pedido aguardando preparo."
+              : "Selecione outro tipo de pedido para visualizar a fila."}
           </p>
         </div>
       )}

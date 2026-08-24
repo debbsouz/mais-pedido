@@ -8,6 +8,11 @@ import {
 } from "@phosphor-icons/react";
 import { useState } from "react";
 
+import {
+  formatCurrency,
+  getPaymentLabel,
+} from "@/lib/format";
+
 import type { Order } from "./OrderCard";
 
 import {
@@ -65,13 +70,6 @@ const initialPayment: NewOrderPaymentData = {
   changeFor: "",
   observation: "",
 };
-
-function formatCurrency(value: number) {
-  return new Intl.NumberFormat("pt-BR", {
-    style: "currency",
-    currency: "BRL",
-  }).format(value);
-}
 
 export function NewOrderDrawer({
   isOpen,
@@ -328,23 +326,6 @@ export function NewOrderDrawer({
     return customer.name || "Não informado";
   }
 
-  function getPaymentLabel() {
-    if (!payment.method) {
-      return "Não informado";
-    }
-
-    if (
-      payment.method === "Crédito" ||
-      payment.method === "Débito"
-    ) {
-      return `${payment.method} · ${
-        payment.cardBrand ?? "Sem bandeira"
-      }`;
-    }
-
-    return payment.method;
-  }
-
   return (
     <div className="new-order-drawer">
       <button
@@ -535,7 +516,7 @@ export function NewOrderDrawer({
                 <span>Pagamento</span>
 
                 <strong>
-                  {getPaymentLabel()}
+                  {getPaymentLabel(payment)}
                 </strong>
               </div>
 

@@ -7,6 +7,9 @@ import {
   Warning,
 } from "@phosphor-icons/react";
 
+import { getShortOrderCode } from "@/lib/format";
+import { getOrderUrgency } from "@/lib/order-timing";
+
 export interface KitchenItem {
   id: string;
   quantity: number;
@@ -29,25 +32,11 @@ interface KitchenCardProps {
   onReady: (orderId: string) => void;
 }
 
-function getUrgency(
-  minutes: number,
-): "normal" | "warning" | "critical" {
-  if (minutes >= 20) {
-    return "critical";
-  }
-
-  if (minutes >= 10) {
-    return "warning";
-  }
-
-  return "normal";
-}
-
 export function KitchenCard({
   order,
   onReady,
 }: KitchenCardProps) {
-  const urgency = getUrgency(
+  const urgency = getOrderUrgency(
     order.elapsedMinutes,
   );
 
@@ -58,7 +47,7 @@ export function KitchenCard({
       <header className="kitchen-card__header">
         <div>
           <span className="kitchen-card__id">
-            Pedido #{order.id}
+            Pedido {getShortOrderCode(order.id)}
           </span>
 
           <h2>{order.customer}</h2>

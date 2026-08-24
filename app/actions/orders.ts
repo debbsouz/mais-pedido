@@ -134,8 +134,45 @@ export async function createOrder(
 
   const supabase = await createClient()
 
-  // Calcula total a partir dos itens
-  const totalCents = input.items.reduce(
+  // Revalida o preco dos itens que referenciam um produto real do
+  // catalogo, em vez de confiar no valor enviado pelo navegador.
+  // Itens sem productId (personalizados) mantem o preco informado,
+  // pois nao existe produto de catalogo para conferir.
+  const productIds = Array.from(
+    new Set(
+      input.items
+        .map((item) => item.productId)
+        .filter((id): id is string => Boolean(id)),
+    ),
+  )
+
+  let realPriceByProductId = new Map<string, number>()
+
+  if (productIds.length > 0) {
+    const { data: catalogProducts } = await supabase
+      .from('products')
+      .select('id, price')
+      .eq('organization_id', context.organizationId)
+      .in('id', productIds)
+
+    realPriceByProductId = new Map(
+      (catalogProducts ?? []).map((product) => [
+        product.id as string,
+        product.price as number,
+      ]),
+    )
+  }
+
+  const verifiedItems = input.items.map((item) => ({
+    ...item,
+    priceCents:
+      item.productId && realPriceByProductId.has(item.productId)
+        ? (realPriceByProductId.get(item.productId) as number)
+        : item.priceCents,
+  }))
+
+  // Calcula total a partir dos itens (ja com preco revalidado)
+  const totalCents = verifiedItems.reduce(
     (total, item) => total + item.priceCents * item.quantity,
     0,
   )
@@ -167,8 +204,8 @@ export async function createOrder(
     }
   }
 
-  // Insere os itens do pedido
-  const orderItems = input.items.map((item) => ({
+  // Insere os itens do pedido (com preco ja revalidado)
+  const orderItems = verifiedItems.map((item) => ({
     order_id: order.id,
     product_id: item.productId || null,
     name: item.name,
@@ -203,7 +240,14 @@ export async function updateOrderStatus(
     return { success: false, error: 'Não autorizado.' }
   }
 
-  const validStatuses = ['new', 'preparing', 'ready', 'delivery']
+  const validStatuses = [
+    'new',
+    'preparing',
+    'ready',
+    'delivery',
+    'completed',
+    'cancelled',
+  ]
 
   if (!validStatuses.includes(status)) {
     return { success: false, error: 'Status inválido.' }

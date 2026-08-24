@@ -28,7 +28,11 @@ interface OrdersBoardProps {
     status: OrderStatus,
   ) => Promise<void>;
 
-  onRemoveOrder: (
+  onCompleteOrder: (
+    orderId: string,
+  ) => Promise<void>;
+
+  onCancelOrder: (
     orderId: string,
   ) => Promise<void>;
 
@@ -76,7 +80,8 @@ export function OrdersBoard({
   searchTerm,
   orders,
   onMoveOrder,
-  onRemoveOrder,
+  onCompleteOrder,
+  onCancelOrder,
   onOrderHandled,
 }: OrdersBoardProps) {
   const [
@@ -112,7 +117,7 @@ export function OrdersBoard({
       return;
     }
 
-    await onRemoveOrder(orderId);
+    await onCancelOrder(orderId);
 
     onOrderHandled(orderId);
 
@@ -135,13 +140,20 @@ export function OrdersBoard({
       return;
     }
 
-    // Regra especial: ready + não-Delivery → finalizar (remover)
+    // Regra especial: ready + não-Delivery → finalizar (concluído)
     if (
       order.status === "ready" &&
       order.fulfillment !==
         "Delivery"
     ) {
-      await onRemoveOrder(orderId);
+      await onCompleteOrder(orderId);
+      setSelectedOrder(null);
+      return;
+    }
+
+    // Em entrega → "Finalizar entrega" conclui o pedido.
+    if (order.status === "delivery") {
+      await onCompleteOrder(orderId);
       setSelectedOrder(null);
       return;
     }
