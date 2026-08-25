@@ -74,16 +74,11 @@ function getColumnVariant(
   | "accepted"
   | "preparing"
   | "ready"
-  | "delivery"
-  | "completed"
-  | "cancelled" {
+  | "delivery" {
   if (status === "new" || status === "accepted") {
     return status === "new" ? "waiting" : "accepted";
   }
 
-  if (status === "completed" || status === "cancelled") {
-    return status;
-  }
 
   return status as any;
 }
