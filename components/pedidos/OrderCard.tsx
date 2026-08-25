@@ -219,6 +219,10 @@ function getAdvanceLabel(
   status: OrderStatus,
   fulfillment: OrderFulfillment,
 ) {
+  if (status === "accepted") {
+    return "Iniciar preparo";
+  }
+
   if (status === "preparing") {
     return "Marcar como pronto";
   }
