@@ -45,10 +45,13 @@ const statusSequence: Record<
   OrderStatus,
   OrderStatus | null
 > = {
-  new: "preparing",
+  new: "accepted",
+  accepted: "preparing",
   preparing: "ready",
   ready: "delivery",
   delivery: null,
+  completed: null,
+  cancelled: null,
 };
 
 const mobileStatusLabels: Record<
@@ -56,23 +59,33 @@ const mobileStatusLabels: Record<
   string
 > = {
   new: "Novos",
+  accepted: "Aceitos",
   preparing: "Preparo",
   ready: "Prontos",
   delivery: "Entrega",
+  completed: "Finalizado",
+  cancelled: "Cancelado",
 };
 
 function getColumnVariant(
   status: OrderStatus,
 ):
   | "waiting"
+  | "accepted"
   | "preparing"
   | "ready"
-  | "delivery" {
-  if (status === "new") {
-    return "waiting";
+  | "delivery"
+  | "completed"
+  | "cancelled" {
+  if (status === "new" || status === "accepted") {
+    return status === "new" ? "waiting" : "accepted";
   }
 
-  return status;
+  if (status === "completed" || status === "cancelled") {
+    return status;
+  }
+
+  return status as any;
 }
 
 export function OrdersBoard({
@@ -99,7 +112,7 @@ export function OrdersBoard({
   ) {
     await onMoveOrder(
       orderId,
-      "preparing",
+      "accepted",
     );
 
     onOrderHandled(orderId);
@@ -264,6 +277,9 @@ export function OrdersBoard({
   const newOrders =
     ordersByStatus("new");
 
+  const acceptedOrders =
+    ordersByStatus("accepted");
+
   const preparingOrders =
     ordersByStatus(
       "preparing",
@@ -282,16 +298,20 @@ export function OrdersBoard({
     number
   > = {
     new: newOrders.length,
+    accepted: acceptedOrders.length,
     preparing:
       preparingOrders.length,
     ready: readyOrders.length,
     delivery:
       deliveryOrders.length,
+    completed: 0,
+    cancelled: 0,
   };
 
   const mobileStatuses: OrderStatus[] =
     [
       "new",
+      "accepted",
       "preparing",
       "ready",
       "delivery",
@@ -346,12 +366,15 @@ export function OrdersBoard({
             "new"
               ? "Novos pedidos"
               : mobileStatus ===
-                  "preparing"
-                ? "Em preparo"
+                  "accepted"
+                ? "Pedidos aceitos"
                 : mobileStatus ===
-                    "ready"
-                  ? "Prontos"
-                  : "Em entrega"
+                    "preparing"
+                  ? "Em preparo"
+                  : mobileStatus ===
+                      "ready"
+                    ? "Prontos"
+                    : "Em entrega"
           }
           count={
             statusCounts[
@@ -379,6 +402,18 @@ export function OrdersBoard({
           variant="waiting"
         >
           {renderCards("new")}
+        </OrderColumn>
+
+        <OrderColumn
+          title="Aceitos"
+          count={
+            acceptedOrders.length
+          }
+          variant="accepted"
+        >
+          {renderCards(
+            "accepted",
+          )}
         </OrderColumn>
 
         <OrderColumn

@@ -252,6 +252,7 @@ export function NewOrderDrawer({
 
     const newOrder: Order = {
   id: orderId,
+  number: 0,
   customer: customerName,
   origin,
   fulfillment,

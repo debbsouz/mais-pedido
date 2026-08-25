@@ -261,6 +261,7 @@ export function OrderCard({
 }: OrderCardProps) {
   const {
     id,
+    number,
     customer,
     origin,
     fulfillment,
@@ -385,7 +386,7 @@ export function OrderCard({
       <div className="order-card__header">
         <div>
           <span className="order-card__id">
-            {formatOrderNumber(id)}
+            {formatOrderNumber(number)}
           </span>
 
           <strong>
