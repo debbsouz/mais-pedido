@@ -125,8 +125,7 @@ export function KitchenBoard() {
       return orders
         .filter(
           (order) =>
-            order.status ===
-            "preparing",
+            ["new", "accepted", "preparing"].includes(order.status),
         )
         .map(
           (
