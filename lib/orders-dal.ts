@@ -6,6 +6,7 @@ import { createClient } from '@/lib/supabase/server'
 import { getCurrentUser } from '@/lib/dal'
 import type { UserRole } from '@/lib/roles'
 
+import { formatOrderNumber } from '@/lib/format'
 import type {
   Order,
   OrderItemDetail,
@@ -28,6 +29,7 @@ export interface OrderItemDto {
 
 export interface OrderDto {
   id: string
+  number: number
   organizationId: string
   customerName: string
   customerPhone: string | null
@@ -114,6 +116,7 @@ export const getOrders = cache(
 
     return ordersData.map((order) => ({
       id: order.id,
+      number: order.number as number,
       organizationId: order.organization_id,
       customerName: order.customer_name,
       customerPhone: order.customer_phone,
@@ -197,6 +200,7 @@ export function toFrontendOrder(dto: OrderDto): Order {
 
   return {
     id: dto.id,
+    number: dto.number,
     customer: dto.customerName || 'Cliente',
     origin: dto.origin as Order['origin'],
     fulfillment: dto.fulfillment as Order['fulfillment'],

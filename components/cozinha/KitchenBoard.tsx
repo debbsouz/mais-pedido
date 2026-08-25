@@ -155,6 +155,8 @@ export function KitchenBoard() {
             return {
               id: order.id,
 
+              number: order.number,
+
               customer:
                 order.customer,
 

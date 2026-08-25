@@ -1,5 +1,12 @@
+/** * Formata o número do pedido para exibição com zeros à esquerda, ex: "#001".
+ * @param number - O número sequencial do pedido
+ */
+export function formatOrderNumber(number: number): string {
+  return `#${String(number).padStart(3, '0')}`
+}
+
 /**
- * Encurta o id (UUID) do pedido para um código curto de exibição, ex: "#A1B2C3".
+ * @deprecated Use formatOrderNumber(number) instead. * Encurta o id (UUID) do pedido para um código curto de exibição, ex: "#A1B2C3".
  */
 export function getShortOrderCode(id: string): string {
   return `#${id.slice(-6).toUpperCase()}`;

@@ -15,7 +15,7 @@ import {
 import {
   formatCurrency,
   getPaymentLabel,
-  getShortOrderCode,
+  formatOrderNumber,
 } from "@/lib/format";
 
 import type { Order } from "./OrderCard";
@@ -72,7 +72,7 @@ export function OrderDrawer({
       <aside className="order-drawer__panel">
         <div className="order-drawer__header">
           <div>
-            <span>Pedido {getShortOrderCode(order.id)}</span>
+            <span>Pedido {formatOrderNumber(order.number)}</span>
             <h2>{order.customer}</h2>
           </div>
 
@@ -264,7 +264,7 @@ export function OrderDrawer({
       <div className="order-print-ticket">
         <div className="order-print-ticket__header">
           <strong>
-            Pedido {getShortOrderCode(order.id)}
+            Pedido {formatOrderNumber(order.number)}
           </strong>
 
           <span>

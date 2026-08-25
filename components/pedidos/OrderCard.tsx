@@ -12,7 +12,7 @@ import {
 } from "@phosphor-icons/react";
 import { useEffect, useState } from "react";
 
-import { getShortOrderCode } from "@/lib/format";
+import { formatOrderNumber } from "@/lib/format";
 import {
   formatElapsedLabel,
   getElapsedMinutes,
@@ -21,9 +21,12 @@ import {
 
 export type OrderStatus =
   | "new"
+  | "accepted"
   | "preparing"
   | "ready"
-  | "delivery";
+  | "delivery"
+  | "completed"
+  | "cancelled";
 
 export type OrderOrigin =
   | "Site"
@@ -76,6 +79,8 @@ export interface OrderPaymentDetails {
 
 export interface Order {
   id: string;
+
+  number: number;
 
   customer: string;
 
@@ -380,7 +385,7 @@ export function OrderCard({
       <div className="order-card__header">
         <div>
           <span className="order-card__id">
-            {getShortOrderCode(id)}
+            {formatOrderNumber(id)}
           </span>
 
           <strong>
