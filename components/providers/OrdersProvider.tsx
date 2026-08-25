@@ -292,6 +292,7 @@ export function OrdersProvider({
 
     return {
       id: data.id as string,
+      number: (data.number as number) ?? 0,
       customer:
         (data.customer_name as string) ||
         "Cliente",

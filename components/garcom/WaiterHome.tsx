@@ -326,6 +326,8 @@ export function WaiterHome() {
     const kitchenOrder: Order = {
       id: orderId,
 
+      number: 0,
+
       customer: tableLabel,
 
       origin: "Garçom",

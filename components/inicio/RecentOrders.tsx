@@ -7,10 +7,16 @@ import {
   useOrders,
 } from "@/components/providers/OrdersProvider";
 import type { OrderStatus } from "@/components/pedidos/OrderCard";
-import { getShortOrderCode } from "@/lib/format";
+import { formatOrderNumber } from "@/lib/format";
 
 function getStatusBadge(status: OrderStatus) {
   switch (status) {
+    case "accepted":
+      return {
+        label: "Aceito",
+        className: "status--accepted",
+      };
+
     case "preparing":
       return {
         label: "Em preparo",
@@ -27,6 +33,18 @@ function getStatusBadge(status: OrderStatus) {
       return {
         label: "Em entrega",
         className: "status--ready",
+      };
+
+    case "completed":
+      return {
+        label: "Finalizado",
+        className: "status--completed",
+      };
+
+    case "cancelled":
+      return {
+        label: "Cancelado",
+        className: "status--cancelled",
       };
 
     default:
@@ -78,8 +96,8 @@ export function RecentOrders() {
               <div key={order.id}>
                 <div>
                   <strong>
-                    {getShortOrderCode(
-                      order.id,
+                    {formatOrderNumber(
+                      order.number,
                     )}{" "}
                     · {order.customer}
                   </strong>

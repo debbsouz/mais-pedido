@@ -277,6 +277,8 @@ export function TablesBoard() {
     const kitchenOrder: Order = {
       id: orderId,
 
+      number: 0,
+
       customer: tableLabel,
 
       origin: "Garçom",

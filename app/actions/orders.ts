@@ -242,6 +242,7 @@ export async function updateOrderStatus(
 
   const validStatuses = [
     'new',
+    'accepted',
     'preparing',
     'ready',
     'delivery',

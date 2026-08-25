@@ -4,7 +4,7 @@ interface OrderColumnProps {
   title: string;
   count: number;
   children: ReactNode;
-  variant: "waiting" | "preparing" | "ready" | "delivery";
+  variant: "waiting" | "accepted" | "preparing" | "ready" | "delivery";
 }
 
 export function OrderColumn({

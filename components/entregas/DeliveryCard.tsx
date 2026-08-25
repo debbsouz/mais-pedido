@@ -11,7 +11,7 @@ import {
 } from "@phosphor-icons/react";
 
 import type { Order } from "@/components/pedidos/OrderCard";
-import { getShortOrderCode } from "@/lib/format";
+import { formatOrderNumber } from "@/lib/format";
 import type { OrderUrgency } from "@/lib/order-timing";
 
 interface DeliveryCardProps {
@@ -73,7 +73,7 @@ export function DeliveryCard({
     >
       <header className="delivery-card__header">
         <div>
-          <span>Pedido {getShortOrderCode(order.id)}</span>
+          <span>Pedido {formatOrderNumber(order.number)}</span>
 
           <h2>{order.customer}</h2>
         </div>

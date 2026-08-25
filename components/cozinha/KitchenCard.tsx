@@ -7,7 +7,7 @@ import {
   Warning,
 } from "@phosphor-icons/react";
 
-import { getShortOrderCode } from "@/lib/format";
+import { formatOrderNumber } from "@/lib/format";
 import { getOrderUrgency } from "@/lib/order-timing";
 
 export interface KitchenItem {
@@ -19,6 +19,7 @@ export interface KitchenItem {
 
 export interface KitchenOrder {
   id: string;
+  number: number;
   customer: string;
   origin: string;
   fulfillment: string;
@@ -47,7 +48,7 @@ export function KitchenCard({
       <header className="kitchen-card__header">
         <div>
           <span className="kitchen-card__id">
-            Pedido {getShortOrderCode(order.id)}
+            Pedido {formatOrderNumber(order.number)}
           </span>
 
           <h2>{order.customer}</h2>
