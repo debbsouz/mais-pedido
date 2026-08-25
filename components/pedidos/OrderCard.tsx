@@ -186,6 +186,15 @@ function AdvanceIcon({
   status: OrderStatus;
   fulfillment: OrderFulfillment;
 }) {
+  if (status === "accepted") {
+    return (
+      <CookingPot
+        size={16}
+        weight="bold"
+      />
+    );
+  }
+
   if (status === "preparing") {
     return (
       <Check
@@ -219,6 +228,10 @@ function getAdvanceLabel(
   status: OrderStatus,
   fulfillment: OrderFulfillment,
 ) {
+  if (status === "accepted") {
+    return "Iniciar preparo";
+  }
+
   if (status === "preparing") {
     return "Marcar como pronto";
   }
