@@ -77,6 +77,7 @@ export interface StorefrontRecentOrderItem {
 }
 
 export interface StorefrontData {
+  organizationId: string;
   slug: string;
   brand: StorefrontBrand;
   status: StorefrontStatus;

@@ -13788,6 +13788,44 @@ html[data-theme="dark"] .storefront__status--closed {
   line-height: 1.5;
 }
 
+.cart-drawer__error {
+  margin-top: 14px;
+  padding: 10px 12px;
+  border-radius: var(--radius-md);
+  background: var(--danger-soft);
+  color: var(--danger);
+  font-size: 12.5px;
+}
+
+.cart-drawer__success {
+  display: grid;
+  justify-items: center;
+  gap: 8px;
+  padding: 24px 20px 32px;
+  text-align: center;
+}
+
+.cart-drawer__success svg {
+  display: grid;
+  width: 48px;
+  height: 48px;
+  place-items: center;
+  border-radius: 999px;
+  background: var(--success-soft);
+  color: var(--success);
+  padding: 10px;
+  box-sizing: border-box;
+}
+
+.cart-drawer__success strong {
+  font-size: 15px;
+}
+
+.cart-drawer__success p {
+  color: var(--text-secondary);
+  font-size: 12.5px;
+}
+
 .cart-drawer__lines {
   display: grid;
   gap: 14px;

@@ -4,6 +4,7 @@ import { useState } from "react";
 
 import {
   CaretLeft,
+  Check,
   Minus,
   Motorcycle,
   Plus,
@@ -12,6 +13,7 @@ import {
   X,
 } from "@phosphor-icons/react";
 
+import { createPublicOrder } from "@/app/actions/public-orders";
 import type {
   OrderFulfillment,
   StorefrontPaymentMethod,
@@ -30,12 +32,14 @@ export interface CartLine {
 
 interface CartDrawerProps {
   open: boolean;
+  organizationId: string;
   lines: CartLine[];
   paymentMethods: StorefrontPaymentMethod[];
   tableNumber?: string | null;
   onClose: () => void;
   onIncrement: (productId: string) => void;
   onDecrement: (productId: string) => void;
+  onOrderPlaced: () => void;
 }
 
 type Step =
@@ -70,12 +74,14 @@ function formatPrice(value: number) {
 
 export function CartDrawer({
   open,
+  organizationId,
   lines,
   paymentMethods,
   tableNumber = null,
   onClose,
   onIncrement,
   onDecrement,
+  onOrderPlaced,
 }: CartDrawerProps) {
   const [step, setStep] = useState<Step>("cart");
 
@@ -86,6 +92,24 @@ export function CartDrawer({
 
   const [payment, setPayment] =
     useState<StorefrontPaymentMethodId | null>(null);
+
+  const [customerName, setCustomerName] =
+    useState("");
+
+  const [customerPhone, setCustomerPhone] =
+    useState("");
+
+  const [addressText, setAddressText] =
+    useState("");
+
+  const [isSubmitting, setIsSubmitting] =
+    useState(false);
+
+  const [submitError, setSubmitError] =
+    useState<string | null>(null);
+
+  const [placedOrderId, setPlacedOrderId] =
+    useState<string | null>(null);
 
   if (!open) {
     return null;
@@ -109,10 +133,49 @@ export function CartDrawer({
     if (prev) setStep(prev);
   }
 
-  function handleClose() {
+  function resetAndClose() {
     setStep("cart");
+    setCustomerName("");
+    setCustomerPhone("");
+    setAddressText("");
+    setPayment(null);
+    setSubmitError(null);
+    setPlacedOrderId(null);
     onClose();
   }
+
+  async function handleConfirm() {
+    setIsSubmitting(true);
+    setSubmitError(null);
+
+    const result = await createPublicOrder({
+      organizationId,
+      customerName,
+      customerPhone: customerPhone || undefined,
+      fulfillment,
+      tableNumber: tableNumber ?? undefined,
+      addressText: addressText || undefined,
+      paymentMethod: payment ?? undefined,
+      items: lines.map((line) => ({
+        productId: line.productId,
+        name: line.name,
+        quantity: line.quantity,
+      })),
+    });
+
+    setIsSubmitting(false);
+
+    if (!result.success) {
+      setSubmitError(result.error);
+      return;
+    }
+
+    setPlacedOrderId(result.data?.id ?? null);
+    onOrderPlaced();
+  }
+
+  const canContinueFromDetails =
+    step !== "details" || customerName.trim().length > 0;
 
   return (
     <div className="cart-drawer">
@@ -120,12 +183,14 @@ export function CartDrawer({
         type="button"
         className="cart-drawer__backdrop"
         aria-label="Fechar carrinho"
-        onClick={handleClose}
+        onClick={resetAndClose}
       />
 
       <aside className="cart-drawer__panel">
         <div className="cart-drawer__header">
-          {!isEmpty && stepIndex > 0 ? (
+          {!isEmpty &&
+          stepIndex > 0 &&
+          !placedOrderId ? (
             <button
               type="button"
               onClick={goBack}
@@ -137,18 +202,22 @@ export function CartDrawer({
             <span className="cart-drawer__header-spacer" />
           )}
 
-          <h2>{stepTitle[step]}</h2>
+          <h2>
+            {placedOrderId
+              ? "Pedido enviado"
+              : stepTitle[step]}
+          </h2>
 
           <button
             type="button"
-            onClick={handleClose}
+            onClick={resetAndClose}
             aria-label="Fechar"
           >
             <X size={20} />
           </button>
         </div>
 
-        {!isEmpty && (
+        {!isEmpty && !placedOrderId && (
           <div className="cart-drawer__steps">
             {stepOrder.map((id, index) => (
               <span
@@ -167,7 +236,29 @@ export function CartDrawer({
         )}
 
         <div className="cart-drawer__content">
-          {isEmpty ? (
+          {placedOrderId ? (
+            <section className="cart-drawer__section">
+              <div className="cart-drawer__success">
+                <Check
+                  size={28}
+                  weight="bold"
+                />
+                <strong>
+                  Pedido enviado com sucesso!
+                </strong>
+                <p>
+                  O estabelecimento já recebeu seu
+                  pedido.
+                </p>
+              </div>
+
+              <OrderTracker
+                fulfillment={fulfillment}
+                currentStep="received"
+                tableNumber={tableNumber}
+              />
+            </section>
+          ) : isEmpty ? (
             <div className="cart-drawer__empty">
               <ShoppingCart
                 size={32}
@@ -237,6 +328,12 @@ export function CartDrawer({
                     <input
                       type="text"
                       placeholder="Nome completo"
+                      value={customerName}
+                      onChange={(event) =>
+                        setCustomerName(
+                          event.target.value,
+                        )
+                      }
                     />
                   </div>
 
@@ -244,6 +341,12 @@ export function CartDrawer({
                     <input
                       type="tel"
                       placeholder="Telefone / WhatsApp"
+                      value={customerPhone}
+                      onChange={(event) =>
+                        setCustomerPhone(
+                          event.target.value,
+                        )
+                      }
                     />
                   </div>
                 </section>
@@ -300,6 +403,12 @@ export function CartDrawer({
                           <input
                             type="text"
                             placeholder="Endereço de entrega"
+                            value={addressText}
+                            onChange={(event) =>
+                              setAddressText(
+                                event.target.value,
+                              )
+                            }
                           />
                         </div>
                       )}
@@ -329,13 +438,19 @@ export function CartDrawer({
                     fulfillment={fulfillment}
                     tableNumber={tableNumber}
                   />
+
+                  {submitError && (
+                    <p className="cart-drawer__error">
+                      {submitError}
+                    </p>
+                  )}
                 </section>
               )}
             </>
           )}
         </div>
 
-        {!isEmpty && (
+        {!isEmpty && !placedOrderId && (
           <div className="cart-drawer__footer">
             <div className="cart-drawer__total">
               <span>Total</span>
@@ -343,30 +458,38 @@ export function CartDrawer({
             </div>
 
             {step === "confirmation" ? (
-              <>
-                <button
-                  type="button"
-                  className="cart-drawer__submit"
-                  disabled
-                >
-                  Confirmar pedido
-                </button>
-
-                <small className="cart-drawer__note">
-                  Pré-visualização — a finalização será
-                  conectada assim que o backend estiver
-                  pronto.
-                </small>
-              </>
+              <button
+                type="button"
+                className="cart-drawer__submit"
+                disabled={isSubmitting}
+                onClick={handleConfirm}
+              >
+                {isSubmitting
+                  ? "Enviando..."
+                  : "Confirmar pedido"}
+              </button>
             ) : (
               <button
                 type="button"
                 className="cart-drawer__submit"
+                disabled={!canContinueFromDetails}
                 onClick={goNext}
               >
                 Continuar
               </button>
             )}
+          </div>
+        )}
+
+        {placedOrderId && (
+          <div className="cart-drawer__footer">
+            <button
+              type="button"
+              className="cart-drawer__submit"
+              onClick={resetAndClose}
+            >
+              Fechar
+            </button>
           </div>
         )}
       </aside>

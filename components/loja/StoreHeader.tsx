@@ -107,14 +107,16 @@ export function StoreHeader({
               {brand.type}
             </span>
 
-            <span className="storefront__rating">
-              <Star
-                size={12}
-                weight="fill"
-              />
-              {brand.rating.toFixed(1)}
-              <em>({brand.reviewCount})</em>
-            </span>
+            {brand.reviewCount > 0 && (
+              <span className="storefront__rating">
+                <Star
+                  size={12}
+                  weight="fill"
+                />
+                {brand.rating.toFixed(1)}
+                <em>({brand.reviewCount})</em>
+              </span>
+            )}
           </span>
         </div>
 

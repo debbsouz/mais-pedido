@@ -285,12 +285,14 @@ export function StorefrontExperience({
 
       <CartDrawer
         open={isCartOpen}
+        organizationId={data.organizationId}
         lines={cartLines}
         paymentMethods={data.paymentMethods}
         tableNumber={tableNumber}
         onClose={() => setIsCartOpen(false)}
         onIncrement={incrementItem}
         onDecrement={decrementItem}
+        onOrderPlaced={() => setQuantities({})}
       />
     </div>
   );

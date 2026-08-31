@@ -7,58 +7,61 @@
 
 ## 1. Contexto
 
-O front-end da loja pública já está pronto (rota `app/loja/[slug]/page.tsx`,
-componentes em `components/loja/`), construído inteiramente com **dados
-mockados**, isolados em `lib/storefront/`:
+O front-end da loja pública está pronto (rota `app/loja/[slug]/page.tsx`,
+componentes em `components/loja/`) e, desde 2026-08-25, **já lê dado real
+do Supabase** — não usa mais mock. Camada de dados em `lib/storefront/`:
 
 - `lib/storefront/types.ts` — contrato de dados que os componentes esperam.
-- `lib/storefront/mock-data.ts` — dados fictícios da loja "burger-house".
 - `lib/storefront/get-storefront-data.ts` — **único ponto de acesso aos
-  dados**. Hoje devolve o mock; quando os itens abaixo estiverem prontos,
-  troca-se só o corpo desta função por chamadas reais ao Supabase — os
-  componentes não precisam mudar, desde que o formato devolvido bata com
-  `StorefrontData` (ver `types.ts`).
+  dados**. Busca a organização pelo slug, categorias e produtos
+  disponíveis, direto do Supabase. Campos que ainda não têm coluna real
+  (cor da marca, logo/banner, avaliação, redes sociais, promoções,
+  populares, pedidos recentes) usam valor neutro/vazio — nunca um número
+  inventado (ver seção 4 abaixo para o que falta em cada um).
+- `app/actions/public-orders.ts` — cria pedido real a partir do carrinho
+  da loja pública (visitante sem login), com `origin: 'Site'`.
 
-Este documento existe pra alinhar o que falta no backend antes de a loja
-pública sair do modo "só visual" e passar a mostrar dado real.
+Este documento existe pra alinhar o que falta no backend pra loja pública
+ficar completa (identidade visual, promoções, etc.) — a base já funciona.
 
 ## 2. O que já existe no banco hoje
 
 - `organizations`: `id`, `name`, `slug` (único), `cnpj`.
 - `units`: `id`, `organization_id`, `name`, `slug`, `address`, `phone`.
-- `categories` / `products`: RLS exige `is_member_of(organization_id)` —
-  só membro autenticado da organização lê.
-- `orders`: RLS de INSERT também exige `is_member_of(organization_id)`.
+- `categories` / `products`: leitura pública liberada (ver seção 3).
+- `orders` / `order_items`: criação por visitante anônimo liberada (ver
+  seção 3), restrita a `origin = 'Site'`.
 - Cadastro de organização: **manual**, via migration/SQL direto no
   Supabase (ver `supabase/migrations/20260810_003_seed_demo_data.sql`).
   Não existe tela nem processo automatizado ainda.
 
-## 3. Pendências — bloqueantes pro MVP da loja pública
+## 3. Bloqueantes do MVP — ✅ resolvidos em 2026-08-25
 
-Sem isso, não dá pra tirar a loja pública do modo mock.
+Migrations `20260825_014_loja_publica_leitura_e_pedido.sql` e
+`20260825_015_loja_publica_fix_order_items_rls.sql` (aplicadas direto no
+banco de produção, verificadas com a chave pública simulando um visitante
+real, incluindo um pedido de teste ponta a ponta que depois foi removido):
 
-### 3.1 Leitura pública de categorias e produtos
+- **Leitura pública de categorias e produtos**: policies
+  `categories_select_public` (`USING (true)`) e `products_select_public`
+  (`USING (is_available = true)`).
+- **Busca pública de organização por slug**: função SECURITY DEFINER
+  `get_public_organization_by_slug(org_slug)`, devolve só `id`/`name`/
+  `slug` — nunca CNPJ nem outro dado sensível.
+- **Criação de pedido por visitante anônimo**: policies
+  `orders_insert_public` e `order_items_insert_public`, restritas a
+  `origin = 'Site'`. O preço de cada item é sempre revalidado contra o
+  catálogo real no servidor (`app/actions/public-orders.ts`), nunca
+  confiando no valor enviado pelo navegador.
 
-Hoje `categories_select_member` / `products_select_member` só liberam
-leitura para membro da organização. Precisa de uma policy adicional de
-`SELECT` para visitante anônimo (`anon`), filtrando por organização/unidade
-ativa — sem expor produtos de organizações inativas/suspensas.
-
-### 3.2 Busca pública de organização/unidade por slug
-
-Hoje a consulta de organização depende de sessão autenticada
-(`getCurrentUser()` → `getCatalogContext()`). Precisa de uma forma de
-resolver `slug → organização/unidade` sem sessão, retornando só os campos
-seguros para exibição pública (nada sensível tipo CNPJ, dados de outros
-clientes, configurações internas).
-
-### 3.3 Criação de pedido por visitante anônimo
-
-RLS de INSERT em `orders` hoje também exige `is_member_of`. Precisa de uma
-policy que permita um visitante sem login criar pedido vinculado à
-organização/unidade certa — com os limites de segurança que fizerem
-sentido (rate limit, validação de itens/preço no servidor para evitar
-manipulação do carrinho pelo cliente, etc.).
+**Detalhe técnico que vale registrar** (pegou os dois de nós de surpresa
+durante o teste): `INSERT ... RETURNING` também passa pela RLS de
+`SELECT` da tabela — como visitante anônimo não pode ler `orders` (tem
+nome/telefone de cliente), um `RETURNING` inicial quebrava mesmo com a
+policy de INSERT correta. Resolvido gerando o `id` do pedido no servidor
+(`crypto.randomUUID()`) em vez de pedir de volta. Pelo mesmo motivo, a
+policy de `order_items` usa uma função SECURITY DEFINER
+(`order_is_public`) em vez de uma subquery direta em `orders`.
 
 ## 4. Pendências — necessárias pra loja ficar "completa", mas não bloqueiam o MVP
 
@@ -135,7 +138,7 @@ validação pode vir depois — não é bloqueante, hoje o número é só exibid
 
 ## 6. Prioridade sugerida
 
-1. 3.1, 3.2, 3.3 — sem isso a loja pública não sai do mock de jeito nenhum.
+1. ~~3.1, 3.2, 3.3~~ — feito em 2026-08-25.
 2. 4.1, 4.2 — identidade e status são o que mais aparece visualmente.
 3. 4.3, 4.5 — redes sociais e pagamento, rápidos de adicionar.
 4. 4.4, 4.6 — promoções e populares, melhoram a experiência mas a loja
