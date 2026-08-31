@@ -1,6 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import {
+  type FormEvent,
+  useEffect,
+  useState,
+} from "react";
 
 import {
   Buildings,
@@ -9,9 +13,14 @@ import {
   Crown,
   ImageSquare,
   QrCode,
+  Storefront,
   UsersThree,
 } from "@phosphor-icons/react";
 
+import {
+  getStoreSettings,
+  updateStoreSettings,
+} from "@/app/actions/store-settings";
 import { useCurrentSubscription } from "@/components/providers/AuthProvider";
 import { plans } from "@/lib/plans";
 
@@ -40,6 +49,63 @@ export default function ConfiguracoesPage() {
             (item) => item !== brand,
           )
         : [...prev, brand],
+    );
+  }
+
+  const [minOrder, setMinOrder] = useState("0");
+  const [instagramUrl, setInstagramUrl] =
+    useState("");
+  const [facebookUrl, setFacebookUrl] =
+    useState("");
+  const [whatsappUrl, setWhatsappUrl] =
+    useState("");
+  const [isSavingStore, setIsSavingStore] =
+    useState(false);
+  const [storeSaveMessage, setStoreSaveMessage] =
+    useState<string | null>(null);
+
+  useEffect(() => {
+    void getStoreSettings().then((settings) => {
+      if (!settings) {
+        return;
+      }
+
+      setMinOrder(
+        (settings.minOrderCents / 100).toFixed(2),
+      );
+      setInstagramUrl(settings.instagramUrl ?? "");
+      setFacebookUrl(settings.facebookUrl ?? "");
+      setWhatsappUrl(settings.whatsappUrl ?? "");
+    });
+  }, []);
+
+  async function handleSaveStoreSettings(
+    event: FormEvent,
+  ) {
+    event.preventDefault();
+
+    setIsSavingStore(true);
+    setStoreSaveMessage(null);
+
+    const minOrderCents = Math.round(
+      Number(minOrder.replace(",", ".")) * 100,
+    );
+
+    const result = await updateStoreSettings({
+      minOrderCents: Number.isFinite(minOrderCents)
+        ? minOrderCents
+        : 0,
+      instagramUrl,
+      facebookUrl,
+      whatsappUrl,
+    });
+
+    setIsSavingStore(false);
+
+    setStoreSaveMessage(
+      result.success
+        ? "Salvo com sucesso."
+        : result.error,
     );
   }
 
@@ -295,6 +361,96 @@ export default function ConfiguracoesPage() {
             O envio de imagens será ativado em
             breve, junto com o backend.
           </small>
+        </article>
+
+        <article className="settings-card">
+          <div className="settings-card__header">
+            <Storefront
+              size={20}
+              weight="bold"
+            />
+            <h2>Loja pública</h2>
+          </div>
+
+          <p className="settings-card__hint">
+            Aparece para o cliente na sua loja
+            pública.
+          </p>
+
+          <form
+            className="settings-form"
+            onSubmit={handleSaveStoreSettings}
+          >
+            <div className="settings-form__field">
+              <span>Pedido mínimo (R$)</span>
+              <input
+                type="text"
+                inputMode="decimal"
+                value={minOrder}
+                onChange={(event) =>
+                  setMinOrder(event.target.value)
+                }
+              />
+            </div>
+
+            <div className="settings-form__field">
+              <span>Instagram</span>
+              <input
+                type="url"
+                placeholder="https://instagram.com/suaempresa"
+                value={instagramUrl}
+                onChange={(event) =>
+                  setInstagramUrl(
+                    event.target.value,
+                  )
+                }
+              />
+            </div>
+
+            <div className="settings-form__field">
+              <span>Facebook</span>
+              <input
+                type="url"
+                placeholder="https://facebook.com/suaempresa"
+                value={facebookUrl}
+                onChange={(event) =>
+                  setFacebookUrl(
+                    event.target.value,
+                  )
+                }
+              />
+            </div>
+
+            <div className="settings-form__field">
+              <span>WhatsApp</span>
+              <input
+                type="url"
+                placeholder="https://wa.me/5511999999999"
+                value={whatsappUrl}
+                onChange={(event) =>
+                  setWhatsappUrl(
+                    event.target.value,
+                  )
+                }
+              />
+            </div>
+
+            <button
+              type="submit"
+              className="settings-form__submit"
+              disabled={isSavingStore}
+            >
+              {isSavingStore
+                ? "Salvando..."
+                : "Salvar alterações"}
+            </button>
+
+            {storeSaveMessage && (
+              <small className="settings-form__note">
+                {storeSaveMessage}
+              </small>
+            )}
+          </form>
         </article>
 
         <article className="settings-card">

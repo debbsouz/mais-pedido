@@ -27,6 +27,10 @@ import { useCurrentUser } from "@/components/providers/AuthProvider";
 import { roles } from "@/lib/roles";
 import { getInitials } from "@/lib/user-display";
 import { signOut } from "@/app/actions/auth";
+import {
+  getStoreSettings,
+  updateStoreStatus,
+} from "@/app/actions/store-settings";
 
 const THEME_STORAGE_KEY =
   "mais-pedido-theme";
@@ -218,6 +222,46 @@ export function Topbar() {
   }, [theme]);
 
   /* =========================================
+     BUSCA O STATUS REAL DA LOJA NO BANCO
+     (localStorage é só cache local/otimista)
+  ========================================= */
+
+  useEffect(() => {
+    let cancelled = false;
+
+    void getStoreSettings().then((settings) => {
+      if (cancelled || !settings) {
+        return;
+      }
+
+      const realStatus: StoreStatus = settings.isOpen
+        ? "open"
+        : "closed";
+
+      if (
+        localStorage.getItem(
+          STORE_STATUS_STORAGE_KEY,
+        ) !== realStatus
+      ) {
+        localStorage.setItem(
+          STORE_STATUS_STORAGE_KEY,
+          realStatus,
+        );
+
+        window.dispatchEvent(
+          new Event(
+            STORE_STATUS_CHANGE_EVENT,
+          ),
+        );
+      }
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  /* =========================================
      FECHAR DROPDOWNS AO CLICAR FORA
   ========================================= */
 
@@ -293,6 +337,24 @@ export function Topbar() {
         STORE_STATUS_CHANGE_EVENT,
       ),
     );
+
+    void updateStoreStatus(
+      nextStatus === "open",
+    ).then((result) => {
+      if (!result.success) {
+        // Reverte o otimista se o banco recusar.
+        localStorage.setItem(
+          STORE_STATUS_STORAGE_KEY,
+          storeStatus,
+        );
+
+        window.dispatchEvent(
+          new Event(
+            STORE_STATUS_CHANGE_EVENT,
+          ),
+        );
+      }
+    });
   }
 
   function toggleNotifications() {

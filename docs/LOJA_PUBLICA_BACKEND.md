@@ -78,17 +78,29 @@ ou `units`, o que fizer mais sentido para o modelo de multi-unidade):
 O front já sabe consumir tudo isso — ver `StorefrontBrand` em
 `lib/storefront/types.ts`.
 
-### 4.2 Status aberto/fechado e pedido mínimo
+### 4.2 Status aberto/fechado e pedido mínimo — ✅ resolvido em 2026-08-25
 
-Hoje "aberto/fechado" é só `localStorage` no painel administrativo — não
-existe no banco, não é um dado real nem sincronizado. Precisa de uma
-coluna (`is_open` e `min_order_value`, provavelmente em `units`) que o
-painel escreve e a loja pública lê.
+Colunas `is_open` e `min_order_cents` em `organizations`. O toggle
+"Loja aberta/fechada" no Topbar (que antes só escrevia no
+`localStorage`) agora persiste de verdade via
+`app/actions/store-settings.ts` (`updateStoreStatus`), e o pedido
+mínimo é editável em Configurações → card "Loja pública"
+(`updateStoreSettings`). A loja pública lê os dois direto do banco.
 
-### 4.3 Redes sociais
+### 4.3 Redes sociais — ✅ resolvido em 2026-08-25
 
-Campos `instagram_url`, `facebook_url`, `whatsapp_url` — hoje inexistentes.
-Formato esperado: `StorefrontSocial` em `types.ts`.
+Colunas `instagram_url`, `facebook_url`, `whatsapp_url` em
+`organizations`, editáveis no mesmo card "Loja pública" em
+Configurações.
+
+**Detalhe técnico que vale registrar**: a tabela `organizations` tinha
+política de `SELECT` (membro) e `INSERT`, mas nenhuma de `UPDATE`. Isso
+fazia o "salvar" retornar sucesso sem gravar nada (o Supabase não
+retorna erro quando um `UPDATE` bate 0 linhas por causa do RLS).
+Corrigido com a policy `organizations_update_member` (migration
+`20260825_019`). Os dois Server Actions também passaram a usar
+`.select()` após o update para detectar isso no futuro, caso aconteça
+de novo em outra tabela.
 
 ### 4.4 Promoções/destaques configuráveis
 
@@ -139,8 +151,9 @@ validação pode vir depois — não é bloqueante, hoje o número é só exibid
 ## 6. Prioridade sugerida
 
 1. ~~3.1, 3.2, 3.3~~ — feito em 2026-08-25.
-2. 4.1, 4.2 — identidade e status são o que mais aparece visualmente.
-3. 4.3, 4.5 — redes sociais e pagamento, rápidos de adicionar.
+2. 4.1 — identidade visual é o que mais falta visualmente agora.
+3. ~~4.2, 4.3~~ — feito em 2026-08-25. 4.5 (pagamento configurável)
+   ainda falta.
 4. 4.4, 4.6 — promoções e populares, melhoram a experiência mas a loja
    funciona sem eles (as seções já somem sozinhas quando vazias).
 5. 4.7, 4.8 — dependem de autenticação de cliente / mesas, podem esperar
