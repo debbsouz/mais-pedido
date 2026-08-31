@@ -14,6 +14,7 @@ import {
 } from "@phosphor-icons/react";
 
 import { createPublicOrder } from "@/app/actions/public-orders";
+import { rememberOrderId } from "@/lib/storefront/order-history";
 import type {
   OrderFulfillment,
   StorefrontPaymentMethod,
@@ -99,8 +100,23 @@ export function CartDrawer({
   const [customerPhone, setCustomerPhone] =
     useState("");
 
-  const [addressText, setAddressText] =
-    useState("");
+  const [address, setAddress] = useState({
+    zipCode: "",
+    street: "",
+    number: "",
+    complement: "",
+    neighborhood: "",
+  });
+
+  function updateAddressField(
+    field: keyof typeof address,
+    value: string,
+  ) {
+    setAddress((prev) => ({
+      ...prev,
+      [field]: value,
+    }));
+  }
 
   const [isSubmitting, setIsSubmitting] =
     useState(false);
@@ -137,7 +153,13 @@ export function CartDrawer({
     setStep("cart");
     setCustomerName("");
     setCustomerPhone("");
-    setAddressText("");
+    setAddress({
+      zipCode: "",
+      street: "",
+      number: "",
+      complement: "",
+      neighborhood: "",
+    });
     setPayment(null);
     setSubmitError(null);
     setPlacedOrderId(null);
@@ -154,7 +176,10 @@ export function CartDrawer({
       customerPhone: customerPhone || undefined,
       fulfillment,
       tableNumber: tableNumber ?? undefined,
-      addressText: addressText || undefined,
+      address:
+        fulfillment === "delivery"
+          ? address
+          : undefined,
       paymentMethod: payment ?? undefined,
       items: lines.map((line) => ({
         productId: line.productId,
@@ -170,12 +195,30 @@ export function CartDrawer({
       return;
     }
 
-    setPlacedOrderId(result.data?.id ?? null);
+    const newOrderId = result.data?.id ?? null;
+    setPlacedOrderId(newOrderId);
+
+    if (newOrderId) {
+      rememberOrderId(organizationId, newOrderId);
+    }
+
     onOrderPlaced();
   }
 
   const canContinueFromDetails =
     step !== "details" || customerName.trim().length > 0;
+
+  const canContinueFromFulfillment =
+    step !== "fulfillment" ||
+    fulfillment !== "delivery" ||
+    Boolean(
+      address.street.trim() &&
+        address.number.trim() &&
+        address.neighborhood.trim(),
+    );
+
+  const canContinue =
+    canContinueFromDetails && canContinueFromFulfillment;
 
   return (
     <div className="cart-drawer">
@@ -399,17 +442,82 @@ export function CartDrawer({
                       </div>
 
                       {fulfillment === "delivery" && (
-                        <div className="cart-drawer__field">
-                          <input
-                            type="text"
-                            placeholder="Endereço de entrega"
-                            value={addressText}
-                            onChange={(event) =>
-                              setAddressText(
-                                event.target.value,
-                              )
-                            }
-                          />
+                        <div className="cart-drawer__address">
+                          <div className="cart-drawer__field">
+                            <input
+                              type="text"
+                              placeholder="CEP (opcional)"
+                              value={address.zipCode}
+                              onChange={(event) =>
+                                updateAddressField(
+                                  "zipCode",
+                                  event.target.value,
+                                )
+                              }
+                            />
+                          </div>
+
+                          <div className="cart-drawer__address-row">
+                            <div className="cart-drawer__field">
+                              <input
+                                type="text"
+                                placeholder="Rua"
+                                value={address.street}
+                                onChange={(event) =>
+                                  updateAddressField(
+                                    "street",
+                                    event.target.value,
+                                  )
+                                }
+                              />
+                            </div>
+
+                            <div className="cart-drawer__field cart-drawer__field--small">
+                              <input
+                                type="text"
+                                placeholder="Nº"
+                                value={address.number}
+                                onChange={(event) =>
+                                  updateAddressField(
+                                    "number",
+                                    event.target.value,
+                                  )
+                                }
+                              />
+                            </div>
+                          </div>
+
+                          <div className="cart-drawer__field">
+                            <input
+                              type="text"
+                              placeholder="Bairro"
+                              value={
+                                address.neighborhood
+                              }
+                              onChange={(event) =>
+                                updateAddressField(
+                                  "neighborhood",
+                                  event.target.value,
+                                )
+                              }
+                            />
+                          </div>
+
+                          <div className="cart-drawer__field">
+                            <input
+                              type="text"
+                              placeholder="Complemento (opcional)"
+                              value={
+                                address.complement
+                              }
+                              onChange={(event) =>
+                                updateAddressField(
+                                  "complement",
+                                  event.target.value,
+                                )
+                              }
+                            />
+                          </div>
                         </div>
                       )}
                     </>
@@ -472,7 +580,7 @@ export function CartDrawer({
               <button
                 type="button"
                 className="cart-drawer__submit"
-                disabled={!canContinueFromDetails}
+                disabled={!canContinue}
                 onClick={goNext}
               >
                 Continuar

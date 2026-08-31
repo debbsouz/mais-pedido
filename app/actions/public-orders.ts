@@ -1,6 +1,19 @@
 'use server'
 
+import { headers } from 'next/headers'
+
 import { createClient } from '@/lib/supabase/server'
+
+async function getClientIp(): Promise<string> {
+  const headerList = await headers()
+
+  const forwardedFor = headerList.get('x-forwarded-for')
+  if (forwardedFor) {
+    return forwardedFor.split(',')[0].trim()
+  }
+
+  return headerList.get('x-real-ip') ?? 'unknown'
+}
 
 // ============================================================
 // Pedido criado por visitante da loja pública (sem sessão).
@@ -25,13 +38,22 @@ export interface PublicOrderItemInput {
 export type PublicOrderFulfillment = 'delivery' | 'pickup' | 'dine-in'
 export type PublicOrderPaymentMethod = 'pix' | 'card' | 'cash'
 
+export interface PublicOrderAddressInput {
+  zipCode?: string
+  street: string
+  number: string
+  complement?: string
+  neighborhood: string
+  city?: string
+}
+
 export interface CreatePublicOrderInput {
   organizationId: string
   customerName: string
   customerPhone?: string
   fulfillment: PublicOrderFulfillment
   tableNumber?: string
-  addressText?: string
+  address?: PublicOrderAddressInput
   paymentMethod?: PublicOrderPaymentMethod
   items: PublicOrderItemInput[]
 }
@@ -91,6 +113,22 @@ export async function createPublicOrder(
 
   const supabase = await createClient()
 
+  // Limite de pedidos por visitante (evita spam de pedido falso).
+  const clientIp = await getClientIp()
+
+  const { data: allowed } = await supabase.rpc(
+    'check_and_log_order_attempt',
+    { client_ip: clientIp },
+  )
+
+  if (!allowed) {
+    return {
+      success: false,
+      error:
+        'Muitos pedidos em pouco tempo. Aguarde alguns minutos e tente novamente.',
+    }
+  }
+
   // Revalida o preco de cada item contra o catalogo real, em vez
   // de confiar no valor enviado pelo navegador.
   const productIds = Array.from(
@@ -145,14 +183,14 @@ export async function createPublicOrder(
     status: 'new',
     table_number: input.tableNumber?.trim() || null,
     address:
-      input.fulfillment === 'delivery' && input.addressText?.trim()
+      input.fulfillment === 'delivery' && input.address
         ? {
-            zipCode: '',
-            street: input.addressText.trim(),
-            number: '',
-            complement: '',
-            neighborhood: '',
-            city: '',
+            zipCode: input.address.zipCode?.trim() ?? '',
+            street: input.address.street.trim(),
+            number: input.address.number.trim(),
+            complement: input.address.complement?.trim() ?? '',
+            neighborhood: input.address.neighborhood.trim(),
+            city: input.address.city?.trim() ?? '',
           }
         : null,
     payment: input.paymentMethod
@@ -191,4 +229,44 @@ export async function createPublicOrder(
   }
 
   return { success: true, data: { id: orderId } }
+}
+
+// ============================================================
+// Consulta de status por id (aba "Pedidos" da loja pública).
+//
+// O navegador guarda o id do pedido (UUID, não adivinhável) após
+// criar. Esta função nunca devolve nome/telefone/endereço do
+// cliente — só o necessário para acompanhar o andamento.
+// ============================================================
+
+export interface PublicOrderStatus {
+  id: string
+  number: number
+  status: string
+  fulfillment: string
+  createdAt: string
+  totalCents: number
+}
+
+export async function getPublicOrderStatus(
+  orderId: string,
+): Promise<PublicOrderStatus | null> {
+  const supabase = await createClient()
+
+  const { data } = (await supabase
+    .rpc('get_public_order_status', { p_order_id: orderId })
+    .single()) as { data: Record<string, unknown> | null }
+
+  if (!data) {
+    return null
+  }
+
+  return {
+    id: data.id as string,
+    number: data.number as number,
+    status: data.status as string,
+    fulfillment: data.fulfillment as string,
+    createdAt: data.created_at as string,
+    totalCents: data.total_cents as number,
+  }
 }

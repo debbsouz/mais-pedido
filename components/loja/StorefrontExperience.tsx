@@ -3,7 +3,7 @@
 import type { CSSProperties } from "react";
 import { useMemo, useState } from "react";
 
-import { ClipboardText, Tag } from "@phosphor-icons/react";
+import { Tag } from "@phosphor-icons/react";
 
 import type { StorefrontData } from "@/lib/storefront/types";
 
@@ -12,6 +12,7 @@ import { CartBar } from "./CartBar";
 import { CartDrawer, type CartLine } from "./CartDrawer";
 import { CategoryNav } from "./CategoryNav";
 import { HighlightsSection } from "./HighlightsSection";
+import { MyOrdersTab } from "./MyOrdersTab";
 import { PopularSection } from "./PopularSection";
 import { ProductSection } from "./ProductSection";
 import { PromotionCarousel } from "./PromotionCarousel";
@@ -256,10 +257,8 @@ export function StorefrontExperience({
       )}
 
       {activeTab === "orders" && (
-        <EmptyTab
-          icon={ClipboardText}
-          title="Seus pedidos"
-          description="Assim que você fizer um pedido, o acompanhamento aparecerá aqui."
+        <MyOrdersTab
+          organizationId={data.organizationId}
         />
       )}
 

@@ -13627,6 +13627,41 @@ html[data-theme="dark"] .storefront__status--closed {
   font-weight: 800;
 }
 
+/* Aba "Pedidos" — acompanhamento sem login */
+
+.storefront__my-orders {
+  display: grid;
+  gap: 12px;
+  max-width: 480px;
+  margin: 0 auto;
+  padding: 20px 20px 100px;
+}
+
+.storefront__my-order {
+  padding: 16px 18px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+  box-shadow: var(--shadow-sm);
+}
+
+.storefront__my-order-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+  font-size: 14px;
+}
+
+.storefront__my-order-header strong {
+  font-size: 14.5px;
+}
+
+.storefront__my-order-terminal {
+  color: var(--text-secondary);
+  font-size: 13px;
+}
+
 /* Acompanhamento do pedido */
 
 .order-tracker {
@@ -13927,6 +13962,20 @@ html[data-theme="dark"] .storefront__status--closed {
   border-color: var(--store-brand);
   box-shadow: 0 0 0 3px
     color-mix(in srgb, var(--store-brand) 18%, transparent);
+}
+
+.cart-drawer__address {
+  display: grid;
+}
+
+.cart-drawer__address-row {
+  display: grid;
+  grid-template-columns: 1fr 88px;
+  gap: 10px;
+}
+
+.cart-drawer__field--small {
+  margin-bottom: 10px;
 }
 
 .payment-method-list {
