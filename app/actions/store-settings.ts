@@ -11,6 +11,7 @@ export type StoreSettingsActionResult =
   | { success: false; error: string }
 
 export interface StoreSettings {
+  slug: string
   isOpen: boolean
   minOrderCents: number
   instagramUrl: string | null
@@ -34,7 +35,7 @@ export async function getStoreSettings(): Promise<StoreSettings | null> {
   const { data } = await supabase
     .from('organizations')
     .select(
-      'is_open, min_order_cents, instagram_url, facebook_url, whatsapp_url',
+      'slug, is_open, min_order_cents, instagram_url, facebook_url, whatsapp_url',
     )
     .eq('id', context.organizationId)
     .single()
@@ -44,6 +45,7 @@ export async function getStoreSettings(): Promise<StoreSettings | null> {
   }
 
   return {
+    slug: data.slug,
     isOpen: data.is_open,
     minOrderCents: data.min_order_cents,
     instagramUrl: data.instagram_url,

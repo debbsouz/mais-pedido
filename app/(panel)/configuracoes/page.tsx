@@ -7,11 +7,14 @@ import {
 } from "react";
 
 import {
+  ArrowSquareOut,
   Buildings,
   Check,
   ChatCircleDots,
+  Copy,
   Crown,
   ImageSquare,
+  LinkSimple,
   QrCode,
   Storefront,
   UsersThree,
@@ -52,6 +55,9 @@ export default function ConfiguracoesPage() {
     );
   }
 
+  const [storeSlug, setStoreSlug] = useState<
+    string | null
+  >(null);
   const [minOrder, setMinOrder] = useState("0");
   const [instagramUrl, setInstagramUrl] =
     useState("");
@@ -63,6 +69,8 @@ export default function ConfiguracoesPage() {
     useState(false);
   const [storeSaveMessage, setStoreSaveMessage] =
     useState<string | null>(null);
+  const [linkCopied, setLinkCopied] =
+    useState(false);
 
   useEffect(() => {
     void getStoreSettings().then((settings) => {
@@ -70,6 +78,7 @@ export default function ConfiguracoesPage() {
         return;
       }
 
+      setStoreSlug(settings.slug);
       setMinOrder(
         (settings.minOrderCents / 100).toFixed(2),
       );
@@ -78,6 +87,29 @@ export default function ConfiguracoesPage() {
       setWhatsappUrl(settings.whatsappUrl ?? "");
     });
   }, []);
+
+  const storeUrl =
+    storeSlug &&
+    typeof window !== "undefined"
+      ? `${window.location.origin}/loja/${storeSlug}`
+      : null;
+
+  async function handleCopyStoreUrl() {
+    if (!storeUrl) {
+      return;
+    }
+
+    try {
+      await navigator.clipboard.writeText(storeUrl);
+      setLinkCopied(true);
+      window.setTimeout(
+        () => setLinkCopied(false),
+        2000,
+      );
+    } catch {
+      // Sem permissão de área de transferência — ignora.
+    }
+  }
 
   async function handleSaveStoreSettings(
     event: FormEvent,
@@ -369,13 +401,52 @@ export default function ConfiguracoesPage() {
               size={20}
               weight="bold"
             />
-            <h2>Loja pública</h2>
+            <h2>Vitrine</h2>
           </div>
 
           <p className="settings-card__hint">
-            Aparece para o cliente na sua loja
-            pública.
+            O link abaixo é o endereço da sua loja —
+            envie para os clientes. Os campos aparecem
+            para eles na sua loja pública.
           </p>
+
+          {storeUrl && (
+            <div className="settings-store-link">
+              <div className="settings-store-link__url">
+                <LinkSimple size={16} />
+                <span>{storeUrl}</span>
+              </div>
+
+              <div className="settings-store-link__actions">
+                <button
+                  type="button"
+                  onClick={handleCopyStoreUrl}
+                  className="settings-store-link__button"
+                >
+                  <Copy
+                    size={15}
+                    weight="bold"
+                  />
+                  {linkCopied
+                    ? "Copiado!"
+                    : "Copiar link"}
+                </button>
+
+                <a
+                  href={storeUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="settings-store-link__button settings-store-link__button--primary"
+                >
+                  <ArrowSquareOut
+                    size={15}
+                    weight="bold"
+                  />
+                  Ver minha loja
+                </a>
+              </div>
+            </div>
+          )}
 
           <form
             className="settings-form"
