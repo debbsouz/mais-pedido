@@ -12245,6 +12245,116 @@ html[data-theme="dark"]
   max-width: 1040px;
 }
 
+.settings-page__cards--single {
+  column-count: 1;
+  max-width: 560px;
+}
+
+.settings-page__back {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--text-secondary);
+  font-size: 12.5px;
+  font-weight: 700;
+}
+
+.settings-page__back:hover {
+  color: var(--brand-600);
+}
+
+.settings-page__title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.settings-page__title-icon {
+  display: grid;
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+  place-items: center;
+  border-radius: var(--radius-md);
+  background: var(--brand-50);
+  color: var(--brand-600);
+}
+
+html[data-theme="dark"] .settings-page__title-icon {
+  background: rgb(249 115 22 / 0.14);
+}
+
+.settings-menu {
+  display: grid;
+  gap: 12px;
+  max-width: 640px;
+}
+
+.settings-menu__item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 18px 20px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+  text-align: left;
+  transition: border-color 150ms ease;
+}
+
+.settings-menu__item:hover {
+  border-color: var(--brand-400);
+}
+
+.settings-menu__icon {
+  display: grid;
+  width: 42px;
+  height: 42px;
+  flex-shrink: 0;
+  place-items: center;
+  border-radius: var(--radius-md);
+  background: var(--brand-50);
+  color: var(--brand-600);
+}
+
+html[data-theme="dark"] .settings-menu__icon {
+  background: rgb(249 115 22 / 0.14);
+}
+
+.settings-menu__text {
+  display: grid;
+  gap: 3px;
+  flex: 1;
+  min-width: 0;
+}
+
+.settings-menu__text strong {
+  font-size: 14.5px;
+}
+
+.settings-menu__text span {
+  color: var(--text-secondary);
+  font-size: 12.5px;
+}
+
+.settings-menu__badge {
+  flex-shrink: 0;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: var(--background);
+  color: var(--text-muted);
+  font-size: 10.5px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.settings-menu__chevron {
+  flex-shrink: 0;
+  color: var(--text-muted);
+}
+
 .settings-card {
   display: grid;
   gap: 16px;
