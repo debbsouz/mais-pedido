@@ -12239,120 +12239,125 @@ html[data-theme="dark"]
   font-size: 13px;
 }
 
-.settings-page__cards {
-  column-count: 2;
-  column-gap: 24px;
-  max-width: 1040px;
+.settings-tabbar {
+  display: flex;
+  gap: 4px;
+  padding-bottom: 1px;
+  border-bottom: 1px solid var(--border);
+  overflow-x: auto;
 }
 
-.settings-page__cards--single {
-  column-count: 1;
-  max-width: 560px;
-}
-
-.settings-page__back {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
+.settings-tabbar__tab {
+  flex-shrink: 0;
+  padding: 10px 2px;
+  margin-right: 22px;
   color: var(--text-secondary);
-  font-size: 12.5px;
+  font-size: 13.5px;
   font-weight: 700;
+  white-space: nowrap;
+  border-bottom: 2px solid transparent;
+  transition:
+    color 150ms ease,
+    border-color 150ms ease;
 }
 
-.settings-page__back:hover {
+.settings-tabbar__tab:hover {
+  color: var(--foreground);
+}
+
+.settings-tabbar__tab--active {
   color: var(--brand-600);
+  border-bottom-color: var(--brand-600);
 }
 
-.settings-page__title {
+.settings-content {
+  max-width: 760px;
+}
+
+.settings-section__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 22px;
+}
+
+.settings-section__header h2 {
   display: flex;
   align-items: center;
-  gap: 12px;
-  margin-top: 12px;
+  gap: 10px;
+  font-size: 19px;
 }
 
-.settings-page__title-icon {
-  display: grid;
-  width: 40px;
-  height: 40px;
-  flex-shrink: 0;
-  place-items: center;
-  border-radius: var(--radius-md);
-  background: var(--brand-50);
-  color: var(--brand-600);
-}
-
-html[data-theme="dark"] .settings-page__title-icon {
-  background: rgb(249 115 22 / 0.14);
-}
-
-.settings-menu {
-  display: grid;
-  gap: 12px;
-  max-width: 640px;
-}
-
-.settings-menu__item {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  padding: 18px 20px;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  background: var(--surface);
-  text-align: left;
-  transition: border-color 150ms ease;
-}
-
-.settings-menu__item:hover {
-  border-color: var(--brand-400);
-}
-
-.settings-menu__icon {
-  display: grid;
-  width: 42px;
-  height: 42px;
-  flex-shrink: 0;
-  place-items: center;
-  border-radius: var(--radius-md);
-  background: var(--brand-50);
-  color: var(--brand-600);
-}
-
-html[data-theme="dark"] .settings-menu__icon {
-  background: rgb(249 115 22 / 0.14);
-}
-
-.settings-menu__text {
-  display: grid;
-  gap: 3px;
-  flex: 1;
-  min-width: 0;
-}
-
-.settings-menu__text strong {
-  font-size: 14.5px;
-}
-
-.settings-menu__text span {
+.settings-section__header p {
+  margin: 5px 0 0;
+  max-width: 480px;
   color: var(--text-secondary);
-  font-size: 12.5px;
+  font-size: 13px;
+  line-height: 1.5;
 }
 
-.settings-menu__badge {
-  flex-shrink: 0;
-  padding: 4px 10px;
+.settings-section__badge {
+  padding: 3px 9px;
   border-radius: 999px;
   background: var(--background);
   color: var(--text-muted);
-  font-size: 10.5px;
+  font-size: 10px;
   font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 0.04em;
 }
 
-.settings-menu__chevron {
+.settings-help {
+  position: relative;
   flex-shrink: 0;
-  color: var(--text-muted);
+}
+
+.settings-help__toggle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 13px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.settings-help__toggle:hover {
+  border-color: var(--brand-400);
+}
+
+.settings-help__toggle[aria-expanded="true"] {
+  border-color: var(--brand-500);
+  background: var(--brand-50);
+  color: var(--brand-600);
+}
+
+html[data-theme="dark"] .settings-help__toggle[aria-expanded="true"] {
+  background: rgb(249 115 22 / 0.12);
+}
+
+.settings-help__panel {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  z-index: 20;
+  width: min(300px, 80vw);
+  padding: 14px 16px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  box-shadow: var(--shadow-md);
+}
+
+.settings-help__panel p {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 12.5px;
+  line-height: 1.6;
 }
 
 .settings-card {
@@ -12365,12 +12370,6 @@ html[data-theme="dark"] .settings-menu__icon {
   background: var(--surface);
   box-shadow: var(--shadow-sm);
   break-inside: avoid;
-}
-
-@media (max-width: 900px) {
-  .settings-page__cards {
-    column-count: 1;
-  }
 }
 
 .settings-payment__group {
@@ -12592,12 +12591,28 @@ html[data-theme="dark"] .settings-payment__online-icon {
 
 .settings-form {
   display: grid;
-  gap: 14px;
+  gap: 16px;
+}
+
+.settings-form--grid {
+  grid-template-columns: 1fr 1fr;
+  gap: 18px 20px;
 }
 
 .settings-form__field {
   display: grid;
   gap: 7px;
+  align-content: start;
+}
+
+.settings-form__field--full {
+  grid-column: 1 / -1;
+}
+
+@media (max-width: 640px) {
+  .settings-form--grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 .settings-form__field > span {
@@ -12648,14 +12663,16 @@ html[data-theme="dark"] .settings-payment__online-icon {
 
 .settings-brand__uploads {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
+  grid-template-columns: 1fr 1.6fr;
+  gap: 14px;
 }
 
 .settings-brand__upload {
   display: grid;
   justify-items: center;
-  gap: 4px;
+  align-content: center;
+  gap: 6px;
+  min-height: 160px;
   padding: 22px 10px;
   border: 1.5px dashed var(--border);
   border-radius: var(--radius-lg);
@@ -12679,10 +12696,13 @@ html[data-theme="dark"] .settings-payment__online-icon {
   }
 }
 
-.settings-card--plan {
-  gap: 0;
-  padding: 0;
+.settings-plan {
+  display: grid;
   overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+  box-shadow: var(--shadow-sm);
 }
 
 .settings-plan__hero {
@@ -12751,8 +12771,11 @@ html[data-theme="dark"] .settings-payment__online-icon {
   padding: 20px 22px 22px;
 }
 
-.settings-plan__body .settings-card__hint {
+.settings-plan__body p {
   margin: 0;
+  color: var(--text-secondary);
+  font-size: 12.5px;
+  line-height: 1.5;
 }
 
 .settings-plan__cta {
