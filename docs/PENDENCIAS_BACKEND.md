@@ -79,6 +79,47 @@ Pra essa tela funcionar de verdade, falta:
 
 Isso é feature nova, não ajuste — não tentei simular com dado local.
 
+## 4. Financeiro e Relatórios — construídos em 2026-09-02, "tempo médio" do Início ainda quebrado
+
+`/financeiro` e `/relatorios` estavam cadastrados em
+`lib/route-access.ts` (com permissão `viewFinancial`/`viewReports`,
+concedida a `owner`/`manager`) e apareciam no menu lateral, mas não
+tinham nenhuma página — clicar neles dava 404 pra quem tivesse acesso
+(proprietário/gerente, ou seja, qualquer conta real de dono de
+restaurante). Construídas agora, com dado 100% real (sem número de
+exemplo):
+
+- `/financeiro` (`lib/financeiro-dal.ts`): receita hoje/7 dias/30
+  dias, ticket médio, receita por forma de pagamento, por origem do
+  pedido e gráfico de receita por dia. Conta tudo que não foi
+  cancelado (não só `status = 'completed'`), porque em fluxo de
+  balcão/mesa nem sempre alguém marca isso.
+- `/relatorios` (`lib/relatorios-dal.ts`): produtos mais vendidos,
+  pedidos por status e horários de pico, últimos 30 dias.
+
+**Bug de layout encontrado e corrigido nesse processo**: o menu
+lateral (`components/layout/Sidebar.tsx`) tinha `overflow: hidden`
+sem scroll — com poucos itens nunca dava problema, mas ao adicionar
+o item "Relatórios" o menu passou a ter itens demais pra caber na
+tela, e o item simplesmente sumia (sem barra de rolagem, sem aviso).
+Corrigido dando scroll interno pro `.sidebar__navigation`
+(`app/globals.css`). Vale ficar de olho se a lista de "Gestão"
+crescer mais.
+
+**Bug observado, NÃO corrigido ainda** (fora do escopo desta sessão):
+na tela Início (`/inicio`), o card "Saúde da operação"
+(`components/inicio/OperationStats.tsx`) mostrou "Operação com atraso
+crítico" com "Tempo médio: 31453 minutos" — isso vem de pedidos de
+teste antigos (de 12/08) que ficaram presos em status
+`preparing`/`ready` por semanas e nunca foram finalizados/cancelados,
+distorcendo o cálculo de tempo médio. Não é dado inventado, é cálculo
+real em cima de dado de teste velho — mas o cálculo em si também
+parece não descartar pedidos muito antigos, o que é um bug separado
+(um pedido esquecido há semanas não devia contar como "31453 minutos
+de atraso"). Fica registrado pra próxima sessão investigar
+`OperationStats`/`OperationAlert` e decidir um limite razoável (ex.:
+ignorar pedidos com mais de X horas no cálculo de tempo médio).
+
 ## 3. Preço do pedido — revalidação server-side (já corrigida, registrar aqui pra visibilidade)
 
 `app/actions/orders.ts` (`createOrder`) antes confiava cegamente no
