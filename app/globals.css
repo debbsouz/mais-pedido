@@ -12425,6 +12425,32 @@ html[data-theme="dark"] .settings-payment__status {
   color: #86efac;
 }
 
+.settings-payment__status--off {
+  background: var(--background);
+  color: var(--text-muted);
+}
+
+.settings-payment__status--off::before {
+  background: var(--text-muted);
+}
+
+html[data-theme="dark"] .settings-payment__status--off {
+  background: var(--background);
+  color: var(--text-muted);
+}
+
+.settings-payment__group .settings-form {
+  margin-top: 4px;
+}
+
+.settings-payment__footer {
+  display: grid;
+  gap: 8px;
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 1px solid var(--border);
+}
+
 .settings-payment__online-icon {
   display: grid;
   width: 38px;

@@ -2,6 +2,25 @@ import { createClient } from "@/lib/supabase/server";
 
 import type { StorefrontData } from "./types";
 
+function buildWhatsAppUrl(
+  phone: string | null,
+): string | undefined {
+  if (!phone) {
+    return undefined;
+  }
+
+  const digits = phone.replace(/\D/g, "");
+
+  if (!digits) {
+    return undefined;
+  }
+
+  const withCountryCode =
+    digits.length <= 11 ? `55${digits}` : digits;
+
+  return `https://wa.me/${withCountryCode}`;
+}
+
 function getInitials(name: string) {
   const words = name.trim().split(/\s+/).filter(Boolean);
 
@@ -24,15 +43,16 @@ function getInitials(name: string) {
  * 20260825_014_loja_publica_leitura_e_pedido.sql).
  *
  * Campos que ainda não têm coluna real no banco (cor da marca,
- * logo/banner, avaliação, promoções, populares, pedidos recentes,
- * formas de pagamento configuráveis) usam um valor neutro/vazio —
- * nunca um número inventado. Os componentes que consomem esses
- * campos já somem sozinhos quando vêm vazios (promoções,
- * destaques, "peça de novo", redes sociais), e a avaliação só
- * aparece quando reviewCount > 0. Status aberto/fechado, pedido
- * mínimo e redes sociais já são reais (ver
- * app/actions/store-settings.ts). Ver docs/LOJA_PUBLICA_BACKEND.md,
- * seção 4, para o que ainda falta.
+ * logo/banner, avaliação, promoções, populares, pedidos recentes)
+ * usam um valor neutro/vazio — nunca um número inventado. Os
+ * componentes que consomem esses campos já somem sozinhos quando
+ * vêm vazios (promoções, destaques, "peça de novo"), e a avaliação
+ * só aparece quando reviewCount > 0. Status aberto/fechado, pedido
+ * mínimo, redes sociais e bandeiras de cartão aceitas já são reais
+ * (ver app/actions/store-settings.ts). O WhatsApp não tem campo
+ * próprio — é derivado do telefone cadastrado em Estabelecimento
+ * (buildWhatsAppUrl). Ver docs/LOJA_PUBLICA_BACKEND.md, seção 4,
+ * para o que ainda falta.
  */
 export async function getStorefrontData(
   slug: string,
@@ -71,6 +91,9 @@ export async function getStorefrontData(
   const categoryNames = (categoryRows ?? []).map(
     (category) => category.name as string,
   );
+
+  const acceptedCardBrands =
+    (org.accepted_card_brands as string[] | null) ?? [];
 
   const products = (productRows ?? []).map(
     (product: Record<string, unknown>) => ({
@@ -112,14 +135,16 @@ export async function getStorefrontData(
         (org.instagram_url as string | null) ?? undefined,
       facebook:
         (org.facebook_url as string | null) ?? undefined,
-      whatsapp:
-        (org.whatsapp_url as string | null) ?? undefined,
+      whatsapp: buildWhatsAppUrl(
+        org.phone as string | null,
+      ),
     },
     categories: ["Todos", ...categoryNames],
     products,
     promos: [],
     popularProductIds: [],
     recentOrders: [],
+    acceptedCardBrands,
     paymentMethods: [
       {
         id: "pix",
@@ -129,7 +154,10 @@ export async function getStorefrontData(
       {
         id: "card",
         label: "Cartão",
-        description: "Crédito ou débito na entrega",
+        description:
+          acceptedCardBrands.length > 0
+            ? `Crédito ou débito na entrega — aceitamos ${acceptedCardBrands.join(", ")}`
+            : "Crédito ou débito na entrega",
       },
       {
         id: "cash",

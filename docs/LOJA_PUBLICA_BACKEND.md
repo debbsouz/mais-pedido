@@ -151,9 +151,22 @@ validação pode vir depois — não é bloqueante, hoje o número é só exibid
 ## 6. Prioridade sugerida
 
 1. ~~3.1, 3.2, 3.3~~ — feito em 2026-08-25.
-2. 4.1 — identidade visual é o que mais falta visualmente agora.
-3. ~~4.2, 4.3~~ — feito em 2026-08-25. 4.5 (pagamento configurável)
-   ainda falta.
+2. 4.1 — identidade visual: adiada de propósito até existir uma
+   empresa real cadastrada (não faz sentido construir upload de
+   logo/banner sem ter o que enviar).
+3. ~~4.2, 4.3~~ — feito em 2026-08-25.
+4. ~~4.5 (parcial)~~ — feito em 2026-08-26: bandeiras de cartão
+   aceitas na entrega são reais e já aparecem no cardápio digital.
+   Pix continua só cadastro da chave (sem QR Code/cobrança
+   automática — isso ainda depende de decidir a integração de
+   pagamento).
+
+## 7. Telefone único (2026-08-26)
+
+Não existe mais campo de WhatsApp separado. O telefone cadastrado em
+Configurações → Estabelecimento (`organizations.phone`) é a fonte
+única — o botão de WhatsApp da loja pública é gerado a partir dele
+(`buildWhatsAppUrl` em `lib/storefront/get-storefront-data.ts`).
 4. 4.4, 4.6 — promoções e populares, melhoram a experiência mas a loja
    funciona sem eles (as seções já somem sozinhas quando vazias).
 5. 4.7, 4.8 — dependem de autenticação de cliente / mesas, podem esperar

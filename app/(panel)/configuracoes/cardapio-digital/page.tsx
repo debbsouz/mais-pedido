@@ -23,8 +23,6 @@ export default function CardapioDigitalPage() {
     useState("");
   const [facebookUrl, setFacebookUrl] =
     useState("");
-  const [whatsappUrl, setWhatsappUrl] =
-    useState("");
   const [isSavingStore, setIsSavingStore] =
     useState(false);
   const [storeSaveMessage, setStoreSaveMessage] =
@@ -44,7 +42,6 @@ export default function CardapioDigitalPage() {
       );
       setInstagramUrl(settings.instagramUrl ?? "");
       setFacebookUrl(settings.facebookUrl ?? "");
-      setWhatsappUrl(settings.whatsappUrl ?? "");
     });
   }, []);
 
@@ -88,7 +85,6 @@ export default function CardapioDigitalPage() {
         : 0,
       instagramUrl,
       facebookUrl,
-      whatsappUrl,
     });
 
     setIsSavingStore(false);
@@ -116,9 +112,9 @@ export default function CardapioDigitalPage() {
             Essa é a página que o seu cliente acessa
             pelo link, sem precisar de login. Copie o
             link abaixo e envie no WhatsApp, Instagram
-            ou onde preferir. O pedido mínimo e as
-            redes sociais que você preencher aqui
-            aparecem direto pra ele.
+            ou onde preferir. O botão de WhatsApp da
+            loja usa o telefone cadastrado na aba
+            Estabelecimento.
           </p>
         </SettingsHelp>
       </div>
@@ -178,18 +174,6 @@ export default function CardapioDigitalPage() {
         </div>
 
         <div className="settings-form__field">
-          <span>WhatsApp</span>
-          <input
-            type="url"
-            placeholder="https://wa.me/5511999999999"
-            value={whatsappUrl}
-            onChange={(event) =>
-              setWhatsappUrl(event.target.value)
-            }
-          />
-        </div>
-
-        <div className="settings-form__field">
           <span>Instagram</span>
           <input
             type="url"
@@ -201,7 +185,7 @@ export default function CardapioDigitalPage() {
           />
         </div>
 
-        <div className="settings-form__field">
+        <div className="settings-form__field settings-form__field--full">
           <span>Facebook</span>
           <input
             type="url"

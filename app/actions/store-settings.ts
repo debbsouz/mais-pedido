@@ -12,11 +12,16 @@ export type StoreSettingsActionResult =
 
 export interface StoreSettings {
   slug: string
+  name: string
+  cnpj: string | null
+  phone: string | null
   isOpen: boolean
   minOrderCents: number
   instagramUrl: string | null
   facebookUrl: string | null
-  whatsappUrl: string | null
+  pixKey: string | null
+  pixKeyType: string | null
+  acceptedCardBrands: string[]
 }
 
 /**
@@ -35,7 +40,7 @@ export async function getStoreSettings(): Promise<StoreSettings | null> {
   const { data } = await supabase
     .from('organizations')
     .select(
-      'slug, is_open, min_order_cents, instagram_url, facebook_url, whatsapp_url',
+      'slug, name, cnpj, phone, is_open, min_order_cents, instagram_url, facebook_url, pix_key, pix_key_type, accepted_card_brands',
     )
     .eq('id', context.organizationId)
     .single()
@@ -46,11 +51,16 @@ export async function getStoreSettings(): Promise<StoreSettings | null> {
 
   return {
     slug: data.slug,
+    name: data.name,
+    cnpj: data.cnpj,
+    phone: data.phone,
     isOpen: data.is_open,
     minOrderCents: data.min_order_cents,
     instagramUrl: data.instagram_url,
     facebookUrl: data.facebook_url,
-    whatsappUrl: data.whatsapp_url,
+    pixKey: data.pix_key,
+    pixKeyType: data.pix_key_type,
+    acceptedCardBrands: data.accepted_card_brands ?? [],
   }
 }
 
@@ -91,12 +101,11 @@ export interface UpdateStoreSettingsInput {
   minOrderCents: number
   instagramUrl: string
   facebookUrl: string
-  whatsappUrl: string
 }
 
 /**
- * Pedido mínimo e redes sociais — configuração de verdade, só
- * quem tem permissão de Configurações (hoje: proprietário).
+ * Pedido mínimo e redes sociais (Instagram/Facebook) — o WhatsApp
+ * não é mais cadastrado aqui, vem do telefone em Estabelecimento.
  */
 export async function updateStoreSettings(
   input: UpdateStoreSettingsInput,
@@ -122,7 +131,6 @@ export async function updateStoreSettings(
       min_order_cents: input.minOrderCents,
       instagram_url: input.instagramUrl.trim() || null,
       facebook_url: input.facebookUrl.trim() || null,
-      whatsapp_url: input.whatsappUrl.trim() || null,
     })
     .eq('id', context.organizationId)
     .select('id')
@@ -131,6 +139,94 @@ export async function updateStoreSettings(
     return {
       success: false,
       error: 'Não foi possível salvar as configurações.',
+    }
+  }
+
+  revalidatePath('/configuracoes')
+
+  return { success: true }
+}
+
+export interface UpdateEstabelecimentoInput {
+  name: string
+  cnpj: string
+  phone: string
+}
+
+export async function updateEstabelecimento(
+  input: UpdateEstabelecimentoInput,
+): Promise<StoreSettingsActionResult> {
+  const context = await getOrdersContext()
+
+  if (!context || !roleHasPermission(context.role, 'viewSettings')) {
+    return { success: false, error: 'Não autorizado.' }
+  }
+
+  if (!input.name.trim()) {
+    return { success: false, error: 'Informe o nome da empresa.' }
+  }
+
+  const supabase = await createClient()
+
+  const { data, error } = await supabase
+    .from('organizations')
+    .update({
+      name: input.name.trim(),
+      cnpj: input.cnpj.trim() || null,
+      phone: input.phone.trim() || null,
+    })
+    .eq('id', context.organizationId)
+    .select('id')
+
+  if (error || !data || data.length === 0) {
+    return {
+      success: false,
+      error: 'Não foi possível salvar o estabelecimento.',
+    }
+  }
+
+  revalidatePath('/configuracoes')
+
+  return { success: true }
+}
+
+export interface UpdatePaymentSettingsInput {
+  pixKey: string
+  pixKeyType: string
+  acceptedCardBrands: string[]
+}
+
+/**
+ * Chave Pix (só preparação — sem integração/QR Code real ainda) e
+ * bandeiras de cartão aceitas na entrega.
+ */
+export async function updatePaymentSettings(
+  input: UpdatePaymentSettingsInput,
+): Promise<StoreSettingsActionResult> {
+  const context = await getOrdersContext()
+
+  if (!context || !roleHasPermission(context.role, 'viewSettings')) {
+    return { success: false, error: 'Não autorizado.' }
+  }
+
+  const supabase = await createClient()
+
+  const { data, error } = await supabase
+    .from('organizations')
+    .update({
+      pix_key: input.pixKey.trim() || null,
+      pix_key_type: input.pixKey.trim()
+        ? input.pixKeyType
+        : null,
+      accepted_card_brands: input.acceptedCardBrands,
+    })
+    .eq('id', context.organizationId)
+    .select('id')
+
+  if (error || !data || data.length === 0) {
+    return {
+      success: false,
+      error: 'Não foi possível salvar as formas de pagamento.',
     }
   }
 

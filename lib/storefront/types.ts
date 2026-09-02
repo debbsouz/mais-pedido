@@ -88,6 +88,7 @@ export interface StorefrontData {
   popularProductIds: string[];
   recentOrders: StorefrontRecentOrderItem[];
   paymentMethods: StorefrontPaymentMethod[];
+  acceptedCardBrands: string[];
 }
 
 export type OrderFulfillment = "delivery" | "pickup" | "dine-in";
