@@ -1,5 +1,4 @@
 import {
-  FacebookLogo,
   InstagramLogo,
   WhatsappLogo,
 } from "@phosphor-icons/react";
@@ -11,8 +10,7 @@ interface SocialLinksProps {
 }
 
 export function SocialLinks({ social }: SocialLinksProps) {
-  const hasAny =
-    social.whatsapp || social.instagram || social.facebook;
+  const hasAny = social.whatsapp || social.instagram;
 
   if (!hasAny) {
     return null;
@@ -41,18 +39,6 @@ export function SocialLinks({ social }: SocialLinksProps) {
           aria-label="Instagram"
         >
           <InstagramLogo size={15} />
-        </a>
-      )}
-
-      {social.facebook && (
-        <a
-          href={social.facebook}
-          target="_blank"
-          rel="noreferrer"
-          className="storefront__social-link"
-          aria-label="Facebook"
-        >
-          <FacebookLogo size={15} />
         </a>
       )}
     </div>

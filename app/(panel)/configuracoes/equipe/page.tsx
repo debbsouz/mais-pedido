@@ -23,14 +23,14 @@ export default function EquipePage() {
           <p>
             Cadastre um funcionário com e-mail, senha
             e cargo, e ele passa a ter acesso só às
-            telas do próprio cargo. Essa tela ainda
-            não está conectada ao banco de dados.
+            telas do próprio cargo. Esse cadastro
+            chega em breve.
           </p>
         </SettingsHelp>
       </div>
 
       <form
-        className="settings-form settings-form--grid"
+        className="settings-card settings-form settings-form--grid"
         onSubmit={(event) => event.preventDefault()}
       >
         <div className="settings-form__field">

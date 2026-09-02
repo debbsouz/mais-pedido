@@ -12283,7 +12283,7 @@ html[data-theme="dark"]
 }
 
 .settings-content {
-  max-width: 760px;
+  max-width: 860px;
 }
 
 .settings-section__header {
@@ -12528,6 +12528,83 @@ html[data-theme="dark"] .settings-payment__online-icon {
 
 .settings-payment__brand:hover {
   border-color: var(--brand-400);
+}
+
+.settings-payment__pix-note {
+  margin: 2px 0 0;
+  color: var(--text-secondary);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.brand-mark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 16px;
+  padding: 0 5px;
+  border-radius: 4px;
+  font-size: 9px;
+  font-weight: 900;
+  letter-spacing: 0.02em;
+  line-height: 1;
+}
+
+.brand-mark--visa {
+  background: #eef1fb;
+  color: #1a1f71;
+  font-style: italic;
+  letter-spacing: 0.04em;
+}
+
+html[data-theme="dark"] .brand-mark--visa {
+  background: rgb(26 31 113 / 0.35);
+  color: #c7ccf7;
+}
+
+.brand-mark--elo {
+  background: #fdece9;
+  color: #ee4d2e;
+  text-transform: lowercase;
+  font-style: italic;
+}
+
+html[data-theme="dark"] .brand-mark--elo {
+  background: rgb(238 77 46 / 0.2);
+  color: #ff9478;
+}
+
+.brand-mark--amex {
+  background: #006fcf;
+  color: #fff;
+}
+
+.brand-mark--mastercard {
+  width: 22px;
+  height: 16px;
+  padding: 0;
+  gap: 0;
+}
+
+.brand-mark--mastercard span:first-child {
+  width: 13px;
+  height: 13px;
+  border-radius: 999px;
+  background: #eb001b;
+}
+
+.brand-mark--mastercard span:last-child {
+  width: 13px;
+  height: 13px;
+  margin-left: -5px;
+  border-radius: 999px;
+  background: #f79e1b;
+  mix-blend-mode: multiply;
+}
+
+html[data-theme="dark"] .brand-mark--mastercard span:last-child {
+  mix-blend-mode: normal;
+  opacity: 0.85;
 }
 
 .settings-payment__brand--active {

@@ -17,17 +17,43 @@ const cardBrands = [
   "American Express",
 ];
 
-const pixKeyTypes = [
-  { value: "cpf_cnpj", label: "CPF/CNPJ" },
-  { value: "email", label: "E-mail" },
-  { value: "telefone", label: "Telefone" },
-  { value: "aleatoria", label: "Chave aleatória" },
-];
+function CardBrandMark({ brand }: { brand: string }) {
+  if (brand === "Visa") {
+    return (
+      <span className="brand-mark brand-mark--visa">
+        VISA
+      </span>
+    );
+  }
+
+  if (brand === "Mastercard") {
+    return (
+      <span className="brand-mark brand-mark--mastercard">
+        <span />
+        <span />
+      </span>
+    );
+  }
+
+  if (brand === "Elo") {
+    return (
+      <span className="brand-mark brand-mark--elo">
+        elo
+      </span>
+    );
+  }
+
+  return (
+    <span className="brand-mark brand-mark--amex">
+      AMEX
+    </span>
+  );
+}
 
 export default function PagamentosPage() {
-  const [pixKey, setPixKey] = useState("");
-  const [pixKeyType, setPixKeyType] =
-    useState("cpf_cnpj");
+  const [pixKey, setPixKey] = useState<string | null>(
+    null,
+  );
   const [acceptedBrands, setAcceptedBrands] = useState<
     string[]
   >([]);
@@ -42,10 +68,7 @@ export default function PagamentosPage() {
         return;
       }
 
-      setPixKey(settings.pixKey ?? "");
-      setPixKeyType(
-        settings.pixKeyType ?? "cpf_cnpj",
-      );
+      setPixKey(settings.pixKey);
       setAcceptedBrands(settings.acceptedCardBrands);
     });
   }, []);
@@ -65,8 +88,6 @@ export default function PagamentosPage() {
     setSaveMessage(null);
 
     const result = await updatePaymentSettings({
-      pixKey,
-      pixKeyType,
       acceptedCardBrands: acceptedBrands,
     });
 
@@ -79,7 +100,7 @@ export default function PagamentosPage() {
     );
   }
 
-  const pixIsActive = pixKey.trim().length > 0;
+  const pixIsActive = !!pixKey;
 
   return (
     <div>
@@ -94,18 +115,22 @@ export default function PagamentosPage() {
 
         <SettingsHelp>
           <p>
-            A chave Pix cadastrada aqui ainda não gera
-            cobrança automática nem QR Code — é só o
-            cadastro, preparado pra quando essa
-            integração for construída. As bandeiras
-            marcadas aparecem pro cliente no cardápio
-            digital e ajudam o entregador a saber que o
-            pagamento é na maquininha.
+            O Pix automático é configurado pela nossa
+            equipe direto no Mercado Pago quando sua
+            empresa é cadastrada — o próprio banco
+            confirma o pagamento e libera o pedido no
+            painel, sem chave pra você digitar aqui. As
+            bandeiras marcadas aparecem pro cliente no
+            cardápio digital e ajudam o entregador a
+            saber que o pagamento é na maquininha.
           </p>
         </SettingsHelp>
       </div>
 
-      <form onSubmit={handleSubmit}>
+      <form
+        className="settings-card"
+        onSubmit={handleSubmit}
+      >
         <div className="settings-payment__group">
           <span className="settings-payment__eyebrow">
             Pagamento online
@@ -121,7 +146,11 @@ export default function PagamentosPage() {
 
             <div className="settings-payment__online-text">
               <strong>Pix</strong>
-              <span>Pagamento via Pix</span>
+              <span>
+                {pixIsActive
+                  ? "Ativo — configurado pela nossa equipe"
+                  : "Ainda não configurado"}
+              </span>
             </div>
 
             <span
@@ -137,38 +166,14 @@ export default function PagamentosPage() {
             </span>
           </div>
 
-          <div className="settings-form settings-form--grid">
-            <div className="settings-form__field">
-              <span>Chave Pix</span>
-              <input
-                type="text"
-                placeholder="CPF, e-mail, telefone ou chave aleatória"
-                value={pixKey}
-                onChange={(event) =>
-                  setPixKey(event.target.value)
-                }
-              />
-            </div>
-
-            <div className="settings-form__field">
-              <span>Tipo de chave</span>
-              <select
-                value={pixKeyType}
-                onChange={(event) =>
-                  setPixKeyType(event.target.value)
-                }
-              >
-                {pixKeyTypes.map((type) => (
-                  <option
-                    key={type.value}
-                    value={type.value}
-                  >
-                    {type.label}
-                  </option>
-                ))}
-              </select>
-            </div>
-          </div>
+          {!pixIsActive && (
+            <p className="settings-payment__pix-note">
+              Quer ativar o Pix automático? Fale com a
+              Next Code — a configuração é feita pela
+              nossa equipe, direto na sua conta do
+              Mercado Pago.
+            </p>
+          )}
         </div>
 
         <div className="settings-payment__group">
@@ -197,13 +202,14 @@ export default function PagamentosPage() {
                         : ""
                     }`}
                   >
+                    <CardBrandMark brand={brand} />
+                    {brand}
                     {active && (
                       <Check
                         size={13}
                         weight="bold"
                       />
                     )}
-                    {brand}
                   </button>
                 );
               })}

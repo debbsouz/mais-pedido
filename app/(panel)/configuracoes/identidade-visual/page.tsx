@@ -25,13 +25,13 @@ export default function IdentidadeVisualPage() {
           <p>
             A logo aparece no topo da sua loja
             pública, e o banner fica atrás dela. Use
-            imagens PNG ou JPG. Essa tela ainda não
-            está conectada ao envio de arquivos.
+            imagens PNG ou JPG. O envio de arquivos
+            chega em breve.
           </p>
         </SettingsHelp>
       </div>
 
-      <div className="settings-brand__uploads">
+      <div className="settings-card settings-brand__uploads">
         <div className="settings-brand__upload">
           <ImageSquare
             size={30}

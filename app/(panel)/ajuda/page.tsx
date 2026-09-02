@@ -45,7 +45,7 @@ const faqItems = [
   {
     question: "Como cadastro um funcionário (garçom, cozinha, entregador)?",
     answer:
-      "Essa função já está desenhada em Configurações > Equipe, mas ainda será ativada em breve.",
+      "Em breve você vai poder convidar sua equipe direto em Configurações > Equipe.",
   },
 ];
 
@@ -103,8 +103,8 @@ export default function AjudaPage() {
         </button>
 
         <small className="settings-form__note">
-          Canal de contato ainda será definido — em
-          breve.
+          Em breve você vai poder falar direto com o
+          nosso suporte por aqui.
         </small>
       </article>
     </section>

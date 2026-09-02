@@ -32,7 +32,6 @@ export interface StorefrontStatus {
 
 export interface StorefrontSocial {
   instagram?: string;
-  facebook?: string;
   whatsapp?: string;
 }
 

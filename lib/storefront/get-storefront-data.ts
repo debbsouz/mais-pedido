@@ -156,8 +156,6 @@ export async function getStorefrontData(
     social: {
       instagram:
         (org.instagram_url as string | null) ?? undefined,
-      facebook:
-        (org.facebook_url as string | null) ?? undefined,
       whatsapp: buildWhatsAppUrl(
         org.phone as string | null,
       ),

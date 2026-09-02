@@ -18,7 +18,6 @@ export interface StoreSettings {
   isOpen: boolean
   minOrderCents: number
   instagramUrl: string | null
-  facebookUrl: string | null
   pixKey: string | null
   pixKeyType: string | null
   acceptedCardBrands: string[]
@@ -40,7 +39,7 @@ export async function getStoreSettings(): Promise<StoreSettings | null> {
   const { data } = await supabase
     .from('organizations')
     .select(
-      'slug, name, cnpj, phone, is_open, min_order_cents, instagram_url, facebook_url, pix_key, pix_key_type, accepted_card_brands',
+      'slug, name, cnpj, phone, is_open, min_order_cents, instagram_url, pix_key, pix_key_type, accepted_card_brands',
     )
     .eq('id', context.organizationId)
     .single()
@@ -57,7 +56,6 @@ export async function getStoreSettings(): Promise<StoreSettings | null> {
     isOpen: data.is_open,
     minOrderCents: data.min_order_cents,
     instagramUrl: data.instagram_url,
-    facebookUrl: data.facebook_url,
     pixKey: data.pix_key,
     pixKeyType: data.pix_key_type,
     acceptedCardBrands: data.accepted_card_brands ?? [],
@@ -100,12 +98,12 @@ export async function updateStoreStatus(
 export interface UpdateStoreSettingsInput {
   minOrderCents: number
   instagramUrl: string
-  facebookUrl: string
 }
 
 /**
- * Pedido mínimo e redes sociais (Instagram/Facebook) — o WhatsApp
- * não é mais cadastrado aqui, vem do telefone em Estabelecimento.
+ * Pedido mínimo e Instagram — o WhatsApp não é cadastrado aqui, vem
+ * do telefone em Estabelecimento, e o Facebook foi removido (a loja
+ * pública já tem um botão de compartilhar próprio).
  */
 export async function updateStoreSettings(
   input: UpdateStoreSettingsInput,
@@ -130,7 +128,6 @@ export async function updateStoreSettings(
     .update({
       min_order_cents: input.minOrderCents,
       instagram_url: input.instagramUrl.trim() || null,
-      facebook_url: input.facebookUrl.trim() || null,
     })
     .eq('id', context.organizationId)
     .select('id')
@@ -191,14 +188,16 @@ export async function updateEstabelecimento(
 }
 
 export interface UpdatePaymentSettingsInput {
-  pixKey: string
-  pixKeyType: string
   acceptedCardBrands: string[]
 }
 
 /**
- * Chave Pix (só preparação — sem integração/QR Code real ainda) e
- * bandeiras de cartão aceitas na entrega.
+ * Bandeiras de cartão aceitas na entrega. A chave Pix NÃO é editada
+ * por aqui: o pagamento automático via Pix é configurado direto no
+ * Mercado Pago pela Next Code no momento em que cadastra o cliente
+ * (FAZER MANUAL NO SUPABASE, colunas pix_key/pix_key_type) — quem
+ * confirma o pagamento é o banco, não o dono do restaurante digitando
+ * uma chave aqui. Esta tela só exibe o status (ver getStoreSettings).
  */
 export async function updatePaymentSettings(
   input: UpdatePaymentSettingsInput,
@@ -214,10 +213,6 @@ export async function updatePaymentSettings(
   const { data, error } = await supabase
     .from('organizations')
     .update({
-      pix_key: input.pixKey.trim() || null,
-      pix_key_type: input.pixKey.trim()
-        ? input.pixKeyType
-        : null,
       accepted_card_brands: input.acceptedCardBrands,
     })
     .eq('id', context.organizationId)

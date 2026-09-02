@@ -87,11 +87,14 @@ Colunas `is_open` e `min_order_cents` em `organizations`. O toggle
 mínimo é editável em Configurações → card "Loja pública"
 (`updateStoreSettings`). A loja pública lê os dois direto do banco.
 
-### 4.3 Redes sociais — ✅ resolvido em 2026-08-25
+### 4.3 Redes sociais — ✅ resolvido em 2026-08-25 (Facebook removido em 2026-09-02)
 
-Colunas `instagram_url`, `facebook_url`, `whatsapp_url` em
-`organizations`, editáveis no mesmo card "Loja pública" em
-Configurações.
+Coluna `instagram_url` em `organizations`, editável em Configurações
+→ Cardápio Digital. `facebook_url` e `whatsapp_url` continuam
+existindo na tabela mas são colunas mortas — a Débora pediu pra
+remover o campo de Facebook (a loja pública já tem botão de
+compartilhar próprio, não precisa de rede social extra) e o WhatsApp
+já vinha do telefone (ver seção 7).
 
 **Detalhe técnico que vale registrar**: a tabela `organizations` tinha
 política de `SELECT` (membro) e `INSERT`, mas nenhuma de `UPDATE`. Isso
@@ -156,10 +159,15 @@ validação pode vir depois — não é bloqueante, hoje o número é só exibid
    logo/banner sem ter o que enviar).
 3. ~~4.2, 4.3~~ — feito em 2026-08-25.
 4. ~~4.5 (parcial)~~ — feito em 2026-08-26: bandeiras de cartão
-   aceitas na entrega são reais e já aparecem no cardápio digital.
-   Pix continua só cadastro da chave (sem QR Code/cobrança
-   automática — isso ainda depende de decidir a integração de
-   pagamento).
+   aceitas na entrega são reais e já aparecem no cardápio digital,
+   agora com um selo visual por bandeira (Visa/Mastercard/Elo/Amex).
+   Pix: a partir de 2026-09-02, `pix_key`/`pix_key_type` **não são
+   mais editáveis pelo cliente** em Configurações — a tela só mostra
+   status (Ativo/Não configurado). O fluxo real é a Next Code
+   cadastrar a chave Pix direto no Mercado Pago ao integrar um
+   cliente novo (FAZER MANUAL NO SUPABASE, colunas já existentes),
+   e o próprio banco confirma o pagamento — não tem QR Code nem
+   cobrança automática dentro do +Pedido ainda.
 
 ## 7. Telefone único (2026-08-26)
 
