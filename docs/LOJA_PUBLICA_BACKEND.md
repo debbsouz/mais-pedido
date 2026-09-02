@@ -167,6 +167,32 @@ Não existe mais campo de WhatsApp separado. O telefone cadastrado em
 Configurações → Estabelecimento (`organizations.phone`) é a fonte
 única — o botão de WhatsApp da loja pública é gerado a partir dele
 (`buildWhatsAppUrl` em `lib/storefront/get-storefront-data.ts`).
+
+## 8. Horário de funcionamento por dia da semana (2026-08-26)
+
+Tabela `business_hours` (migration `20260826_021_business_hours.sql`):
+uma linha por dia da semana (0 = domingo) por organização, com
+`is_closed`, `opens_at`, `closes_at`. Leitura pública liberada (não é
+dado sensível); escrita só para membro da organização.
+
+`status.isOpen` da loja pública passa a combinar dois fatores
+(`isWithinBusinessHours` em `lib/storefront/business-hours.ts`,
+usado em `get-storefront-data.ts`):
+
+- Interruptor manual (`organizations.is_open`, Topbar) — continua
+  funcionando como um "fechar de emergência", mesmo dentro do
+  horário programado.
+- Horário programado do dia (considera também o dia anterior, pra
+  cobrir horário que passa da meia-noite).
+
+Se a organização não configurar nenhum horário (tabela vazia para
+ela), o cálculo cai de volta pro comportamento antigo — só o
+interruptor manual decide. Isso mantém compatível qualquer
+organização que ainda não configurou nada.
+
+UI de edição: Configurações → Cardápio Digital, seção "Horário de
+funcionamento" (`app/actions/business-hours.ts` para
+`getBusinessHours`/`updateBusinessHours`).
 4. 4.4, 4.6 — promoções e populares, melhoram a experiência mas a loja
    funciona sem eles (as seções já somem sozinhas quando vazias).
 5. 4.7, 4.8 — dependem de autenticação de cliente / mesas, podem esperar

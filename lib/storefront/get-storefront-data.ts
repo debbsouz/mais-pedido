@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 
+import { isWithinBusinessHours } from "./business-hours";
 import type { StorefrontData } from "./types";
 
 function buildWhatsAppUrl(
@@ -49,7 +50,11 @@ function getInitials(name: string) {
  * vêm vazios (promoções, destaques, "peça de novo"), e a avaliação
  * só aparece quando reviewCount > 0. Status aberto/fechado, pedido
  * mínimo, redes sociais e bandeiras de cartão aceitas já são reais
- * (ver app/actions/store-settings.ts). O WhatsApp não tem campo
+ * (ver app/actions/store-settings.ts). O status "aberto" combina o
+ * interruptor manual com o horário de funcionamento programado
+ * (app/actions/business-hours.ts, isWithinBusinessHours) — se não
+ * houver horário configurado, vale só o interruptor manual, igual
+ * antes. O WhatsApp não tem campo
  * próprio — é derivado do telefone cadastrado em Estabelecimento
  * (buildWhatsAppUrl). Ver docs/LOJA_PUBLICA_BACKEND.md, seção 4,
  * para o que ainda falta.
@@ -70,7 +75,7 @@ export async function getStorefrontData(
     return null;
   }
 
-  const [{ data: categoryRows }, { data: productRows }] =
+  const [{ data: categoryRows }, { data: productRows }, { data: hourRows }] =
     await Promise.all([
       supabase
         .from("categories")
@@ -86,7 +91,25 @@ export async function getStorefrontData(
         .eq("organization_id", org.id)
         .eq("is_available", true)
         .order("sort_order", { ascending: true }),
+      supabase
+        .from("business_hours")
+        .select("day_of_week, is_closed, opens_at, closes_at")
+        .eq("organization_id", org.id),
     ]);
+
+  const businessHours = (hourRows ?? []).map(
+    (row: Record<string, unknown>) => ({
+      dayOfWeek: row.day_of_week as number,
+      isClosed: row.is_closed as boolean,
+      opensAt: (row.opens_at as string | null)?.slice(0, 5) ?? null,
+      closesAt: (row.closes_at as string | null)?.slice(0, 5) ?? null,
+    }),
+  );
+
+  const withinSchedule = isWithinBusinessHours(businessHours);
+  const manualIsOpen = org.is_open as boolean;
+  const effectiveIsOpen =
+    manualIsOpen && (withinSchedule === null || withinSchedule);
 
   const categoryNames = (categoryRows ?? []).map(
     (category) => category.name as string,
@@ -127,7 +150,7 @@ export async function getStorefrontData(
       reviewCount: 0,
     },
     status: {
-      isOpen: org.is_open as boolean,
+      isOpen: effectiveIsOpen,
       minOrder: (org.min_order_cents as number) / 100,
     },
     social: {

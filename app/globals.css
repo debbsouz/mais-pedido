@@ -12845,6 +12845,131 @@ html[data-theme="dark"] .settings-plan__cta:hover:not(:disabled) {
   }
 }
 
+.settings-section__header--secondary {
+  margin-top: 32px;
+  padding-top: 28px;
+  border-top: 1px solid var(--border);
+}
+
+.settings-section__header--secondary h3 {
+  font-size: 16px;
+}
+
+.settings-section__header--secondary p {
+  margin: 5px 0 0;
+  max-width: 480px;
+  color: var(--text-secondary);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.settings-hours {
+  display: grid;
+  gap: 16px;
+}
+
+.settings-hours__preview {
+  padding: 10px 14px;
+  border-radius: var(--radius-md);
+  background: var(--success-soft);
+  color: var(--success);
+  font-size: 12.5px;
+  font-weight: 700;
+}
+
+.settings-hours__preview--closed {
+  background: var(--danger-soft);
+  color: var(--danger);
+}
+
+.settings-hours__table {
+  display: grid;
+  gap: 8px;
+}
+
+.settings-hours__row {
+  display: grid;
+  grid-template-columns: 84px 90px 1fr auto 1fr;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+}
+
+.settings-hours__day {
+  font-size: 13px;
+  font-weight: 750;
+}
+
+.settings-hours__closed {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--text-secondary);
+  font-size: 12.5px;
+  font-weight: 600;
+}
+
+.settings-hours__row input[type="time"] {
+  width: 100%;
+  min-height: 38px;
+  padding: 0 10px;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  background: var(--surface);
+  color: inherit;
+  font-size: 13px;
+}
+
+.settings-hours__row input[type="time"]:disabled {
+  opacity: 0.5;
+}
+
+.settings-hours__separator {
+  color: var(--text-muted);
+  font-size: 12px;
+}
+
+@media (max-width: 640px) {
+  .settings-hours__row {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .settings-hours__separator {
+    display: none;
+  }
+}
+
+.settings-hours__footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.settings-hours__copy {
+  padding: 9px 14px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--text-secondary);
+  font-size: 12.5px;
+  font-weight: 700;
+}
+
+.settings-hours__copy:hover {
+  border-color: var(--brand-400);
+  color: var(--brand-600);
+}
+
+.settings-hours__submit-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
 /* =========================================
    MEU PERFIL
 ========================================= */
