@@ -354,17 +354,8 @@ export function OrdersProvider({
       const { data: { session } } = await supabase.auth.getSession();
 
       if (cancelled || !session) {
-        console.log(
-          "[orders-realtime] sem sessao no browser — skip subscription",
-        );
         return;
       }
-
-      console.log(
-        "[orders-realtime] sessao confirmada, user:",
-        session.user.id,
-        "— subscrevendo...",
-      );
 
       channel = supabase
         .channel("orders-realtime")
@@ -376,7 +367,6 @@ export function OrdersProvider({
             table: "orders",
           },
           (payload) => {
-            console.log("[orders-realtime] INSERT", payload.new);
             const orderId = (
               payload.new as Record<string, unknown>
             )?.id as string;
@@ -419,7 +409,6 @@ export function OrdersProvider({
             table: "orders",
           },
           (payload) => {
-            console.log("[orders-realtime] UPDATE", payload.new);
             const orderId = (
               payload.new as Record<string, unknown>
             )?.id as string;
@@ -471,9 +460,7 @@ export function OrdersProvider({
             }
           },
         )
-        .subscribe((status) => {
-          console.log("[orders-realtime] status:", status);
-        });
+        .subscribe();
     })();
 
     return () => {
