@@ -13,6 +13,7 @@ import {
 } from "@phosphor-icons/react";
 import { useState } from "react";
 
+import { formatCurrency } from "@/lib/format";
 import type { RestaurantTable } from "@/components/mesas/TableCard";
 import type { Order } from "@/components/pedidos/OrderCard";
 import {
@@ -30,13 +31,6 @@ const initialPayment: NewOrderPaymentData = {
   changeFor: "",
   observation: "",
 };
-
-function formatCurrency(value: number) {
-  return new Intl.NumberFormat("pt-BR", {
-    style: "currency",
-    currency: "BRL",
-  }).format(value);
-}
 
 function parseMoney(value: string) {
   if (!value) {

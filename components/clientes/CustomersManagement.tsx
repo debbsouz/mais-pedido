@@ -13,6 +13,8 @@ import {
 } from "@phosphor-icons/react";
 import { useMemo, useState } from "react";
 
+import { formatCurrency } from "@/lib/format";
+
 import {
   CustomerProfileDrawer,
   type CustomerProfile,
@@ -137,13 +139,6 @@ const customersMock: CustomerProfile[] = [
     history: [],
   },
 ];
-
-function formatCurrency(value: number) {
-  return new Intl.NumberFormat("pt-BR", {
-    style: "currency",
-    currency: "BRL",
-  }).format(value);
-}
 
 function getAverageTicket(
   customer: CustomerProfile,

@@ -12,6 +12,8 @@ import {
 } from "@phosphor-icons/react";
 import { useMemo, useRef, useState } from "react";
 
+import { formatCurrency } from "@/lib/format";
+
 import {
   createProduct as createProductAction,
   updateProduct as updateProductAction,
@@ -62,13 +64,6 @@ export interface MenuManagementProps {
    * image, available).
    */
   products: ManagedProduct[];
-}
-
-function formatCurrency(value: number) {
-  return new Intl.NumberFormat("pt-BR", {
-    style: "currency",
-    currency: "BRL",
-  }).format(value);
 }
 
 export function MenuManagement({

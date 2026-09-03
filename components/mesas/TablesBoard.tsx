@@ -6,8 +6,10 @@ import {
   CookingPot,
   Plus,
 } from "@phosphor-icons/react";
+
 import { useState } from "react";
 
+import { formatCurrency } from "@/lib/format";
 import {
   OrderItemsForm,
   type NewOrderItem,
@@ -35,13 +37,6 @@ const initialPayment: NewOrderPaymentData = {
   changeFor: "",
   observation: "",
 };
-
-function formatCurrency(value: number) {
-  return new Intl.NumberFormat("pt-BR", {
-    style: "currency",
-    currency: "BRL",
-  }).format(value);
-}
 
 function calculateItemsTotal(
   items: NewOrderItem[],

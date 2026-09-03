@@ -7,6 +7,7 @@ import {
 } from "@phosphor-icons/react";
 import { useState } from "react";
 
+import { formatCurrency } from "@/lib/format";
 import type { RestaurantTable } from "@/components/mesas/TableCard";
 import type { NewOrderItem } from "@/components/pedidos/OrderItemsForm";
 import type { Order } from "@/components/pedidos/OrderCard";
@@ -20,13 +21,6 @@ import {
   WaiterTableFilters,
   type WaiterTableFilter,
 } from "./WaiterTableFilters";
-
-function formatCurrency(value: number) {
-  return new Intl.NumberFormat("pt-BR", {
-    style: "currency",
-    currency: "BRL",
-  }).format(value);
-}
 
 function calculateItemsTotal(
   items: NewOrderItem[],

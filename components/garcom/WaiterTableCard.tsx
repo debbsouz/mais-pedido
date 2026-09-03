@@ -9,6 +9,7 @@ import {
   WarningCircle,
 } from "@phosphor-icons/react";
 
+import { formatCurrency } from "@/lib/format";
 import type { RestaurantTable } from "@/components/mesas/TableCard";
 
 interface WaiterTableCardProps {
@@ -18,17 +19,6 @@ interface WaiterTableCardProps {
   ) => void;
 }
 
-function formatCurrency(
-  value: number,
-) {
-  return new Intl.NumberFormat(
-    "pt-BR",
-    {
-      style: "currency",
-      currency: "BRL",
-    },
-  ).format(value);
-}
 
 function getStatusLabel(
   status: RestaurantTable["status"],

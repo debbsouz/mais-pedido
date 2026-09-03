@@ -7,6 +7,7 @@ import {
   Users,
 } from "@phosphor-icons/react";
 
+import { formatCurrency } from "@/lib/format";
 import type { NewOrderItem } from "@/components/pedidos/OrderItemsForm";
 
 export type TableStatus =
@@ -35,17 +36,6 @@ interface TableCardProps {
   ) => void;
 }
 
-function formatCurrency(
-  value: number,
-) {
-  return new Intl.NumberFormat(
-    "pt-BR",
-    {
-      style: "currency",
-      currency: "BRL",
-    },
-  ).format(value);
-}
 
 function getStatusLabel(
   status: TableStatus,

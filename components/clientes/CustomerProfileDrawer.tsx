@@ -14,6 +14,8 @@ import {
   X,
 } from "@phosphor-icons/react";
 
+import { formatCurrency } from "@/lib/format";
+
 export interface CustomerHistoryOrder {
   id: string;
   displayNumber: string;
@@ -42,13 +44,6 @@ interface CustomerProfileDrawerProps {
   open: boolean;
   customer: CustomerProfile | null;
   onClose: () => void;
-}
-
-function formatCurrency(value: number) {
-  return new Intl.NumberFormat("pt-BR", {
-    style: "currency",
-    currency: "BRL",
-  }).format(value);
 }
 
 export function CustomerProfileDrawer({
