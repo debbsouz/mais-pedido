@@ -6,7 +6,6 @@ import { usePathname } from "next/navigation";
 
 import {
   ChartBar,
-  ChartPieSlice,
   ClipboardText,
   CookingPot,
   Crown,
@@ -102,12 +101,6 @@ const managementNavigation: NavigationItem[] = [
     icon: CurrencyCircleDollar,
     feature: "financial",
     permission: "viewFinancial",
-  },
-  {
-    label: "Dashboard",
-    href: "/dashboard",
-    icon: ChartPieSlice,
-    permission: "viewDashboard",
   },
   {
     label: "Relatórios",

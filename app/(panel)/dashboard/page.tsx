@@ -1,24 +1,12 @@
-"use client";
+import { redirect } from "next/navigation";
 
-import { OperationAlert } from "@/components/inicio/OperationAlert";
-import { OperationHeader } from "@/components/inicio/OperationHeader";
-import { OperationPanel } from "@/components/inicio/OperationPanel";
-import { OperationStats } from "@/components/inicio/OperationStats";
-import { RecentOrders } from "@/components/inicio/RecentOrders";
-
+/**
+ * "Dashboard" era uma tela 100% mockada (OperationStats/
+ * OperationAlert/OperationPanel, sem leitura nenhuma do banco),
+ * duplicando o que "Início" já faz de verdade. Removida do menu
+ * em 2026-09-02; a rota continua existindo só como redirecionamento,
+ * pra não quebrar link/favorito antigo.
+ */
 export default function DashboardPage() {
-  return (
-    <>
-      <OperationHeader />
-
-      <OperationStats />
-
-      <OperationAlert />
-
-      <section className="dashboard__grid">
-        <OperationPanel />
-        <RecentOrders />
-      </section>
-    </>
-  );
+  redirect("/inicio");
 }

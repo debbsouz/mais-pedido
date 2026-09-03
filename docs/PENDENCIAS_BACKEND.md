@@ -140,18 +140,17 @@ com `formatDuration()` (novo, em `lib/order-timing.ts`), que mostra
 (um pedido esquecido por dias na Cozinha/Entregas ia mostrar o
 mesmo número gigante).
 
-## 6. `OperationStats.tsx` e `OperationAlert.tsx` são 100% mock — NÃO usados em `/inicio`
+## 6. `OperationStats.tsx` e `OperationAlert.tsx` eram 100% mock — ✅ removidos em 2026-09-02
 
 Achado ao investigar o bug acima: `/dashboard` (item "Dashboard" no
-menu, separado de "Início") usa `OperationStats.tsx` e
-`OperationAlert.tsx`, que são **totalmente hardcoded** ("3 pedidos",
-"Tempo médio de 17 min" etc., sem nenhuma leitura do banco) —
-diferente de `/inicio`, que usa `OperationOverview.tsx` (real, ver
-acima). Ou seja, o painel tem duas telas parecidas ("Início" e
-"Dashboard") fazendo a mesma coisa, uma real e outra fake. Não mexi
-nisso agora — só documentando, porque parece que "Dashboard" pode
-ser tela redundante pra remover do menu (o `/inicio` já cobre tudo
-que ela mostra, só que de verdade).
+menu, separado de "Início") usava `OperationStats.tsx`,
+`OperationAlert.tsx` e `OperationPanel.tsx`, **totalmente
+hardcoded** ("3 pedidos", "Tempo médio de 17 min" etc., sem nenhuma
+leitura do banco) — duplicando o que `/inicio` já faz de verdade
+via `OperationOverview.tsx`. A Débora confirmou remover: item
+"Dashboard" saiu do menu (`components/layout/Sidebar.tsx`), a rota
+`/dashboard` agora só redireciona pra `/inicio` (não quebra
+link/favorito antigo), e os 3 componentes mock foram apagados.
 
 ## 3. Preço do pedido — revalidação server-side (já corrigida, registrar aqui pra visibilidade)
 
