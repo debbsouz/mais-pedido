@@ -42,6 +42,31 @@ export function getOrderUrgency(minutes: number): OrderUrgency {
 }
 
 /**
+ * Formata uma duração em minutos como "X min", "Xh" ou "Xd" — sem
+ * prefixo. Evita mostrar números absurdos tipo "31547 min" quando
+ * um pedido antigo fica esquecido em preparo por dias/semanas.
+ */
+export function formatDuration(minutes: number): string {
+  if (minutes < 1) {
+    return "menos de 1 min";
+  }
+
+  if (minutes < 60) {
+    return `${minutes} min`;
+  }
+
+  const hours = Math.floor(minutes / 60);
+
+  if (hours < 24) {
+    return `${hours}h`;
+  }
+
+  const days = Math.floor(hours / 24);
+
+  return `${days}d`;
+}
+
+/**
  * Formata minutos decorridos como "agora", "há X min", "há Xh" ou "há Xd".
  */
 export function formatElapsedLabel(minutes: number): string {
@@ -49,17 +74,5 @@ export function formatElapsedLabel(minutes: number): string {
     return "agora";
   }
 
-  if (minutes < 60) {
-    return `há ${minutes} min`;
-  }
-
-  const hours = Math.floor(minutes / 60);
-
-  if (hours < 24) {
-    return `há ${hours}h`;
-  }
-
-  const days = Math.floor(hours / 24);
-
-  return `há ${days}d`;
+  return `há ${formatDuration(minutes)}`;
 }

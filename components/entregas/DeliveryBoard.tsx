@@ -8,6 +8,7 @@ import {
 
 import { useOrders } from "@/components/providers/OrdersProvider";
 import {
+  formatDuration,
   getElapsedMinutes,
   getOrderUrgency,
 } from "@/lib/order-timing";
@@ -125,7 +126,7 @@ export function DeliveryBoard() {
 
           <strong>
             {deliveryOrders.length > 0
-              ? `${averageTime} min`
+              ? formatDuration(averageTime)
               : "—"}
           </strong>
 

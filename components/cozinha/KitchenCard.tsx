@@ -8,7 +8,10 @@ import {
 } from "@phosphor-icons/react";
 
 import { formatOrderNumber } from "@/lib/format";
-import { getOrderUrgency } from "@/lib/order-timing";
+import {
+  formatDuration,
+  getOrderUrgency,
+} from "@/lib/order-timing";
 
 export interface KitchenItem {
   id: string;
@@ -63,7 +66,7 @@ export function KitchenCard({
             <Clock size={17} weight="bold" />
           )}
 
-          {order.elapsedMinutes} min
+          {formatDuration(order.elapsedMinutes)}
         </div>
       </header>
 

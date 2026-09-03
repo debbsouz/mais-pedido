@@ -127,19 +127,31 @@ compartilhado em `lib/format.ts` (existe ainda um outro
 nome de pessoa, não de empresa — lógica diferente de propósito,
 mantido separado).
 
-**Bug observado, NÃO corrigido ainda** (fora do escopo desta sessão):
-na tela Início (`/inicio`), o card "Saúde da operação"
-(`components/inicio/OperationStats.tsx`) mostrou "Operação com atraso
-crítico" com "Tempo médio: 31453 minutos" — isso vem de pedidos de
-teste antigos (de 12/08) que ficaram presos em status
-`preparing`/`ready` por semanas e nunca foram finalizados/cancelados,
-distorcendo o cálculo de tempo médio. Não é dado inventado, é cálculo
-real em cima de dado de teste velho — mas o cálculo em si também
-parece não descartar pedidos muito antigos, o que é um bug separado
-(um pedido esquecido há semanas não devia contar como "31453 minutos
-de atraso"). Fica registrado pra próxima sessão investigar
-`OperationStats`/`OperationAlert` e decidir um limite razoável (ex.:
-ignorar pedidos com mais de X horas no cálculo de tempo médio).
+**Bug do "tempo médio: 31453 minutos" — ✅ corrigido em 2026-09-02.**
+Vinha de `components/inicio/OperationOverview.tsx` (não de
+`OperationStats.tsx`, que é mock e nem é usado em `/inicio` — é do
+`/dashboard`, ver seção 6). Pedidos de teste antigos (12/08) presos
+em `preparing` há semanas faziam o tempo médio explodir. Não era bug
+de cálculo (a conta em minutos estava certa) — era falta de
+formatação: minutos crus sendo jogados direto na tela. Corrigido
+com `formatDuration()` (novo, em `lib/order-timing.ts`), que mostra
+"22d" em vez de "31453 minutos". Também apliquei o mesmo formato em
+`KitchenCard.tsx` e `DeliveryBoard.tsx`, que tinham o mesmo problema
+(um pedido esquecido por dias na Cozinha/Entregas ia mostrar o
+mesmo número gigante).
+
+## 6. `OperationStats.tsx` e `OperationAlert.tsx` são 100% mock — NÃO usados em `/inicio`
+
+Achado ao investigar o bug acima: `/dashboard` (item "Dashboard" no
+menu, separado de "Início") usa `OperationStats.tsx` e
+`OperationAlert.tsx`, que são **totalmente hardcoded** ("3 pedidos",
+"Tempo médio de 17 min" etc., sem nenhuma leitura do banco) —
+diferente de `/inicio`, que usa `OperationOverview.tsx` (real, ver
+acima). Ou seja, o painel tem duas telas parecidas ("Início" e
+"Dashboard") fazendo a mesma coisa, uma real e outra fake. Não mexi
+nisso agora — só documentando, porque parece que "Dashboard" pode
+ser tela redundante pra remover do menu (o `/inicio` já cobre tudo
+que ela mostra, só que de verdade).
 
 ## 3. Preço do pedido — revalidação server-side (já corrigida, registrar aqui pra visibilidade)
 

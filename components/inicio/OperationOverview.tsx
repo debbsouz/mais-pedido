@@ -22,6 +22,7 @@ import {
 import { useOrders } from "@/components/providers/OrdersProvider";
 import { useTables } from "@/components/providers/TablesProvider";
 import {
+  formatDuration,
   getElapsedMinutes,
   getOrderUrgency,
 } from "@/lib/order-timing";
@@ -246,7 +247,7 @@ export function OperationOverview() {
       value: newOrders.length,
       detail:
         newOrders.length > 0
-          ? `Mais antigo há ${oldestNewMinutes} min`
+          ? `Mais antigo há ${formatDuration(oldestNewMinutes)}`
           : "Nenhum pedido novo",
       icon: ClockCountdown,
       className:
@@ -257,7 +258,7 @@ export function OperationOverview() {
       value: preparingOrders.length,
       detail:
         preparingOrders.length > 0
-          ? `Tempo médio de ${averagePreparingMinutes} min`
+          ? `Tempo médio de ${formatDuration(averagePreparingMinutes)}`
           : "Nenhum pedido em preparo",
       icon: CookingPot,
       className:
@@ -323,7 +324,7 @@ export function OperationOverview() {
             <span>Tempo médio</span>
             <strong>
               {preparingOrders.length > 0
-                ? `${averagePreparingMinutes} minutos`
+                ? formatDuration(averagePreparingMinutes)
                 : "—"}
             </strong>
           </div>
@@ -439,7 +440,7 @@ export function OperationOverview() {
 
             <span>
               O mais antigo está aguardando há{" "}
-              {oldestNewMinutes} minutos.
+              {formatDuration(oldestNewMinutes)}.
             </span>
           </div>
 
