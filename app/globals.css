@@ -14736,3 +14736,110 @@ html[data-theme="dark"] .storefront__status--closed {
     grid-template-columns: 1fr;
   }
 }
+
+/* =========================================
+   ERRO / PÁGINA NÃO ENCONTRADA
+========================================= */
+
+.error-page {
+  display: grid;
+  min-height: 100vh;
+  place-items: center;
+  padding: 32px;
+  background: var(--background);
+}
+
+.error-page--inline {
+  min-height: 50vh;
+  padding: 24px;
+}
+
+.error-page__card {
+  display: grid;
+  justify-items: center;
+  gap: 14px;
+  max-width: 420px;
+  padding: 40px 32px;
+  text-align: center;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+  box-shadow: var(--shadow-md);
+}
+
+.error-page__logo {
+  width: 130px;
+  height: auto;
+  margin-bottom: 4px;
+}
+
+.error-page__icon {
+  display: grid;
+  width: 58px;
+  height: 58px;
+  place-items: center;
+  border-radius: 999px;
+  background: var(--danger-soft);
+  color: var(--danger);
+}
+
+.error-page__icon--neutral {
+  background: var(--brand-50);
+  color: var(--brand-600);
+}
+
+.error-page h1 {
+  margin: 0;
+  font-size: 21px;
+}
+
+.error-page p {
+  max-width: 340px;
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 13.5px;
+  line-height: 1.6;
+}
+
+.error-page__actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 6px;
+}
+
+.error-page__button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 42px;
+  padding: 0 18px;
+  border: 1.5px solid var(--border);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--text-secondary);
+  font-size: 13px;
+  font-weight: 750;
+  cursor: pointer;
+  transition:
+    background 150ms ease,
+    border-color 150ms ease;
+}
+
+.error-page__button:hover {
+  border-color: var(--brand-400);
+  color: var(--brand-600);
+}
+
+.error-page__button--primary {
+  border-color: var(--brand-500);
+  background: var(--brand-500);
+  color: #fff;
+}
+
+.error-page__button--primary:hover {
+  border-color: var(--brand-600);
+  background: var(--brand-600);
+  color: #fff;
+}
