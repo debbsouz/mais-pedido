@@ -16,6 +16,8 @@ export interface CurrentUserData {
   id: string
   name: string
   role: UserRole
+  organizationName: string
+  unitName: string | null
 }
 
 export interface CurrentSubscriptionData {
@@ -62,10 +64,10 @@ export const getCurrentUser = cache(
       .eq('id', user.id)
       .maybeSingle()
 
-    // Busca o vinculo mais recente (organizacao + cargo)
+    // Busca o vinculo mais recente (organizacao + unidade + cargo)
     const { data: membership } = await supabase
       .from('organization_members')
-      .select('role')
+      .select('role, organizations(name), units(name)')
       .eq('user_id', user.id)
       .eq('is_active', true)
       .order('created_at', { ascending: false })
@@ -78,10 +80,21 @@ export const getCurrentUser = cache(
       return null
     }
 
+    const organization = Array.isArray(membership.organizations)
+      ? membership.organizations[0]
+      : membership.organizations
+    const unit = Array.isArray(membership.units)
+      ? membership.units[0]
+      : membership.units
+
     return {
       id: user.id,
       name: profile?.full_name || user.email || 'Usuario',
       role: membership.role as UserRole,
+      organizationName:
+        (organization as { name?: string } | null)?.name ??
+        'Minha empresa',
+      unitName: (unit as { name?: string } | null)?.name ?? null,
     }
   },
 )

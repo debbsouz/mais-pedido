@@ -19,6 +19,7 @@ import {
   OrderPaymentForm,
   type NewOrderPaymentData,
 } from "@/components/pedidos/OrderPaymentForm";
+import { useCurrentUser } from "@/components/providers/AuthProvider";
 import { useOrders } from "@/components/providers/OrdersProvider";
 import { useTables } from "@/components/providers/TablesProvider";
 
@@ -50,6 +51,8 @@ function parseMoney(value: string) {
 }
 
 export function AttendantHome() {
+  const currentUser = useCurrentUser();
+
   const {
     orders,
     moveOrder,
@@ -296,7 +299,7 @@ export function AttendantHome() {
           </span>
 
           <strong>
-            Burger House
+            {currentUser.organizationName}
           </strong>
         </div>
 

@@ -386,8 +386,9 @@ export function Topbar() {
         </span>
 
         <strong>
-          Burger House · Unidade
-          Centro
+          {currentUser.unitName
+            ? `${currentUser.organizationName} · ${currentUser.unitName}`
+            : currentUser.organizationName}
         </strong>
       </div>
 

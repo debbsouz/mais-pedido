@@ -39,7 +39,8 @@ export function OperationHeader() {
         </h1>
 
         <p>
-          Veja o que está acontecendo agora na Burger House.
+          Veja o que está acontecendo agora na{" "}
+          {currentUser.organizationName}.
         </p>
       </div>
 

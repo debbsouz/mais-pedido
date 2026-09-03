@@ -22,6 +22,7 @@ import {
 } from "@phosphor-icons/react";
 
 import { hasFeature } from "@/lib/access";
+import { getInitials } from "@/lib/format";
 import {
   plans,
   type FeatureId,
@@ -241,16 +242,18 @@ export function Sidebar() {
 
       <div className="sidebar__restaurant">
         <div className="sidebar__restaurant-logo">
-          BH
+          {getInitials(currentUser.organizationName)}
         </div>
 
         <div className="sidebar__restaurant-info">
           <strong>
-            Burger House
+            {currentUser.organizationName}
           </strong>
 
           <span>
-            Unidade Centro · {currentRole.name}
+            {currentUser.unitName
+              ? `${currentUser.unitName} · ${currentRole.name}`
+              : currentRole.name}
           </span>
 
           <small className="sidebar__plan">

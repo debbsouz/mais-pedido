@@ -106,6 +106,27 @@ Corrigido dando scroll interno pro `.sidebar__navigation`
 (`app/globals.css`). Vale ficar de olho se a lista de "Gestão"
 crescer mais.
 
+## 5. "Burger House" hardcoded em 5 componentes — ✅ corrigido em 2026-09-02
+
+Achado enquanto revisava a Sidebar: o nome "Burger House" (e "Unidade
+Centro", e até o nome "João" do garçom) estava escrito direto no
+JSX em `Sidebar.tsx`, `Topbar.tsx`, `OperationHeader.tsx`,
+`WaiterHeader.tsx` e `AttendantHome.tsx` — ou seja, **qualquer
+empresa real que fosse cadastrada continuaria vendo "Burger House"
+em vez do próprio nome**, em praticamente toda tela do painel. Bug
+crítico de multi-tenancy, não só estético.
+
+Corrigido: `lib/dal.ts` (`getCurrentUser`) agora busca
+`organizations.name` e `units.name` reais via
+`organization_members` e devolve em `CurrentUserData` como
+`organizationName`/`unitName`. Os 5 componentes passaram a usar
+`useCurrentUser()` em vez de texto fixo. De quebra, um `getInitials`
+duplicado saiu de `lib/storefront/get-storefront-data.ts` e virou
+compartilhado em `lib/format.ts` (existe ainda um outro
+`getInitials` em `lib/user-display.ts`, mas esse é pra iniciais de
+nome de pessoa, não de empresa — lógica diferente de propósito,
+mantido separado).
+
 **Bug observado, NÃO corrigido ainda** (fora do escopo desta sessão):
 na tela Início (`/inicio`), o card "Saúde da operação"
 (`components/inicio/OperationStats.tsx`) mostrou "Operação com atraso
