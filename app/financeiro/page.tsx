@@ -1,4 +1,5 @@
 import { FinanceiroPanel } from "@/components/financeiro/FinanceiroPanel";
+import { PurchasesSection } from "@/components/financeiro/PurchasesSection";
 import { getFinancialSummary } from "@/lib/financeiro-dal";
 
 /**
@@ -10,5 +11,10 @@ import { getFinancialSummary } from "@/lib/financeiro-dal";
 export default async function FinanceiroPage() {
   const summary = await getFinancialSummary();
 
-  return <FinanceiroPanel summary={summary} />;
+  return (
+    <>
+      <FinanceiroPanel summary={summary} />
+      <PurchasesSection />
+    </>
+  );
 }
