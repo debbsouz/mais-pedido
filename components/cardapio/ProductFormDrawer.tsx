@@ -28,6 +28,9 @@ export interface ProductFormData {
   price: number;
   image: string | null;
   available: boolean;
+  trackStock: boolean;
+  stockQuantity: number;
+  lowStockThreshold: number;
 }
 
 interface ProductFormDrawerProps {
@@ -110,6 +113,27 @@ function ProductFormContent({
     setAvailable,
   ] = useState(
     product?.available ?? true,
+  );
+
+  const [
+    trackStock,
+    setTrackStock,
+  ] = useState(
+    product?.trackStock ?? false,
+  );
+
+  const [
+    stockQuantity,
+    setStockQuantity,
+  ] = useState(
+    String(product?.stockQuantity ?? 0),
+  );
+
+  const [
+    lowStockThreshold,
+    setLowStockThreshold,
+  ] = useState(
+    String(product?.lowStockThreshold ?? 5),
   );
 
   function parsePrice(
@@ -253,6 +277,21 @@ function ProductFormContent({
         normalizedPrice,
       image,
       available,
+      trackStock,
+      stockQuantity:
+        Math.max(
+          0,
+          Math.round(
+            Number(stockQuantity) || 0,
+          ),
+        ),
+      lowStockThreshold:
+        Math.max(
+          0,
+          Math.round(
+            Number(lowStockThreshold) || 0,
+          ),
+        ),
     });
 
     onClose();
@@ -498,6 +537,97 @@ function ProductFormContent({
               <span />
             </button>
           </div>
+
+          <div className="product-drawer__availability">
+            <div>
+              <strong>
+                Controlar estoque
+              </strong>
+
+              <span>
+                Quando ligado, o
+                sistema desconta a
+                quantidade a cada
+                venda e marca como
+                indisponível
+                automaticamente
+                quando chegar a
+                zero.
+              </span>
+            </div>
+
+            <button
+              type="button"
+              className={
+                trackStock
+                  ? "product-drawer__toggle product-drawer__toggle--on"
+                  : "product-drawer__toggle"
+              }
+              onClick={() =>
+                setTrackStock(
+                  (current) =>
+                    !current,
+                )
+              }
+              aria-pressed={
+                trackStock
+              }
+            >
+              <span />
+            </button>
+          </div>
+
+          {trackStock && (
+            <div className="product-drawer__grid">
+              <label className="product-drawer__field">
+                <span>
+                  Quantidade em
+                  estoque
+                </span>
+
+                <input
+                  type="text"
+                  inputMode="numeric"
+                  value={
+                    stockQuantity
+                  }
+                  onChange={(event) =>
+                    setStockQuantity(
+                      event.target.value.replace(
+                        /\D/g,
+                        "",
+                      ),
+                    )
+                  }
+                  placeholder="0"
+                />
+              </label>
+
+              <label className="product-drawer__field">
+                <span>
+                  Avisar quando
+                  restar
+                </span>
+
+                <input
+                  type="text"
+                  inputMode="numeric"
+                  value={
+                    lowStockThreshold
+                  }
+                  onChange={(event) =>
+                    setLowStockThreshold(
+                      event.target.value.replace(
+                        /\D/g,
+                        "",
+                      ),
+                    )
+                  }
+                  placeholder="5"
+                />
+              </label>
+            </div>
+          )}
         </div>
 
         <footer className="product-drawer__footer">

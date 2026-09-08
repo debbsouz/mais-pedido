@@ -33,6 +33,9 @@ function toManagedProduct(
     price: product.priceCents / 100,
     image: product.imageUrl,
     available: product.isAvailable,
+    trackStock: product.trackStock,
+    stockQuantity: product.stockQuantity,
+    lowStockThreshold: product.lowStockThreshold,
   };
 }
 

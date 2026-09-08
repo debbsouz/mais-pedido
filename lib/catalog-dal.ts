@@ -31,6 +31,9 @@ export interface CatalogProductDto {
   imageUrl: string | null
   isAvailable: boolean
   sortOrder: number
+  trackStock: boolean
+  stockQuantity: number
+  lowStockThreshold: number
 }
 
 export interface CatalogContext {
@@ -138,6 +141,9 @@ export const getCatalogProducts = cache(
       imageUrl: product.image_url,
       isAvailable: product.is_available,
       sortOrder: product.sort_order,
+      trackStock: product.track_stock,
+      stockQuantity: product.stock_quantity,
+      lowStockThreshold: product.low_stock_threshold,
     }))
   },
 )

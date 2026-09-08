@@ -44,6 +44,9 @@ import { ProductActionsMenu } from "./ProductActionsMenu";
 
 export type ManagedProduct = CatalogProduct & {
   available: boolean;
+  trackStock: boolean;
+  stockQuantity: number;
+  lowStockThreshold: number;
 };
 
 export interface MenuManagementProps {
@@ -268,6 +271,12 @@ export function MenuManagement({
       image: product.image,
       available:
         product.available,
+      trackStock:
+        product.trackStock,
+      stockQuantity:
+        product.stockQuantity,
+      lowStockThreshold:
+        product.lowStockThreshold,
     });
 
     setIsProductDrawerOpen(true);
@@ -292,6 +301,9 @@ export function MenuManagement({
       categoryId,
       imageUrl: product.image,
       isAvailable: product.available,
+      trackStock: product.trackStock,
+      stockQuantity: product.stockQuantity,
+      lowStockThreshold: product.lowStockThreshold,
     };
 
     const isEditing =
@@ -1005,6 +1017,25 @@ export function MenuManagement({
                           product.description
                         }
                       </span>
+
+                      {product.trackStock && (
+                        <span
+                          className={`menu-admin-product__stock${
+                            product.stockQuantity <=
+                            0
+                              ? " menu-admin-product__stock--out"
+                              : product.stockQuantity <=
+                                  product.lowStockThreshold
+                                ? " menu-admin-product__stock--low"
+                                : ""
+                          }`}
+                        >
+                          {product.stockQuantity <=
+                          0
+                            ? "Esgotado"
+                            : `Estoque: ${product.stockQuantity}`}
+                        </span>
+                      )}
                     </div>
                   </div>
 

@@ -226,6 +226,12 @@ export async function createOrder(
     }
   }
 
+  // Desconta estoque dos produtos com controle ativado. Best-effort:
+  // não bloqueia a criação do pedido se isso falhar.
+  await supabase.rpc('apply_order_stock_deductions', {
+    p_order_id: order.id,
+  })
+
   revalidatePath('/pedidos')
   return { success: true, data: { id: order.id } }
 }

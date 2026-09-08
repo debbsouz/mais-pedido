@@ -26,6 +26,9 @@ export interface CreateProductInput {
   categoryId?: string | null
   imageUrl?: string | null
   isAvailable?: boolean
+  trackStock?: boolean
+  stockQuantity?: number
+  lowStockThreshold?: number
 }
 
 export interface UpdateProductInput {
@@ -36,6 +39,9 @@ export interface UpdateProductInput {
   categoryId?: string | null
   imageUrl?: string | null
   isAvailable?: boolean
+  trackStock?: boolean
+  stockQuantity?: number
+  lowStockThreshold?: number
 }
 
 export interface ReorderItem {
@@ -263,6 +269,17 @@ export async function createProduct(
     return { success: false, error: 'Preço inválido.' }
   }
 
+  const stockQuantity = input.stockQuantity ?? 0
+  const lowStockThreshold = input.lowStockThreshold ?? 5
+
+  if (!Number.isInteger(stockQuantity) || stockQuantity < 0) {
+    return { success: false, error: 'Quantidade em estoque inválida.' }
+  }
+
+  if (!Number.isInteger(lowStockThreshold) || lowStockThreshold < 0) {
+    return { success: false, error: 'Limite de estoque baixo inválido.' }
+  }
+
   const supabase = await createClient()
   const categoryId = input.categoryId || null
 
@@ -291,6 +308,9 @@ export async function createProduct(
       image_url: input.imageUrl || null,
       is_available: input.isAvailable ?? true,
       sort_order: sortOrder,
+      track_stock: input.trackStock ?? false,
+      stock_quantity: stockQuantity,
+      low_stock_threshold: lowStockThreshold,
     })
     .select('id')
     .single()
@@ -320,6 +340,20 @@ export async function updateProduct(
     if (!Number.isInteger(input.priceCents) || input.priceCents < 0) {
       return { success: false, error: 'Preço inválido.' }
     }
+  }
+
+  if (
+    input.stockQuantity !== undefined &&
+    (!Number.isInteger(input.stockQuantity) || input.stockQuantity < 0)
+  ) {
+    return { success: false, error: 'Quantidade em estoque inválida.' }
+  }
+
+  if (
+    input.lowStockThreshold !== undefined &&
+    (!Number.isInteger(input.lowStockThreshold) || input.lowStockThreshold < 0)
+  ) {
+    return { success: false, error: 'Limite de estoque baixo inválido.' }
   }
 
   const supabase = await createClient()
@@ -368,6 +402,18 @@ export async function updateProduct(
 
   if (input.isAvailable !== undefined) {
     updates.is_available = input.isAvailable
+  }
+
+  if (input.trackStock !== undefined) {
+    updates.track_stock = input.trackStock
+  }
+
+  if (input.stockQuantity !== undefined) {
+    updates.stock_quantity = input.stockQuantity
+  }
+
+  if (input.lowStockThreshold !== undefined) {
+    updates.low_stock_threshold = input.lowStockThreshold
   }
 
   const { data, error } = await supabase
@@ -489,6 +535,11 @@ export async function duplicateProduct(
       image_url: original.image_url,
       is_available: original.is_available,
       sort_order: sortOrder,
+      track_stock: original.track_stock,
+      // Estoque físico não é duplicado — a cópia começa zerada,
+      // o dono ajusta a quantidade real dela manualmente.
+      stock_quantity: 0,
+      low_stock_threshold: original.low_stock_threshold,
     })
     .select('id')
     .single()

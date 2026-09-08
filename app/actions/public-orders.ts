@@ -228,6 +228,13 @@ export async function createPublicOrder(
     }
   }
 
+  // Desconta estoque dos produtos com controle ativado. Best-effort:
+  // se falhar, o pedido já foi criado com sucesso — não bloqueia o
+  // cliente por causa de um ajuste de estoque.
+  await supabase.rpc('apply_order_stock_deductions', {
+    p_order_id: orderId,
+  })
+
   return { success: true, data: { id: orderId } }
 }
 
