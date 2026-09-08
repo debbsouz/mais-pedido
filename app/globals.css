@@ -977,12 +977,16 @@ html[data-theme="dark"] .dashboard__alert button {
 }
 
 .login-form__submit {
+  display: flex;
+  align-items: center;
+  justify-content: center;
   min-height: 50px;
   border: 0;
   border-radius: var(--radius-md);
   background: var(--brand-600);
   color: #ffffff;
   font-weight: 800;
+  text-decoration: none;
   box-shadow: 0 10px 24px rgb(234 88 12 / 0.2);
   transition:
     transform 150ms ease,
@@ -1001,6 +1005,14 @@ html[data-theme="dark"] .dashboard__alert button {
   color: var(--text-muted);
   font-size: 11px;
   text-align: center;
+}
+
+.login-page__back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--brand-600);
+  font-weight: 700;
 }
 
 @media (max-width: 960px) {

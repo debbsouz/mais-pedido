@@ -154,15 +154,20 @@ Equipe (Configurações → Equipe) agora é real:
 - **Lista o time atual** de verdade (`app/actions/team.ts`,
   `getTeamMembers`) — nome + cargo de cada membro ativo da
   organização.
-- **Adicionar funcionário**: como este ambiente só tem a chave anon
-  do Supabase (sem `service_role`), criar o *login* em si (e-mail +
-  senha) continua manual, **FAZER MANUAL NO SUPABASE** (Authentication
-  → Add user) — isso é feito pela Débora, não pelo sistema. Depois
-  disso, na tela Equipe ela digita o mesmo e-mail + nome + cargo, e
-  a função `add_team_member` (SECURITY DEFINER, só owner pode
-  chamar) vincula esse usuário à organização, criando/atualizando
-  `profiles` e `organization_members`. Reativa automaticamente se a
-  pessoa já tinha sido removida antes.
+- **Adicionar funcionário — ✅ 100% automático desde 2026-09-08**
+  (atualização: a chave `service_role` foi configurada). O
+  dono/gerente digita nome, e-mail e cargo na tela Equipe;
+  `addTeamMember` (`app/actions/team.ts`) usa
+  `auth.admin.inviteUserByEmail` (via `lib/supabase/admin.ts`,
+  cliente privilegiado — ver `.env.local`) pra criar o login e
+  mandar o e-mail de convite sozinho, depois chama a função
+  `add_team_member` (SECURITY DEFINER, só owner pode chamar) pra
+  vincular à organização, criando/atualizando `profiles` e
+  `organization_members`. Se o e-mail já tiver login (de uma
+  organização anterior, por exemplo), o convite é ignorado sem erro
+  e só o vínculo é feito. Reativa automaticamente se a pessoa já
+  tinha sido removida antes. **Não precisa mais de nenhum passo
+  manual da Débora** pra isso.
 - **Remover funcionário**: desativa (`is_active = false`) via
   `removeTeamMember` — a policy `organization_members_manage_owner`
   já permitia isso direto, sem precisar de função especial. Owner
@@ -179,12 +184,32 @@ tinha policy de SELECT pro próprio dono — precisou de uma policy
 nova (`profiles_select_same_org`) pra um membro conseguir ver o
 nome dos colegas.
 
-Testado ponta a ponta: lista carrega os 3 membros reais que já
-existiam (Débora/owner, além de dois logins de teste pré-existentes
-— João/garçom, Maria/atendente), tentativa com e-mail inexistente
-mostra erro claro, e um ciclo completo de remover + readicionar a
-Maria funcionou e devolveu ela ao estado original (mesmo `id`, mesmo
-cargo, ativa de novo) — sem sobra de dado quebrado.
+Testado ponta a ponta (parte original): lista carrega os 3 membros
+reais que já existiam, tentativa com e-mail inexistente mostra erro
+claro, e um ciclo completo de remover + readicionar funcionou e
+devolveu ao estado original — sem sobra de dado quebrado.
+
+**Convite automático (parte nova, 2026-09-08)** — também testado
+ponta a ponta com Playwright + consulta direta no banco: convite pra
+e-mail novo cria o `auth.users` (`invited_at` preenchido) e já
+aparece na equipe; reenviar convite pro MESMO e-mail (já
+cadastrado) não dá erro, só atualiza o cargo; gerado um link de
+recuperação de verdade (Admin API) pra simular o clique no e-mail —
+cai em `/redefinir-senha`, define senha nova, e o login com essa
+senha nova funciona e cai na tela certa pro cargo.
+
+**Achado durante o teste, importante**: o link de convite/recuperar
+senha do Supabase usa um formato de URL (`#access_token=...` depois
+do `#`) que o painel de "Redirect URLs" do projeto não tinha
+liberado pra `/redefinir-senha` — sem isso, o Supabase manda a
+pessoa de volta pra `/login` puro, sem conseguir criar a senha nunca.
+Resolvido de duas formas, pra não depender só da configuração do
+Supabase: (1) `/login` agora detecta esse link "perdido" e redireciona
+sozinho pra `/redefinir-senha` preservando o token; (2) recomendado,
+mas não obrigatório — **FAZER MANUAL NO SUPABASE**: Authentication →
+URL Configuration → Redirect URLs → adicionar
+`http://localhost:3000/**` (e o domínio de produção, quando tiver
+um, ex.: `https://app.maispedido.com.br/**`) pra ficar redundante.
 
 ## 8. Mesas do salão — ✅ construído em 2026-09-08 (era 100% mock)
 

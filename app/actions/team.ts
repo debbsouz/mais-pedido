@@ -4,6 +4,8 @@ import { revalidatePath } from 'next/cache'
 
 import { getOrdersContext } from '@/lib/orders-dal'
 import { roleHasPermission, type UserRole } from '@/lib/roles'
+import { getSiteOrigin } from '@/lib/site-url'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
 
 export type TeamActionResult =
@@ -87,10 +89,14 @@ export interface AddTeamMemberInput {
 }
 
 /**
- * Vincula um usuário que JÁ existe no Supabase Auth à equipe da
- * organização (ver migration 20260826_022_add_team_member.sql —
- * criar o login em si continua manual, no Supabase Dashboard,
- * porque este ambiente não tem a service_role key).
+ * Convida (por e-mail) ou reaproveita um login já existente, e
+ * vincula esse usuário à equipe da organização (ver migration
+ * 20260826_022_add_team_member.sql pra parte do vínculo).
+ *
+ * Antes disso, criar o login em si era manual no Supabase Dashboard
+ * (sem service_role key). Agora usa auth.admin.inviteUserByEmail —
+ * o Supabase manda um e-mail com um link, a pessoa define a própria
+ * senha em /redefinir-senha e já cai logada.
  */
 export async function addTeamMember(
   input: AddTeamMemberInput,
@@ -113,6 +119,30 @@ export async function addTeamMember(
 
   if (!addableRoles.includes(input.role as UserRole)) {
     return { success: false, error: 'Cargo inválido.' }
+  }
+
+  const origin = await getSiteOrigin()
+  const admin = createAdminClient()
+
+  const { error: inviteError } =
+    await admin.auth.admin.inviteUserByEmail(email, {
+      data: { full_name: fullName },
+      redirectTo: `${origin}/redefinir-senha`,
+    })
+
+  // "E-mail já cadastrado" não é erro aqui — só significa que essa
+  // pessoa já tem login (de uma organização anterior, por exemplo).
+  // Segue o fluxo normal e só vincula à equipe.
+  const emailJaExiste =
+    inviteError &&
+    (inviteError.code === 'email_exists' ||
+      /already.*registered/i.test(inviteError.message))
+
+  if (inviteError && !emailJaExiste) {
+    return {
+      success: false,
+      error: 'Não foi possível enviar o convite. Tente novamente.',
+    }
   }
 
   const supabase = await createClient()

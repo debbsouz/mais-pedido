@@ -58,7 +58,9 @@ export default function EquipePage() {
       setName("");
       setEmail("");
       setRole("kitchen");
-      setSaveMessage("Funcionário adicionado com sucesso.");
+      setSaveMessage(
+        "Convite enviado! A pessoa já aparece na equipe.",
+      );
       void getTeamMembers().then(setMembers);
       return;
     }
@@ -91,11 +93,9 @@ export default function EquipePage() {
 
         <SettingsHelp>
           <p>
-            Por segurança, o acesso da pessoa (e-mail + senha) é
-            criado direto no Supabase, não por aqui. Depois de
-            criado, volte nesta tela, digite o mesmo e-mail e
-            escolha o cargo — a pessoa passa a ter acesso só às
-            telas do próprio cargo.
+            Preencha nome, e-mail e cargo da pessoa. A gente manda
+            um e-mail de convite pra ela criar a própria senha — a
+            pessoa passa a ter acesso só às telas do próprio cargo.
           </p>
         </SettingsHelp>
       </div>
@@ -149,10 +149,9 @@ export default function EquipePage() {
         </div>
 
         <p className="settings-team__instructions">
-          1. Crie o acesso no Supabase: Authentication → Add user
-          → preencha e-mail e uma senha temporária.
-          <br />
-          2. Volte aqui, digite o mesmo e-mail e escolha o cargo.
+          Preencha os dados e clique em adicionar. A pessoa recebe
+          um e-mail de convite e cria a própria senha — não precisa
+          de mais nenhum passo manual.
         </p>
 
         <form

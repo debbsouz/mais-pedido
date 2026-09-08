@@ -2,14 +2,33 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Eye, EyeSlash, Lock, User } from "@phosphor-icons/react";
-import { useActionState, useState } from "react";
+import { useActionState, useEffect, useState } from "react";
 
 import { signIn } from "@/app/actions/auth";
 
 export default function LoginPage() {
+  const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
   const [state, action, pending] = useActionState(signIn, undefined);
+
+  // Rede de segurança: se o link de convite/recuperar senha do
+  // Supabase cair aqui (ex.: a URL de redirecionamento configurada
+  // no painel do Supabase não inclui /redefinir-senha na lista
+  // permitida), manda pra tela certa preservando o token que veio
+  // no #hash da URL — sem isso a pessoa fica presa numa tela de
+  // login sem saber nenhuma senha ainda.
+  useEffect(() => {
+    const hash = window.location.hash;
+
+    if (
+      hash.includes("type=recovery") ||
+      hash.includes("type=invite")
+    ) {
+      router.replace(`/redefinir-senha${hash}`);
+    }
+  }, [router]);
 
   return (
     <section className="login-page">

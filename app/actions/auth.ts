@@ -2,6 +2,7 @@
 
 import { redirect } from 'next/navigation'
 
+import { getSiteOrigin } from '@/lib/site-url'
 import { createClient } from '@/lib/supabase/server'
 
 /**
@@ -43,4 +44,29 @@ export async function signOut() {
   const supabase = await createClient()
   await supabase.auth.signOut()
   redirect('/login')
+}
+
+/**
+ * Server Action: pede o e-mail de "recuperar senha".
+ * Sempre retorna sucesso (mesma mensagem exista ou nao o e-mail) —
+ * pratica padrao pra nao revelar quais e-mails tem cadastro.
+ */
+export async function requestPasswordReset(
+  _prevState: { success?: boolean; error?: string } | undefined,
+  formData: FormData,
+): Promise<{ success?: boolean; error?: string }> {
+  const email = (formData.get('email') as string)?.trim()
+
+  if (!email) {
+    return { error: 'Informe seu e-mail.' }
+  }
+
+  const supabase = await createClient()
+  const origin = await getSiteOrigin()
+
+  await supabase.auth.resetPasswordForEmail(email, {
+    redirectTo: `${origin}/redefinir-senha`,
+  })
+
+  return { success: true }
 }

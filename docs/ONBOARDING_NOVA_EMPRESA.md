@@ -19,6 +19,11 @@ pode virar self-service depois, se fizer sentido).
 
 ## 2. FAZER MANUAL NO SUPABASE — criar o login do dono
 
+Isso só é manual pra esse primeiro login (o dono) — ainda não existe
+ninguém na empresa nova pra "convidar" ele. Depois disso, o próprio
+dono consegue convidar todo o resto da equipe sozinho, direto pelo
+sistema (ver passo 4).
+
 No painel do Supabase: **Authentication → Add user**. Preenche o
 e-mail do dono e uma senha temporária (avise o cliente pra trocar
 depois, em "Meu perfil" — ou passe a senha por um canal seguro).
@@ -75,9 +80,9 @@ A partir daí, o próprio dono consegue:
 - Cadastrar o cardápio (categorias/produtos) em Cardápio.
 - Configurar tudo em Configurações (telefone, Instagram, horário de
   funcionamento, bandeiras de cartão, etc.).
-- Adicionar a equipe dele sozinho (Configurações → Equipe — mas
-  criar o *login* de cada funcionário ainda é manual, igual o passo
-  2 acima, um de cada vez).
+- Adicionar a equipe dele sozinho (Configurações → Equipe — o
+  próprio sistema manda o convite por e-mail pra cada funcionário,
+  não precisa mais repetir o passo 2 manualmente pra cada um).
 
 Não precisa de mais nenhuma ação manual depois disso — o resto do
 sistema já funciona sozinho pra cada empresa nova.
