@@ -1934,6 +1934,24 @@ html[data-theme="dark"] .operation-warning button {
   font-weight: 750;
 }
 
+.order-card__scheduled {
+  display: flex;
+  width: fit-content;
+  align-items: center;
+  gap: 6px;
+  margin-top: 8px;
+  padding: 6px 9px;
+  border-radius: 9px;
+  background: var(--brand-50);
+  color: var(--brand-600);
+  font-size: 10px;
+  font-weight: 750;
+}
+
+html[data-theme="dark"] .order-card__scheduled {
+  background: rgb(249 115 22 / 0.14);
+}
+
 
 .order-card {
   cursor: pointer;
@@ -14604,6 +14622,34 @@ html[data-theme="dark"] .storefront__status--closed {
 
 .cart-drawer__coupon {
   margin-top: 14px;
+}
+
+.cart-drawer__scheduling {
+  display: grid;
+  gap: 10px;
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+}
+
+.cart-drawer__scheduling-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-secondary);
+  font-size: 12.5px;
+  font-weight: 650;
+  cursor: pointer;
+}
+
+.cart-drawer__scheduling-input {
+  min-height: 42px;
+  padding: 0 13px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  color: inherit;
+  font-size: 13px;
 }
 
 .cart-drawer__coupon-input {

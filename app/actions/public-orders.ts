@@ -57,6 +57,8 @@ export interface CreatePublicOrderInput {
   paymentMethod?: PublicOrderPaymentMethod
   items: PublicOrderItemInput[]
   couponCode?: string
+  /** ISO 8601. Omitido = pedido pra agora. */
+  scheduledFor?: string
 }
 
 export interface PublicCouponCheckResult {
@@ -174,6 +176,22 @@ export async function createPublicOrder(
 
   if (!input.items || input.items.length === 0) {
     return { success: false, error: 'Adicione pelo menos um item ao pedido.' }
+  }
+
+  let scheduledFor: string | null = null
+
+  if (input.scheduledFor) {
+    const parsed = new Date(input.scheduledFor)
+    const minLeadTime = Date.now() + 30 * 60 * 1000
+
+    if (Number.isNaN(parsed.getTime()) || parsed.getTime() < minLeadTime) {
+      return {
+        success: false,
+        error: 'Escolha um horário pelo menos 30 minutos à frente.',
+      }
+    }
+
+    scheduledFor = parsed.toISOString()
   }
 
   const supabase = await createClient()
@@ -298,6 +316,7 @@ export async function createPublicOrder(
     total_cents: totalCents,
     coupon_code: couponCode,
     discount_cents: discountCents,
+    scheduled_for: scheduledFor,
   })
 
   if (orderError) {

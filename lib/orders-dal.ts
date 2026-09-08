@@ -6,7 +6,6 @@ import { createClient } from '@/lib/supabase/server'
 import { getCurrentUser } from '@/lib/dal'
 import type { UserRole } from '@/lib/roles'
 
-import { formatOrderNumber } from '@/lib/format'
 import type {
   Order,
   OrderItemDetail,
@@ -47,6 +46,7 @@ export interface OrderDto {
   items: OrderItemDto[]
   assignedDriverId: string | null
   assignedDriverName: string | null
+  scheduledFor: Date | null
 }
 
 export interface OrdersContext {
@@ -171,6 +171,9 @@ export const getOrders = cache(
       assignedDriverId: order.assigned_driver_id as string | null,
       assignedDriverName:
         driverNamesById.get(order.assigned_driver_id as string) ?? null,
+      scheduledFor: order.scheduled_for
+        ? new Date(order.scheduled_for as string)
+        : null,
     }))
   },
 )
@@ -250,6 +253,9 @@ export function toFrontendOrder(dto: OrderDto): Order {
     itemDetails,
     assignedDriverId: dto.assignedDriverId,
     assignedDriverName: dto.assignedDriverName,
+    scheduledFor: dto.scheduledFor
+      ? dto.scheduledFor.getTime()
+      : null,
   }
 }
 

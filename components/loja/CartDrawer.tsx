@@ -69,6 +69,13 @@ const stepTitle: Record<Step, string> = {
   confirmation: "Confirmação",
 };
 
+/** "YYYY-MM-DDTHH:mm" pro input datetime-local, no fuso local do navegador. */
+function toDateTimeLocalValue(date: Date) {
+  const pad = (n: number) => String(n).padStart(2, "0");
+
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
+}
+
 function formatPrice(value: number) {
   return new Intl.NumberFormat("pt-BR", {
     style: "currency",
@@ -144,6 +151,18 @@ export function CartDrawer({
 
   const [isCheckingCoupon, setIsCheckingCoupon] =
     useState(false);
+
+  const [wantsScheduling, setWantsScheduling] =
+    useState(false);
+
+  const [scheduledDateTime, setScheduledDateTime] =
+    useState("");
+
+  const [minScheduleValue] = useState(() =>
+    toDateTimeLocalValue(
+      new Date(Date.now() + 35 * 60 * 1000),
+    ),
+  );
 
   if (!open) {
     return null;
@@ -225,6 +244,8 @@ export function CartDrawer({
     setCouponCode("");
     setAppliedCoupon(null);
     setCouponMessage(null);
+    setWantsScheduling(false);
+    setScheduledDateTime("");
     onClose();
   }
 
@@ -249,6 +270,12 @@ export function CartDrawer({
         quantity: line.quantity,
       })),
       couponCode: appliedCoupon?.code,
+      scheduledFor:
+        wantsScheduling && scheduledDateTime
+          ? new Date(
+              scheduledDateTime,
+            ).toISOString()
+          : undefined,
     });
 
     setIsSubmitting(false);
@@ -273,12 +300,14 @@ export function CartDrawer({
 
   const canContinueFromFulfillment =
     step !== "fulfillment" ||
-    fulfillment !== "delivery" ||
-    Boolean(
-      address.street.trim() &&
-        address.number.trim() &&
-        address.neighborhood.trim(),
-    );
+    ((fulfillment !== "delivery" ||
+      Boolean(
+        address.street.trim() &&
+          address.number.trim() &&
+          address.neighborhood.trim(),
+      )) &&
+      (!wantsScheduling ||
+        Boolean(scheduledDateTime)));
 
   const canContinue =
     canContinueFromDetails && canContinueFromFulfillment;
@@ -647,6 +676,51 @@ export function CartDrawer({
                           </div>
                         </div>
                       )}
+
+                      <div className="cart-drawer__scheduling">
+                        <label className="cart-drawer__scheduling-toggle">
+                          <input
+                            type="checkbox"
+                            checked={
+                              wantsScheduling
+                            }
+                            onChange={(event) => {
+                              setWantsScheduling(
+                                event.target
+                                  .checked,
+                              );
+                              if (
+                                !event.target
+                                  .checked
+                              ) {
+                                setScheduledDateTime(
+                                  "",
+                                );
+                              }
+                            }}
+                          />
+                          Agendar pra outro
+                          horário (em vez de
+                          agora)
+                        </label>
+
+                        {wantsScheduling && (
+                          <input
+                            type="datetime-local"
+                            className="cart-drawer__scheduling-input"
+                            min={minScheduleValue}
+                            value={
+                              scheduledDateTime
+                            }
+                            onChange={(event) =>
+                              setScheduledDateTime(
+                                event.target
+                                  .value,
+                              )
+                            }
+                          />
+                        )}
+                      </div>
                     </>
                   )}
                 </section>
@@ -665,8 +739,10 @@ export function CartDrawer({
               {step === "confirmation" && (
                 <section className="cart-drawer__section">
                   <p className="cart-drawer__confirmation-note">
-                    Depois de confirmado, seu pedido passa
-                    por estas etapas:
+                    {wantsScheduling &&
+                    scheduledDateTime
+                      ? `Agendado para ${new Date(scheduledDateTime).toLocaleString("pt-BR", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" })}. Depois de confirmado, seu pedido passa por estas etapas:`
+                      : "Depois de confirmado, seu pedido passa por estas etapas:"}
                   </p>
 
                   <OrderTracker

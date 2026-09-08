@@ -348,6 +348,11 @@ export function OrdersProvider({
       itemDetails,
       assignedDriverId,
       assignedDriverName,
+      scheduledFor: data.scheduled_for
+        ? new Date(
+            data.scheduled_for as string,
+          ).getTime()
+        : null,
     };
   }
 

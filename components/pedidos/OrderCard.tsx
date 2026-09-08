@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  CalendarBlank,
   Check,
   Clock,
   CookingPot,
@@ -121,6 +122,8 @@ export interface Order {
   assignedDriverId?: string | null;
 
   assignedDriverName?: string | null;
+
+  scheduledFor?: number | null;
 }
 
 interface OrderCardProps {
@@ -279,6 +282,7 @@ export function OrderCard({
     status,
     delayed = false,
     createdAt,
+    scheduledFor,
   } = order;
 
   const [now, setNow] =
@@ -420,6 +424,27 @@ export function OrderCard({
           {fulfillment}
         </span>
       </div>
+
+      {scheduledFor && (
+        <div className="order-card__scheduled">
+          <CalendarBlank
+            size={14}
+            weight="bold"
+          />
+
+          <span>
+            Agendado:{" "}
+            {new Date(
+              scheduledFor,
+            ).toLocaleString("pt-BR", {
+              day: "2-digit",
+              month: "2-digit",
+              hour: "2-digit",
+              minute: "2-digit",
+            })}
+          </span>
+        </div>
+      )}
 
       <p className="order-card__items">
         {items}
