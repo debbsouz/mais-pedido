@@ -4,6 +4,7 @@ import {
   Bell,
   CaretDown,
   CheckCircle,
+  CookingPot,
   Gear,
   Moon,
   SignOut,
@@ -24,6 +25,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 
 import { useCurrentUser } from "@/components/providers/AuthProvider";
+import { useOrders } from "@/components/providers/OrdersProvider";
 import { roles } from "@/lib/roles";
 import { getInitials } from "@/lib/user-display";
 import { signOut } from "@/app/actions/auth";
@@ -177,6 +179,15 @@ export function Topbar() {
   const currentUser = useCurrentUser();
   const currentRole = roles[currentUser.role];
   const initials = getInitials(currentUser.name);
+  const { orders } = useOrders();
+
+  const waitingOrdersCount = orders.filter(
+    (order) => order.status === "new",
+  ).length;
+
+  const preparingOrdersCount = orders.filter(
+    (order) => order.status === "preparing",
+  ).length;
 
   const theme =
     useSyncExternalStore(
@@ -197,10 +208,10 @@ export function Topbar() {
     setIsNotificationsOpen,
   ] = useState(false);
 
-  const [
-    hasUnreadNotifications,
-    setHasUnreadNotifications,
-  ] = useState(true);
+  // Antes era um valor fixo (sempre "tem notificação nova" ao
+  // carregar a página) — agora reflete se tem pedido de verdade
+  // esperando confirmação.
+  const hasUnreadNotifications = waitingOrdersCount > 0;
 
   const [
     isProfileOpen,
@@ -362,8 +373,6 @@ export function Topbar() {
       (current) => !current,
     );
 
-    setHasUnreadNotifications(false);
-
     setIsProfileOpen(false);
   }
 
@@ -476,29 +485,55 @@ export function Topbar() {
               </div>
 
               <div className="topbar-notifications">
-                <article>
-                  <span className="topbar-notifications__icon topbar-notifications__icon--warning">
-                    !
-                  </span>
-
-                  <div>
-                    <strong>
-                      3 pedidos
-                      aguardando
-                      confirmação
-                    </strong>
-
-                    <span>
-                      Verifique a
-                      central de
-                      pedidos.
+                {waitingOrdersCount > 0 ? (
+                  <article>
+                    <span className="topbar-notifications__icon topbar-notifications__icon--warning">
+                      !
                     </span>
-                  </div>
-                </article>
+
+                    <div>
+                      <strong>
+                        {waitingOrdersCount}{" "}
+                        {waitingOrdersCount === 1
+                          ? "pedido"
+                          : "pedidos"}{" "}
+                        aguardando
+                        confirmação
+                      </strong>
+
+                      <span>
+                        Verifique a
+                        central de
+                        pedidos.
+                      </span>
+                    </div>
+                  </article>
+                ) : (
+                  <article>
+                    <span className="topbar-notifications__icon topbar-notifications__icon--success">
+                      <CheckCircle
+                        size={17}
+                        weight="fill"
+                      />
+                    </span>
+
+                    <div>
+                      <strong>
+                        Nenhum pedido
+                        aguardando
+                      </strong>
+
+                      <span>
+                        Tudo confirmado
+                        por enquanto.
+                      </span>
+                    </div>
+                  </article>
+                )}
 
                 <article>
-                  <span className="topbar-notifications__icon topbar-notifications__icon--success">
-                    <CheckCircle
+                  <span className="topbar-notifications__icon">
+                    <CookingPot
                       size={17}
                       weight="fill"
                     />
@@ -506,14 +541,16 @@ export function Topbar() {
 
                   <div>
                     <strong>
-                      Cozinha em
-                      operação
+                      {preparingOrdersCount}{" "}
+                      {preparingOrdersCount === 1
+                        ? "pedido em preparo"
+                        : "pedidos em preparo"}
                     </strong>
 
                     <span>
-                      Nenhum pedido
-                      crítico no
-                      momento.
+                      {preparingOrdersCount > 0
+                        ? "Acompanhe na Cozinha."
+                        : "Nenhum pedido em preparo agora."}
                     </span>
                   </div>
                 </article>
