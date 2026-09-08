@@ -3,8 +3,13 @@
 import { useEffect } from "react";
 import { usePathname, useRouter } from "next/navigation";
 
-import { useCurrentUser } from "@/components/providers/AuthProvider";
 import {
+  useCurrentSubscription,
+  useCurrentUser,
+} from "@/components/providers/AuthProvider";
+import { hasFeature } from "@/lib/access";
+import {
+  getRouteFeature,
   getRoutePermission,
   roleHomeRoutes,
 } from "@/lib/route-access";
@@ -20,16 +25,25 @@ export function PanelAccessGuard({
   const pathname = usePathname();
   const router = useRouter();
   const currentUser = useCurrentUser();
+  const subscription = useCurrentSubscription();
 
   const requiredPermission =
     getRoutePermission(pathname);
 
+  const requiredFeature =
+    getRouteFeature(pathname);
+
   const hasAccess =
-    requiredPermission === null ||
-    roleHasPermission(
-      currentUser.role,
-      requiredPermission,
-    );
+    (requiredPermission === null ||
+      roleHasPermission(
+        currentUser.role,
+        requiredPermission,
+      )) &&
+    (requiredFeature === null ||
+      hasFeature(
+        subscription.planId,
+        requiredFeature,
+      ));
 
   useEffect(() => {
     if (hasAccess) {

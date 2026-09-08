@@ -102,8 +102,11 @@ export const getCurrentUser = cache(
 /**
  * Busca a assinatura atual da organizacao do usuario.
  *
- * Por enquanto retorna defaults — sera implementado
- * quando a tabela de assinaturas existir.
+ * O plano fica salvo em organizations.plan_id — nao existe
+ * autoatendimento/cobranca automatica ainda, o onboarding e
+ * manual (docs/ONBOARDING_NOVA_EMPRESA.md), entao uma coluna
+ * simples ja resolve (sem precisar de uma tabela subscriptions
+ * separada por enquanto).
  */
 export const getCurrentSubscription = cache(
   async (): Promise<CurrentSubscriptionData> => {
@@ -124,11 +127,24 @@ export const getCurrentSubscription = cache(
       return { planId: 'start', activeAddons: [] }
     }
 
-    // TODO: buscar assinatura real da tabela subscriptions
-    // Por enquanto retorna plano premium para manter
-    // compatibilidade com o front atual
+    const { data: membership } = await supabase
+      .from('organization_members')
+      .select('organizations(plan_id)')
+      .eq('user_id', user.id)
+      .eq('is_active', true)
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle()
+
+    const organization = Array.isArray(membership?.organizations)
+      ? membership.organizations[0]
+      : membership?.organizations
+
+    const planId =
+      (organization as { plan_id?: PlanId } | null)?.plan_id
+
     return {
-      planId: 'premium',
+      planId: planId ?? 'start',
       activeAddons: [],
     }
   },

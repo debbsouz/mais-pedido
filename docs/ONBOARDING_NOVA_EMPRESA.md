@@ -14,6 +14,8 @@ pode virar self-service depois, se fizer sentido).
   empresa + "Centro" ou similar)
 - Nome completo do dono/responsável
 - E-mail do dono (vai ser o login dele)
+- Qual plano contratou: `start`, `essencial`, `gestao-pro` ou
+  `premium` (ver `lib/plans.ts` pra conferir o que cada um libera)
 
 ## 2. FAZER MANUAL NO SUPABASE — criar o login do dono
 
@@ -31,11 +33,12 @@ ou não cria nada, sem risco de ficar pela metade.
 
 ```sql
 WITH new_org AS (
-  INSERT INTO organizations (name, slug, cnpj)
+  INSERT INTO organizations (name, slug, cnpj, plan_id)
   VALUES (
     'NOME DA EMPRESA',
     'slug-da-empresa',        -- vira parte do link público: /loja/slug-da-empresa
-    NULL                      -- CNPJ, ou NULL se não tiver
+    NULL,                     -- CNPJ, ou NULL se não tiver
+    'start'                   -- start | essencial | gestao-pro | premium
   )
   RETURNING id
 ),
@@ -78,3 +81,13 @@ A partir daí, o próprio dono consegue:
 
 Não precisa de mais nenhuma ação manual depois disso — o resto do
 sistema já funciona sozinho pra cada empresa nova.
+
+## 5. FAZER MANUAL NO SUPABASE — trocar o plano de uma empresa
+
+Pra testar como o sistema se comporta em cada plano (sidebar
+esconde/bloqueia item, rota fica inacessível etc.), ou quando um
+cliente muda de plano de verdade: **Table Editor → organizations**,
+acha a linha pelo `slug` ou `name`, edita a coluna `plan_id` pra um
+desses valores: `start`, `essencial`, `gestao-pro`, `premium`. Só
+recarregar a página no navegador que o sistema já reflete o plano
+novo — não precisa de mais nada.

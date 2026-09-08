@@ -234,23 +234,37 @@ fechamento → confirmar pagamento → mesa libera e Início volta a
 0/8; adicionar/remover mesa funciona (confirmado direto no banco).
 Dados de teste (mesa extra e pedido de teste) removidos depois.
 
-## 9. Plano da assinatura — ainda hardcoded (pendência aberta)
+## 9. Plano da assinatura — ✅ construído em 2026-09-08 (era hardcoded)
 
-`lib/dal.ts` (`getCurrentSubscription`) sempre retorna
-`planId: 'premium'` pra qualquer organização — comentário no próprio
-código já avisa (`TODO: buscar assinatura real da tabela
-subscriptions`). Efeito prático: o sidebar mostra "Premium" pra
-qualquer empresa, e o bloqueio de item por plano (`Sidebar.tsx`, já
-existe pronto — ícone de cadeado + "Disponível em um plano
-superior") nunca ativa, porque todo mundo "tem" o plano mais alto.
+`lib/dal.ts` (`getCurrentSubscription`) sempre retornava
+`planId: 'premium'` pra qualquer organização. Efeito prático: o
+sidebar mostrava "Premium" pra qualquer empresa, e o bloqueio de
+item por plano (`Sidebar.tsx`, já existia pronto — ícone de cadeado
++ "Disponível em um plano superior") nunca ativava, porque todo
+mundo "tinha" o plano mais alto.
 
-Proposta (não implementada ainda): adicionar uma coluna
-`plan_id` em `organizations` (ou uma tabela `subscriptions` separada,
-se um dia tiver cobrança automática recorrente — por enquanto não
-tem, então uma coluna simples já resolve) e ler o plano de verdade
-ali. O fluxo de onboarding manual (`docs/ONBOARDING_NOVA_EMPRESA.md`)
-já teria onde registrar o plano contratado na hora de cadastrar o
-cliente.
+Migration `20260908_033_organizations_plan.sql` aplicada: coluna
+`organizations.plan_id` (`start` | `essencial` | `gestao-pro` |
+`premium`, default `'start'`). Organizações que já existiam antes
+dessa coluna foram migradas pra `'premium'` (era o que recebiam de
+fato no código antigo — ninguém perdeu recurso na hora da migração).
+`getCurrentSubscription` agora lê o plano de verdade da organização
+do usuário logado.
+
+Onboarding manual (`docs/ONBOARDING_NOVA_EMPRESA.md`) atualizado:
+tem um passo pra escolher o plano na hora de cadastrar o cliente, e
+outro (seção 5) pra trocar o plano de uma empresa já existente
+direto no Table Editor do Supabase — útil pra testar como cada plano
+se comporta no sistema.
+
+**Bônus, mesmo escopo**: o bloqueio de item por plano só existia no
+sidebar (visual) — quem soubesse a URL direto (ex.: `/financeiro`)
+entrava mesmo sem o plano incluir aquele recurso. Adicionado o mesmo
+bloqueio na entrada da rota (`lib/route-access.ts` +
+`PanelAccessGuard.tsx`), reaproveitando o mapeamento rota → recurso
+que já existia no Sidebar (Mesas, Cozinha, Entregas, Cardápio,
+Financeiro, e also Garçom/Atendente que ainda não tinham essa
+checagem em lugar nenhum).
 
 ## 3. Preço do pedido — revalidação server-side (já corrigida, registrar aqui pra visibilidade)
 

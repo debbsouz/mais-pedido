@@ -1,3 +1,4 @@
+import type { FeatureId } from "./plans";
 import type {
   PermissionId,
   UserRole,
@@ -6,6 +7,12 @@ import type {
 export interface ProtectedRoute {
   path: string;
   permission: PermissionId;
+  /**
+   * Recurso do plano exigido pra essa rota — mesmo mapeamento que
+   * já existe no Sidebar (item.feature). Sem isso, a rota fica
+   * liberada pra qualquer plano (ex.: Início, Pedidos).
+   */
+  feature?: FeatureId;
 }
 
 export const protectedRoutes: ProtectedRoute[] = [
@@ -24,18 +31,22 @@ export const protectedRoutes: ProtectedRoute[] = [
   {
     path: "/mesas",
     permission: "viewTables",
+    feature: "tables",
   },
   {
     path: "/cozinha",
     permission: "viewKitchen",
+    feature: "kitchenDisplay",
   },
   {
     path: "/entregas",
     permission: "viewDeliveries",
+    feature: "delivery",
   },
   {
     path: "/cardapio",
     permission: "viewMenu",
+    feature: "digitalMenu",
   },
   {
     path: "/clientes",
@@ -44,6 +55,7 @@ export const protectedRoutes: ProtectedRoute[] = [
   {
     path: "/financeiro",
     permission: "viewFinancial",
+    feature: "financial",
   },
   {
     path: "/relatorios",
@@ -56,10 +68,12 @@ export const protectedRoutes: ProtectedRoute[] = [
   {
     path: "/garcom",
     permission: "viewTables",
+    feature: "waiter",
   },
   {
     path: "/atendente",
     permission: "viewOrders",
+    feature: "frontDesk",
   },
 ];
 
@@ -75,16 +89,26 @@ export const roleHomeRoutes: Record<
   delivery: "/entregas",
 };
 
-export function getRoutePermission(
+function findProtectedRoute(
   pathname: string,
 ) {
-  const route = protectedRoutes.find(
+  return protectedRoutes.find(
     (item) =>
       pathname === item.path ||
       pathname.startsWith(
         `${item.path}/`,
       ),
   );
+}
 
-  return route?.permission ?? null;
+export function getRoutePermission(
+  pathname: string,
+) {
+  return findProtectedRoute(pathname)?.permission ?? null;
+}
+
+export function getRouteFeature(
+  pathname: string,
+) {
+  return findProtectedRoute(pathname)?.feature ?? null;
 }
