@@ -32,44 +32,15 @@ function calculateItemsTotal(
   );
 }
 
-function mergeCommandItems(
-  currentItems: NewOrderItem[],
-  newItems: NewOrderItem[],
-) {
-  const mergedItems = [...currentItems];
-
-  newItems.forEach((newItem) => {
-    const existingItemIndex =
-      mergedItems.findIndex(
-        (item) =>
-          item.productId ===
-          newItem.productId,
-      );
-
-    if (existingItemIndex >= 0) {
-      mergedItems[existingItemIndex] = {
-        ...mergedItems[existingItemIndex],
-
-        quantity:
-          mergedItems[existingItemIndex]
-            .quantity +
-          newItem.quantity,
-      };
-
-      return;
-    }
-
-    mergedItems.push(newItem);
-  });
-
-  return mergedItems;
-}
-
 export function WaiterHome() {
   const { addOrder } = useOrders();
 
-  const { tables, setTables } =
-    useTables();
+  const {
+    tables,
+    openTable: commitOpenTable,
+    mergeTableRound,
+    requestTableClosing,
+  } = useTables();
 
   const [selectedTable, setSelectedTable] =
     useState<RestaurantTable | null>(null);
@@ -199,7 +170,7 @@ export function WaiterHome() {
     setIsOpeningTable(true);
   }
 
-  function confirmOpenTable() {
+  async function confirmOpenTable() {
     if (!selectedTable) {
       return;
     }
@@ -214,33 +185,15 @@ export function WaiterHome() {
       return;
     }
 
-    const updatedTable: RestaurantTable = {
-      ...selectedTable,
-
-      status: "occupied",
-
-      customerName:
-        customerName.trim() ||
-        undefined,
-
-      people: peopleNumber,
-
-      total: 0,
-
-      openedAt: "agora",
-
-      commandItems: [],
-    };
-
-    setTables((currentTables) =>
-      currentTables.map((table) =>
-        table.id === selectedTable.id
-          ? updatedTable
-          : table,
-      ),
+    const updatedTable = await commitOpenTable(
+      selectedTable.id,
+      customerName,
+      peopleNumber,
     );
 
-    setSelectedTable(updatedTable);
+    if (updatedTable) {
+      setSelectedTable(updatedTable);
+    }
 
     setIsOpeningTable(false);
   }
@@ -257,7 +210,7 @@ export function WaiterHome() {
     setIsAddingItems(false);
   }
 
-  function sendItemsToKitchen() {
+  async function sendItemsToKitchen() {
     if (
       !selectedTable ||
       newItems.length === 0
@@ -267,38 +220,6 @@ export function WaiterHome() {
 
     const roundTotal =
       calculateItemsTotal(newItems);
-
-    const currentCommand =
-      selectedTable.commandItems ?? [];
-
-    const updatedCommand =
-      mergeCommandItems(
-        currentCommand,
-        newItems,
-      );
-
-    const updatedTotal =
-      (selectedTable.total ?? 0) +
-      roundTotal;
-
-    const updatedTable: RestaurantTable = {
-      ...selectedTable,
-
-      status: "occupied",
-
-      commandItems:
-        updatedCommand,
-
-      total: updatedTotal,
-    };
-
-    setTables((currentTables) =>
-      currentTables.map((table) =>
-        table.id === selectedTable.id
-          ? updatedTable
-          : table,
-      ),
-    );
 
     const orderId = Date.now()
       .toString()
@@ -360,11 +281,21 @@ export function WaiterHome() {
         undefined,
     };
 
-    addOrder(kitchenOrder);
+    const realOrderId =
+      await addOrder(kitchenOrder);
 
-    setSelectedTable(
-      updatedTable,
+    if (!realOrderId) {
+      return;
+    }
+
+    const updatedTable = mergeTableRound(
+      selectedTable.id,
+      newItems,
     );
+
+    if (updatedTable) {
+      setSelectedTable(updatedTable);
+    }
 
     setNewItems([]);
     setRoundObservation("");
@@ -372,7 +303,7 @@ export function WaiterHome() {
     setIsAddingItems(false);
   }
 
-  function requestTableClosing() {
+  function openTableClosingConfirm() {
     if (!selectedTable) {
       return;
     }
@@ -395,29 +326,19 @@ export function WaiterHome() {
     );
   }
 
-  function confirmTableClosing() {
+  async function confirmTableClosing() {
     if (!selectedTable) {
       return;
     }
 
-    const updatedTable: RestaurantTable = {
-      ...selectedTable,
+    const updatedTable =
+      await requestTableClosing(
+        selectedTable.id,
+      );
 
-      status:
-        "waiting-payment",
-    };
-
-    setTables((currentTables) =>
-      currentTables.map((table) =>
-        table.id === selectedTable.id
-          ? updatedTable
-          : table,
-      ),
-    );
-
-    setSelectedTable(
-      updatedTable,
-    );
+    if (updatedTable) {
+      setSelectedTable(updatedTable);
+    }
 
     setIsClosingConfirmOpen(
       false,
@@ -770,7 +691,7 @@ export function WaiterHome() {
                         type="button"
                         className="waiter-table-preview__secondary"
                         onClick={
-                          requestTableClosing
+                          openTableClosingConfirm
                         }
                         disabled={
                           (selectedTable.total ??

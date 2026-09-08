@@ -5,6 +5,7 @@ import {
   Check,
   CookingPot,
   Plus,
+  Trash,
 } from "@phosphor-icons/react";
 
 import { useState } from "react";
@@ -22,6 +23,7 @@ import {
 
 import type { Order } from "@/components/pedidos/OrderCard";
 
+import { useCurrentUser } from "@/components/providers/AuthProvider";
 import { useOrders } from "@/components/providers/OrdersProvider";
 import { useTables } from "@/components/providers/TablesProvider";
 
@@ -48,39 +50,6 @@ function calculateItemsTotal(
   );
 }
 
-function mergeCommandItems(
-  currentItems: NewOrderItem[],
-  newItems: NewOrderItem[],
-) {
-  const mergedItems = [...currentItems];
-
-  newItems.forEach((newItem) => {
-    const existingItemIndex =
-      mergedItems.findIndex(
-        (item) =>
-          item.productId ===
-          newItem.productId,
-      );
-
-    if (existingItemIndex >= 0) {
-      mergedItems[existingItemIndex] = {
-        ...mergedItems[existingItemIndex],
-
-        quantity:
-          mergedItems[existingItemIndex]
-            .quantity +
-          newItem.quantity,
-      };
-
-      return;
-    }
-
-    mergedItems.push(newItem);
-  });
-
-  return mergedItems;
-}
-
 function parseMoney(value: string) {
   if (!value) {
     return 0;
@@ -94,10 +63,23 @@ function parseMoney(value: string) {
 }
 
 export function TablesBoard() {
+  const currentUser = useCurrentUser();
   const { addOrder } = useOrders();
 
-  const { tables, setTables } =
-    useTables();
+  const {
+    tables,
+    openTable: commitOpenTable,
+    mergeTableRound,
+    requestTableClosing,
+    cancelTableClosing,
+    releaseTable,
+    addTable,
+    removeTable,
+  } = useTables();
+
+  const canManageLayout =
+    currentUser.role === "owner" ||
+    currentUser.role === "manager";
 
   const [selectedTable, setSelectedTable] =
     useState<RestaurantTable | null>(null);
@@ -158,7 +140,7 @@ export function TablesBoard() {
     setPayment(initialPayment);
   }
 
-  function openTable() {
+  async function openTable() {
     if (!selectedTable) {
       return;
     }
@@ -172,33 +154,15 @@ export function TablesBoard() {
       return;
     }
 
-    const updatedTable: RestaurantTable = {
-      ...selectedTable,
-
-      status: "occupied",
-
-      customerName:
-        customerName.trim() ||
-        undefined,
-
-      people: peopleNumber,
-
-      total: 0,
-
-      openedAt: "agora",
-
-      commandItems: [],
-    };
-
-    setTables((currentTables) =>
-      currentTables.map((table) =>
-        table.id === selectedTable.id
-          ? updatedTable
-          : table,
-      ),
+    const updatedTable = await commitOpenTable(
+      selectedTable.id,
+      customerName,
+      peopleNumber,
     );
 
-    setSelectedTable(updatedTable);
+    if (updatedTable) {
+      setSelectedTable(updatedTable);
+    }
   }
 
   function startAddingItems() {
@@ -212,7 +176,7 @@ export function TablesBoard() {
     setIsAddingItems(false);
   }
 
-  function sendItemsToKitchen() {
+  async function sendItemsToKitchen() {
     if (
       !selectedTable ||
       newItems.length === 0
@@ -222,37 +186,6 @@ export function TablesBoard() {
 
     const roundTotal =
       calculateItemsTotal(newItems);
-
-    const currentCommand =
-      selectedTable.commandItems ?? [];
-
-    const updatedCommand =
-      mergeCommandItems(
-        currentCommand,
-        newItems,
-      );
-
-    const updatedTotal =
-      (selectedTable.total ?? 0) +
-      roundTotal;
-
-    const updatedTable: RestaurantTable = {
-      ...selectedTable,
-
-      status: "occupied",
-
-      commandItems: updatedCommand,
-
-      total: updatedTotal,
-    };
-
-    setTables((currentTables) =>
-      currentTables.map((table) =>
-        table.id === selectedTable.id
-          ? updatedTable
-          : table,
-      ),
-    );
 
     const orderId = Date.now()
       .toString()
@@ -306,31 +239,37 @@ export function TablesBoard() {
       ),
     };
 
-    addOrder(kitchenOrder);
+    const realOrderId = await addOrder(kitchenOrder);
 
-    setSelectedTable(updatedTable);
+    if (!realOrderId) {
+      return;
+    }
+
+    const updatedTable = mergeTableRound(
+      selectedTable.id,
+      newItems,
+    );
+
+    if (updatedTable) {
+      setSelectedTable(updatedTable);
+    }
 
     setNewItems([]);
     setIsAddingItems(false);
   }
 
-  function startPayment() {
+  async function startPayment() {
     if (!selectedTable) {
       return;
     }
 
-    const updatedTable: RestaurantTable = {
-      ...selectedTable,
-      status: "waiting-payment",
-    };
-
-    setTables((currentTables) =>
-      currentTables.map((table) =>
-        table.id === selectedTable.id
-          ? updatedTable
-          : table,
-      ),
+    const updatedTable = await requestTableClosing(
+      selectedTable.id,
     );
+
+    if (!updatedTable) {
+      return;
+    }
 
     setSelectedTable(updatedTable);
 
@@ -339,23 +278,18 @@ export function TablesBoard() {
     setIsClosingTable(true);
   }
 
-  function cancelPayment() {
+  async function cancelPayment() {
     if (!selectedTable) {
       return;
     }
 
-    const updatedTable: RestaurantTable = {
-      ...selectedTable,
-      status: "occupied",
-    };
-
-    setTables((currentTables) =>
-      currentTables.map((table) =>
-        table.id === selectedTable.id
-          ? updatedTable
-          : table,
-      ),
+    const updatedTable = await cancelTableClosing(
+      selectedTable.id,
     );
+
+    if (!updatedTable) {
+      return;
+    }
 
     setSelectedTable(updatedTable);
 
@@ -397,7 +331,7 @@ export function TablesBoard() {
     return true;
   }
 
-  function confirmPaymentAndRelease() {
+  async function confirmPaymentAndRelease() {
     if (
       !selectedTable ||
       !canConfirmPayment()
@@ -418,21 +352,43 @@ export function TablesBoard() {
       return;
     }
 
-    const releasedTable: RestaurantTable = {
-      id: selectedTable.id,
-      number: selectedTable.number,
-      status: "free",
-    };
-
-    setTables((currentTables) =>
-      currentTables.map((table) =>
-        table.id === selectedTable.id
-          ? releasedTable
-          : table,
-      ),
+    const released = await releaseTable(
+      selectedTable.id,
     );
 
+    if (!released) {
+      return;
+    }
+
     closePreview();
+  }
+
+  async function handleAddTable() {
+    await addTable();
+  }
+
+  async function handleRemoveTable() {
+    if (!selectedTable) {
+      return;
+    }
+
+    const shouldConfirm = window.confirm(
+      `Remover a Mesa ${String(
+        selectedTable.number,
+      ).padStart(2, "0")} do salão?`,
+    );
+
+    if (!shouldConfirm) {
+      return;
+    }
+
+    const removed = await removeTable(
+      selectedTable.id,
+    );
+
+    if (removed) {
+      closePreview();
+    }
   }
 
   return (
@@ -450,6 +406,17 @@ export function TablesBoard() {
           Selecione uma mesa para abrir ou
           visualizar a comanda.
         </p>
+
+        {canManageLayout && (
+          <button
+            type="button"
+            className="tables-board__add-table"
+            onClick={handleAddTable}
+          >
+            <Plus size={16} weight="bold" />
+            Adicionar mesa
+          </button>
+        )}
       </div>
 
       <div className="tables-board__grid">
@@ -566,6 +533,17 @@ export function TablesBoard() {
                 >
                   Abrir atendimento
                 </button>
+
+                {canManageLayout && (
+                  <button
+                    type="button"
+                    className="table-preview__remove-table"
+                    onClick={handleRemoveTable}
+                  >
+                    <Trash size={16} weight="bold" />
+                    Remover esta mesa do salão
+                  </button>
+                )}
               </div>
             )}
 

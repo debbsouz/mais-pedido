@@ -186,6 +186,72 @@ mostra erro claro, e um ciclo completo de remover + readicionar a
 Maria funcionou e devolveu ela ao estado original (mesmo `id`, mesmo
 cargo, ativa de novo) — sem sobra de dado quebrado.
 
+## 8. Mesas do salão — ✅ construído em 2026-09-08 (era 100% mock)
+
+Achado testando (Débora reportou "esses dados são reais?"): o
+`TablesProvider.tsx` inteiro era um `useState` local com 8 mesas
+fixas, nomes fictícios (Carlos, Amanda, João, Mariana) e totais
+fixos (R$ 84,90 etc.) — nunca salvava nada, resetava a cada
+recarregamento, e era **igual para toda organização** (qualquer
+cliente testando o sistema veria os mesmos nomes fictícios). Afetava
+3 telas: `/mesas` (painel), o app do Garçom (`/garcom`) e o app do
+Atendente (`/atendente`), além do card "Resumo do salão" em Início.
+
+Migrations `20260908_031_restaurant_tables.sql` (tabela + RLS) e
+`20260908_032_restaurant_tables_realtime.sql` (Realtime) aplicadas.
+
+- **`restaurant_tables`** guarda só o *estado* da mesa (número,
+  status livre/ocupada/aguardando pagamento, nome do cliente,
+  quantidade de pessoas, hora que abriu). O total e os itens da
+  comanda **não são duplicados aqui** — vêm dos pedidos reais
+  (`orders`/`order_items`, mesma tabela que já alimenta a Cozinha)
+  filtrados por `table_number` + `opened_at` (`lib/tables-dal.ts`,
+  `getRestaurantTables`). Ou seja: uma rodada lançada na mesa já era
+  um pedido real antes dessa mudança — só o *status da mesa em si*
+  era fictício.
+- **Auto-semeadura**: na primeira vez que uma organização nova abre
+  o Mesas, o sistema cria 8 mesas livres automaticamente (só se a
+  organização tiver zero mesas cadastradas). Depois disso, quem
+  administra a conta (owner/manager) pode adicionar/remover mesas
+  pela própria tela de Mesas — o número de mesas não fica mais preso
+  em 8 fixo.
+- **Tempo real entre os 3 apps**: se o Garçom abre a mesa 5 pelo
+  celular, o painel desktop (Mesas) e o app do Atendente atualizam
+  sozinhos, sem precisar recarregar (Supabase Realtime na tabela
+  `restaurant_tables`, mesmo padrão já usado em `orders`).
+- **Permissão corrigida**: o cargo Atendente precisa liberar a mesa
+  depois de receber o pagamento, mas não tinha `manageTables` em
+  `lib/roles.ts` — corrigido (achado revisando o fluxo, não só
+  copiando o que já existia).
+
+Testado ponta a ponta com Playwright + consulta direta no banco:
+abrir mesa → **recarregar a página inteira** → mesa continua
+ocupada com o mesmo cliente (antes, resetava pro mock); lançar um
+item → recarregar de novo → comanda e total continuam corretos
+(prova que vêm de um pedido real, não de estado voador); Início
+"Resumo do salão" mostra 1/8 ocupadas em tempo real; solicitar
+fechamento → confirmar pagamento → mesa libera e Início volta a
+0/8; adicionar/remover mesa funciona (confirmado direto no banco).
+Dados de teste (mesa extra e pedido de teste) removidos depois.
+
+## 9. Plano da assinatura — ainda hardcoded (pendência aberta)
+
+`lib/dal.ts` (`getCurrentSubscription`) sempre retorna
+`planId: 'premium'` pra qualquer organização — comentário no próprio
+código já avisa (`TODO: buscar assinatura real da tabela
+subscriptions`). Efeito prático: o sidebar mostra "Premium" pra
+qualquer empresa, e o bloqueio de item por plano (`Sidebar.tsx`, já
+existe pronto — ícone de cadeado + "Disponível em um plano
+superior") nunca ativa, porque todo mundo "tem" o plano mais alto.
+
+Proposta (não implementada ainda): adicionar uma coluna
+`plan_id` em `organizations` (ou uma tabela `subscriptions` separada,
+se um dia tiver cobrança automática recorrente — por enquanto não
+tem, então uma coluna simples já resolve) e ler o plano de verdade
+ali. O fluxo de onboarding manual (`docs/ONBOARDING_NOVA_EMPRESA.md`)
+já teria onde registrar o plano contratado na hora de cadastrar o
+cliente.
+
 ## 3. Preço do pedido — revalidação server-side (já corrigida, registrar aqui pra visibilidade)
 
 `app/actions/orders.ts` (`createOrder`) antes confiava cegamente no

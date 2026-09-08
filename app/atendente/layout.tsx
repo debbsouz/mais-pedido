@@ -5,9 +5,11 @@ import {
 
 import { AuthProvider } from "@/components/providers/AuthProvider";
 import { OrdersProvider } from "@/components/providers/OrdersProvider";
+import { TablesProvider } from "@/components/providers/TablesProvider";
 import { PanelAccessGuard } from "@/components/auth/PanelAccessGuard";
 
 import { getOrders, toFrontendOrders } from "@/lib/orders-dal";
+import { getRestaurantTables } from "@/lib/tables-dal";
 
 interface AttendantLayoutProps {
   children: React.ReactNode;
@@ -19,6 +21,7 @@ export default async function AttendantLayout({
   const user = await requireAuth();
   const subscription = await getCurrentSubscription();
   const orders = toFrontendOrders(await getOrders());
+  const tables = await getRestaurantTables();
 
   return (
     <AuthProvider
@@ -26,9 +29,11 @@ export default async function AttendantLayout({
       subscription={subscription}
     >
       <OrdersProvider initialOrders={orders}>
-        <PanelAccessGuard>
-          {children}
-        </PanelAccessGuard>
+        <TablesProvider initialTables={tables}>
+          <PanelAccessGuard>
+            {children}
+          </PanelAccessGuard>
+        </TablesProvider>
       </OrdersProvider>
     </AuthProvider>
   );

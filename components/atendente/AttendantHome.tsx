@@ -53,10 +53,7 @@ export function AttendantHome() {
     completeOrder,
   } = useOrders();
 
-  const {
-    tables,
-    setTables,
-  } = useTables();
+  const { tables, releaseTable } = useTables();
 
   const [
     selectedTable,
@@ -221,7 +218,7 @@ export function AttendantHome() {
     );
   }
 
-  function confirmPaymentAndRelease() {
+  async function confirmPaymentAndRelease() {
     if (
       !selectedTable ||
       !canConfirmPayment()
@@ -229,24 +226,13 @@ export function AttendantHome() {
       return;
     }
 
-    const releasedTable: RestaurantTable =
-      {
-        id: selectedTable.id,
-        number:
-          selectedTable.number,
-        status: "free",
-      };
-
-    setTables(
-      (currentTables) =>
-        currentTables.map(
-          (table) =>
-            table.id ===
-            selectedTable.id
-              ? releasedTable
-              : table,
-        ),
+    const released = await releaseTable(
+      selectedTable.id,
     );
+
+    if (!released) {
+      return;
+    }
 
     closePayment();
   }

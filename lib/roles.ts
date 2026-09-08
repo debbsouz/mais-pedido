@@ -88,6 +88,8 @@ export const roles: Record<UserRole, RoleDefinition> = {
       "viewOrders",
       "createOrders",
       "manageOrders",
+      "viewTables",
+      "manageTables",
       "viewCustomers",
       "manageCustomers",
     ],
