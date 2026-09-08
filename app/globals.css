@@ -14995,3 +14995,31 @@ html[data-theme="dark"] .storefront__status--closed {
 .purchases-list li span {
   font-variant-numeric: tabular-nums;
 }
+
+/* =========================================
+   RELATÓRIO EXECUTIVO MENSAL
+========================================= */
+
+.monthly-report__kpis {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.monthly-report__growth {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 8px;
+  color: var(--success);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.monthly-report__growth--down {
+  color: var(--danger);
+}
+
+@media (max-width: 900px) {
+  .monthly-report__kpis {
+    grid-template-columns: 1fr;
+  }
+}
