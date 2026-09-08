@@ -14590,6 +14590,83 @@ html[data-theme="dark"] .storefront__status--closed {
   font-size: 18px;
 }
 
+.cart-drawer__total-value {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.cart-drawer__total-original {
+  color: var(--text-muted);
+  font-size: 12px;
+  text-decoration: line-through;
+}
+
+.cart-drawer__coupon {
+  margin-top: 14px;
+}
+
+.cart-drawer__coupon-input {
+  display: flex;
+  gap: 8px;
+}
+
+.cart-drawer__coupon-input input {
+  flex: 1;
+  min-height: 42px;
+  padding: 0 13px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  color: inherit;
+  font-size: 13px;
+}
+
+.cart-drawer__coupon-input button {
+  padding: 0 16px;
+  border: 1px solid var(--brand-500);
+  border-radius: var(--radius-md);
+  background: var(--brand-50);
+  color: var(--brand-600);
+  font-size: 12.5px;
+  font-weight: 750;
+}
+
+.cart-drawer__coupon-input button:disabled {
+  opacity: 0.6;
+}
+
+.cart-drawer__coupon-applied {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: var(--radius-md);
+  background: var(--success-soft);
+  color: var(--success);
+  font-size: 12.5px;
+  font-weight: 650;
+}
+
+.cart-drawer__coupon-applied button {
+  color: inherit;
+  font-size: 11.5px;
+  font-weight: 750;
+  text-decoration: underline;
+}
+
+.cart-drawer__coupon-message {
+  display: block;
+  margin-top: 6px;
+  color: var(--danger);
+  font-size: 11.5px;
+}
+
+.cart-drawer__coupon-message--ok {
+  color: var(--success);
+}
+
 .cart-drawer__submit {
   display: flex;
   width: 100%;
@@ -15058,4 +15135,37 @@ html[data-theme="dark"] .storefront__status--closed {
   .monthly-report__kpis {
     grid-template-columns: 1fr;
   }
+}
+
+/* =========================================
+   CUPONS
+========================================= */
+
+.coupons-form {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+}
+
+.coupons-list__actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.coupons-list__toggle {
+  min-height: 34px;
+  padding: 0 12px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--text-secondary);
+  font-size: 11.5px;
+  font-weight: 750;
+}
+
+.coupons-list__toggle--on {
+  border-color: var(--success);
+  background: var(--success-soft);
+  color: var(--success);
 }

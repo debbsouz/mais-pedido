@@ -56,6 +56,71 @@ export interface CreatePublicOrderInput {
   address?: PublicOrderAddressInput
   paymentMethod?: PublicOrderPaymentMethod
   items: PublicOrderItemInput[]
+  couponCode?: string
+}
+
+export interface PublicCouponCheckResult {
+  valid: boolean
+  discountCents: number
+  errorMessage: string | null
+}
+
+const couponErrorMessages: Record<string, string> = {
+  not_found: 'Cupom inválido ou não encontrado.',
+  below_minimum: 'Pedido não atinge o mínimo exigido por este cupom.',
+}
+
+/**
+ * Valida um cupom pra prévia no carrinho (sem criar pedido nenhum).
+ * O desconto final é sempre recalculado de novo, no servidor, na
+ * hora de criar o pedido de verdade — nunca confia no que voltou
+ * aqui pra gravar o total.
+ */
+export async function checkPublicCoupon(
+  organizationId: string,
+  code: string,
+  subtotalCents: number,
+): Promise<PublicCouponCheckResult> {
+  if (!organizationId || !code.trim()) {
+    return {
+      valid: false,
+      discountCents: 0,
+      errorMessage: 'Informe um cupom.',
+    }
+  }
+
+  const supabase = await createClient()
+
+  const { data } = await supabase
+    .rpc('validate_public_coupon', {
+      p_organization_id: organizationId,
+      p_code: code.trim(),
+      p_subtotal_cents: subtotalCents,
+    })
+    .single()
+
+  const result = data as {
+    valid: boolean
+    discount_cents: number
+    error_code: string | null
+    min_order_cents: number
+  } | null
+
+  if (!result || !result.valid) {
+    const code = result?.error_code ?? 'not_found'
+    const message =
+      code === 'below_minimum' && result
+        ? `Pedido mínimo de ${(result.min_order_cents / 100).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })} para usar este cupom.`
+        : couponErrorMessages[code] ?? 'Cupom inválido.'
+
+    return { valid: false, discountCents: 0, errorMessage: message }
+  }
+
+  return {
+    valid: true,
+    discountCents: result.discount_cents,
+    errorMessage: null,
+  }
 }
 
 const fulfillmentByStorefrontValue: Record<
@@ -161,10 +226,44 @@ export async function createPublicOrder(
     priceCents: realPriceByProductId.get(item.productId) as number,
   }))
 
-  const totalCents = verifiedItems.reduce(
+  const subtotalCents = verifiedItems.reduce(
     (total, item) => total + item.priceCents * item.quantity,
     0,
   )
+
+  // Revalida o cupom de novo aqui, com o subtotal calculado no
+  // servidor — o desconto mostrado no carrinho é só uma prévia, o
+  // que efetivamente é gravado vem desta checagem.
+  let discountCents = 0
+  let couponCode: string | null = null
+
+  if (input.couponCode?.trim()) {
+    const { data: couponResult } = await supabase
+      .rpc('validate_public_coupon', {
+        p_organization_id: input.organizationId,
+        p_code: input.couponCode.trim(),
+        p_subtotal_cents: subtotalCents,
+      })
+      .single()
+
+    const result = couponResult as {
+      valid: boolean
+      discount_cents: number
+    } | null
+
+    if (!result?.valid) {
+      return {
+        success: false,
+        error:
+          'O cupom aplicado não é mais válido. Remova-o e tente novamente.',
+      }
+    }
+
+    discountCents = result.discount_cents
+    couponCode = input.couponCode.trim().toUpperCase()
+  }
+
+  const totalCents = Math.max(0, subtotalCents - discountCents)
 
   // Gera o id no servidor em vez de usar .select() após o insert:
   // visitante anônimo não tem permissão de LEITURA em orders (só
@@ -197,6 +296,8 @@ export async function createPublicOrder(
       ? { method: paymentMethodByStorefrontValue[input.paymentMethod] }
       : null,
     total_cents: totalCents,
+    coupon_code: couponCode,
+    discount_cents: discountCents,
   })
 
   if (orderError) {

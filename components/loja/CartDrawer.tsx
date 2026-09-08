@@ -13,7 +13,10 @@ import {
   X,
 } from "@phosphor-icons/react";
 
-import { createPublicOrder } from "@/app/actions/public-orders";
+import {
+  checkPublicCoupon,
+  createPublicOrder,
+} from "@/app/actions/public-orders";
 import { rememberOrderId } from "@/lib/storefront/order-history";
 import type {
   OrderFulfillment,
@@ -127,6 +130,21 @@ export function CartDrawer({
   const [placedOrderId, setPlacedOrderId] =
     useState<string | null>(null);
 
+  const [couponCode, setCouponCode] =
+    useState("");
+
+  const [appliedCoupon, setAppliedCoupon] =
+    useState<{
+      code: string;
+      discountCents: number;
+    } | null>(null);
+
+  const [couponMessage, setCouponMessage] =
+    useState<string | null>(null);
+
+  const [isCheckingCoupon, setIsCheckingCoupon] =
+    useState(false);
+
   if (!open) {
     return null;
   }
@@ -135,6 +153,47 @@ export function CartDrawer({
     (sum, line) => sum + line.price * line.quantity,
     0,
   );
+
+  const discount = appliedCoupon
+    ? appliedCoupon.discountCents / 100
+    : 0;
+
+  const total = Math.max(0, subtotal - discount);
+
+  async function handleApplyCoupon() {
+    if (!couponCode.trim()) {
+      return;
+    }
+
+    setIsCheckingCoupon(true);
+    setCouponMessage(null);
+
+    const result = await checkPublicCoupon(
+      organizationId,
+      couponCode,
+      Math.round(subtotal * 100),
+    );
+
+    setIsCheckingCoupon(false);
+
+    if (!result.valid) {
+      setAppliedCoupon(null);
+      setCouponMessage(result.errorMessage);
+      return;
+    }
+
+    setAppliedCoupon({
+      code: couponCode.trim().toUpperCase(),
+      discountCents: result.discountCents,
+    });
+    setCouponMessage("Cupom aplicado!");
+  }
+
+  function handleRemoveCoupon() {
+    setAppliedCoupon(null);
+    setCouponCode("");
+    setCouponMessage(null);
+  }
 
   const isEmpty = lines.length === 0;
   const stepIndex = stepOrder.indexOf(step);
@@ -163,6 +222,9 @@ export function CartDrawer({
     setPayment(null);
     setSubmitError(null);
     setPlacedOrderId(null);
+    setCouponCode("");
+    setAppliedCoupon(null);
+    setCouponMessage(null);
     onClose();
   }
 
@@ -186,6 +248,7 @@ export function CartDrawer({
         name: line.name,
         quantity: line.quantity,
       })),
+      couponCode: appliedCoupon?.code,
     });
 
     setIsSubmitting(false);
@@ -361,6 +424,70 @@ export function CartDrawer({
                         </div>
                       </div>
                     ))}
+                  </div>
+
+                  <div className="cart-drawer__coupon">
+                    {appliedCoupon ? (
+                      <div className="cart-drawer__coupon-applied">
+                        <span>
+                          Cupom{" "}
+                          <strong>
+                            {appliedCoupon.code}
+                          </strong>{" "}
+                          aplicado: -
+                          {formatPrice(discount)}
+                        </span>
+
+                        <button
+                          type="button"
+                          onClick={
+                            handleRemoveCoupon
+                          }
+                        >
+                          Remover
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="cart-drawer__coupon-input">
+                        <input
+                          type="text"
+                          placeholder="Cupom de desconto"
+                          value={couponCode}
+                          onChange={(event) =>
+                            setCouponCode(
+                              event.target.value,
+                            )
+                          }
+                        />
+
+                        <button
+                          type="button"
+                          disabled={
+                            isCheckingCoupon ||
+                            !couponCode.trim()
+                          }
+                          onClick={
+                            handleApplyCoupon
+                          }
+                        >
+                          {isCheckingCoupon
+                            ? "..."
+                            : "Aplicar"}
+                        </button>
+                      </div>
+                    )}
+
+                    {couponMessage && (
+                      <small
+                        className={
+                          appliedCoupon
+                            ? "cart-drawer__coupon-message cart-drawer__coupon-message--ok"
+                            : "cart-drawer__coupon-message"
+                        }
+                      >
+                        {couponMessage}
+                      </small>
+                    )}
                   </div>
                 </section>
               )}
@@ -562,7 +689,16 @@ export function CartDrawer({
           <div className="cart-drawer__footer">
             <div className="cart-drawer__total">
               <span>Total</span>
-              <strong>{formatPrice(subtotal)}</strong>
+
+              <div className="cart-drawer__total-value">
+                {appliedCoupon && (
+                  <small className="cart-drawer__total-original">
+                    {formatPrice(subtotal)}
+                  </small>
+                )}
+
+                <strong>{formatPrice(total)}</strong>
+              </div>
             </div>
 
             {step === "confirmation" ? (
