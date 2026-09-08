@@ -12628,6 +12628,70 @@ html[data-theme="dark"] .brand-mark--mastercard span:last-child {
   font-size: 15px;
 }
 
+.team-list {
+  display: grid;
+  gap: 10px;
+  list-style: none;
+  padding: 0;
+  margin: 12px 0 0;
+}
+
+.team-list li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--background);
+}
+
+.team-list li div {
+  display: grid;
+  gap: 2px;
+}
+
+.team-list li strong {
+  font-size: 13.5px;
+}
+
+.team-list li span {
+  color: var(--text-secondary);
+  font-size: 12px;
+}
+
+.team-list li button {
+  display: grid;
+  width: 34px;
+  height: 34px;
+  place-items: center;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  background: var(--surface);
+  color: var(--text-secondary);
+}
+
+.team-list li button:hover {
+  border-color: var(--danger);
+  color: var(--danger);
+}
+
+.team-list li button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.settings-team__instructions {
+  margin: 12px 0 18px;
+  padding: 12px 14px;
+  border: 1px dashed var(--border);
+  border-radius: var(--radius-md);
+  color: var(--text-secondary);
+  font-size: 12.5px;
+  line-height: 1.7;
+}
+
 .settings-card__badge {
   margin-left: auto;
   padding: 3px 9px;

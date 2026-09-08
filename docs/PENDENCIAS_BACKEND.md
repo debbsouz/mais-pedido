@@ -19,7 +19,7 @@ garçom, atendente, cardápio, clientes, configurações).
   front-end diretamente. Ela e a IA que ajuda no front mantêm esse
   lado do código; qualquer ajuste lá deve passar por ela primeiro.
 
-## 1. Migration de status terminais de pedido — CONFIRMAR SE JÁ FOI APLICADA
+## 1. Migration de status terminais de pedido — ✅ CONFIRMADO aplicado (2026-09-08)
 
 Arquivo: `supabase/migrations/20260824_011_orders_terminal_status.sql`
 
@@ -42,17 +42,10 @@ ALTER TABLE orders ADD CONSTRAINT orders_status_check
   CHECK (status IN ('new', 'preparing', 'ready', 'delivery', 'completed', 'cancelled'));
 ```
 
-**Status**: a Débora pediu para eu aplicar isso no banco, mas eu não
-tenho credenciais de administração do Supabase neste ambiente (só
-`NEXT_PUBLIC_SUPABASE_URL` e `NEXT_PUBLIC_SUPABASE_ANON_KEY`, que não
-permitem DDL). Ela decidiu como proceder — **confira com ela se este
-SQL já foi rodado** antes de assumir que sim. Enquanto não for
-aplicado, os botões "Finalizar pedido", "Recusar" e "Finalizar
-entrega" mostram um erro ("Não foi possível atualizar o pedido.") em
-vez de funcionar — testei e confirmei que isso já falha de forma
-segura (sem apagar nada, sem travar a tela), então não é urgente ao
-ponto de quebrar o produto, mas precisa ser aplicado antes de qualquer
-demonstração real desse fluxo.
+**Status**: confirmado direto no banco em 2026-09-08 — a constraint
+`orders_status_check` já inclui `completed` e `cancelled` (e também
+`accepted`, de um ajuste do Jon). "Finalizar pedido"/"Recusar"
+funcionam de verdade. Não precisa de mais nenhuma ação aqui.
 
 Depois de aplicada, pedidos com status `completed`/`cancelled` somem
 sozinhos dos quadros operacionais (Pedidos, Cozinha, Entregas) — eles
@@ -151,6 +144,47 @@ via `OperationOverview.tsx`. A Débora confirmou remover: item
 "Dashboard" saiu do menu (`components/layout/Sidebar.tsx`), a rota
 `/dashboard` agora só redireciona pra `/inicio` (não quebra
 link/favorito antigo), e os 3 componentes mock foram apagados.
+
+## 7. Equipe (cadastro de funcionário) — ✅ construído em 2026-09-08
+
+Migrations `20260826_022_add_team_member.sql`, `_023_profiles_select_same_org.sql`
+e `_024_fix_add_team_member_ambiguity.sql` (aplicadas). A tela
+Equipe (Configurações → Equipe) agora é real:
+
+- **Lista o time atual** de verdade (`app/actions/team.ts`,
+  `getTeamMembers`) — nome + cargo de cada membro ativo da
+  organização.
+- **Adicionar funcionário**: como este ambiente só tem a chave anon
+  do Supabase (sem `service_role`), criar o *login* em si (e-mail +
+  senha) continua manual, **FAZER MANUAL NO SUPABASE** (Authentication
+  → Add user) — isso é feito pela Débora, não pelo sistema. Depois
+  disso, na tela Equipe ela digita o mesmo e-mail + nome + cargo, e
+  a função `add_team_member` (SECURITY DEFINER, só owner pode
+  chamar) vincula esse usuário à organização, criando/atualizando
+  `profiles` e `organization_members`. Reativa automaticamente se a
+  pessoa já tinha sido removida antes.
+- **Remover funcionário**: desativa (`is_active = false`) via
+  `removeTeamMember` — a policy `organization_members_manage_owner`
+  já permitia isso direto, sem precisar de função especial. Owner
+  não pode se autorremover por essa tela.
+
+**Detalhe técnico que vale registrar** (achado testando, não
+adivinhado): `organization_members.user_id` referencia `auth.users`,
+não `profiles` — não existe FK direta entre `organization_members` e
+`profiles`, então o PostgREST não consegue embutir
+`profiles(full_name)` num único `.select()` (a query falhava
+silenciosamente e a lista sempre voltava vazia). Resolvido buscando
+os dois separadamente e juntando em JS. Além disso, `profiles` só
+tinha policy de SELECT pro próprio dono — precisou de uma policy
+nova (`profiles_select_same_org`) pra um membro conseguir ver o
+nome dos colegas.
+
+Testado ponta a ponta: lista carrega os 3 membros reais que já
+existiam (Débora/owner, além de dois logins de teste pré-existentes
+— João/garçom, Maria/atendente), tentativa com e-mail inexistente
+mostra erro claro, e um ciclo completo de remover + readicionar a
+Maria funcionou e devolveu ela ao estado original (mesmo `id`, mesmo
+cargo, ativa de novo) — sem sobra de dado quebrado.
 
 ## 3. Preço do pedido — revalidação server-side (já corrigida, registrar aqui pra visibilidade)
 
