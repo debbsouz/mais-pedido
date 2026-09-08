@@ -38,6 +38,34 @@ export function getInitials(name: string): string {
   return (words[0][0] + words[1][0]).toUpperCase();
 }
 
+/**
+ * Remove tudo que não é dígito — usado como chave de comparação
+ * entre telefones digitados de formas diferentes (com/sem DDD,
+ * parênteses, espaço, hífen).
+ */
+export function normalizePhone(phone: string): string {
+  return phone.replace(/\D/g, "")
+}
+
+/**
+ * Formata um telefone (só dígitos) para exibição: "(51) 99999-9999"
+ * ou "(51) 9999-9999", conforme a quantidade de dígitos. Sem DDD
+ * reconhecível, devolve o valor original sem tentar adivinhar.
+ */
+export function formatPhone(phone: string): string {
+  const digits = normalizePhone(phone)
+
+  if (digits.length === 11) {
+    return `(${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(7)}`
+  }
+
+  if (digits.length === 10) {
+    return `(${digits.slice(0, 2)}) ${digits.slice(2, 6)}-${digits.slice(6)}`
+  }
+
+  return phone
+}
+
 interface PaymentLabelInput {
   method: string | null;
   cardBrand?: string | null;

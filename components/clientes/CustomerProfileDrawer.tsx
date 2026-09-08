@@ -9,40 +9,17 @@ import {
   Phone,
   Receipt,
   ShoppingBag,
-  Star,
   User,
   X,
 } from "@phosphor-icons/react";
 
 import { formatCurrency } from "@/lib/format";
 
-export interface CustomerHistoryOrder {
-  id: string;
-  displayNumber: string;
-  date: string;
-  total: number;
-  channel: "Delivery" | "Retirada" | "Mesa";
-  status: "Concluído" | "Cancelado";
-  items: string;
-}
-
-export interface CustomerProfile {
-  id: string;
-  name: string;
-  phone: string;
-  orders: number;
-  totalSpent: number;
-  lastOrder: string;
-  customerSince: string;
-  loyaltyProgress: number;
-  loyaltyGoal: number;
-  address?: string;
-  history: CustomerHistoryOrder[];
-}
+import type { CustomerDto } from "@/app/actions/customers";
 
 interface CustomerProfileDrawerProps {
   open: boolean;
-  customer: CustomerProfile | null;
+  customer: CustomerDto | null;
   onClose: () => void;
 }
 
@@ -54,27 +31,11 @@ export function CustomerProfileDrawer({
   if (!open || !customer) return null;
 
   const averageTicket =
-    customer.orders > 0
-      ? customer.totalSpent / customer.orders
+    customer.ordersCount > 0
+      ? customer.totalSpentCents /
+        100 /
+        customer.ordersCount
       : 0;
-
-  const loyaltyPercentage =
-    customer.loyaltyGoal > 0
-      ? Math.min(
-          100,
-          Math.round(
-            (customer.loyaltyProgress /
-              customer.loyaltyGoal) *
-              100,
-          ),
-        )
-      : 0;
-
-  const remainingOrders = Math.max(
-    0,
-    customer.loyaltyGoal -
-      customer.loyaltyProgress,
-  );
 
   return (
     <div className="customer-profile">
@@ -92,8 +53,7 @@ export function CustomerProfileDrawer({
             <h2>{customer.name}</h2>
 
             <p>
-              Informações, relacionamento e histórico
-              de pedidos.
+              Informações e histórico de pedidos.
             </p>
           </div>
 
@@ -123,7 +83,10 @@ export function CustomerProfileDrawer({
 
               <small>
                 <CalendarBlank size={13} />
-                Cliente desde {customer.customerSince}
+                Cliente desde{" "}
+                {customer.customerSince.toLocaleDateString(
+                  "pt-BR",
+                )}
               </small>
             </div>
           </section>
@@ -134,7 +97,7 @@ export function CustomerProfileDrawer({
 
               <div>
                 <span>Pedidos</span>
-                <strong>{customer.orders}</strong>
+                <strong>{customer.ordersCount}</strong>
               </div>
             </article>
 
@@ -144,7 +107,9 @@ export function CustomerProfileDrawer({
               <div>
                 <span>Total gasto</span>
                 <strong>
-                  {formatCurrency(customer.totalSpent)}
+                  {formatCurrency(
+                    customer.totalSpentCents / 100,
+                  )}
                 </strong>
               </div>
             </article>
@@ -161,68 +126,31 @@ export function CustomerProfileDrawer({
             </article>
           </section>
 
-          <section className="customer-profile__section">
-            <div className="customer-profile__section-title">
-              <Star size={18} weight="fill" />
-
-              <div>
-                <strong>Fidelidade</strong>
-                <span>
-                  Acompanhe o progresso deste cliente.
-                </span>
-              </div>
-            </div>
-
-            <div className="customer-profile__loyalty">
-              <div className="customer-profile__loyalty-top">
-                <div>
-                  <strong>
-                    {customer.loyaltyProgress}/
-                    {customer.loyaltyGoal} pedidos
-                  </strong>
-
-                  <span>
-                    {remainingOrders === 0
-                      ? "Recompensa disponível"
-                      : remainingOrders === 1
-                        ? "Falta 1 pedido para a recompensa"
-                        : `Faltam ${remainingOrders} pedidos para a recompensa`}
-                  </span>
-                </div>
-
-                <strong>
-                  {loyaltyPercentage}%
-                </strong>
-              </div>
-
-              <div className="customer-profile__loyalty-bar">
-                <span
-                  style={{
-                    width: `${loyaltyPercentage}%`,
-                  }}
-                />
-              </div>
-            </div>
-          </section>
-
-          {customer.address && (
+          {(customer.address || customer.email) && (
             <section className="customer-profile__section">
               <div className="customer-profile__section-title">
                 <MapPin size={18} />
 
                 <div>
-                  <strong>Endereço recente</strong>
+                  <strong>Contato e endereço</strong>
                   <span>
-                    Último endereço utilizado em entrega.
+                    Dados cadastrados deste cliente.
                   </span>
                 </div>
               </div>
 
-              <div className="customer-profile__address">
-                <MapPin size={17} />
+              {customer.email && (
+                <div className="customer-profile__address">
+                  <span>{customer.email}</span>
+                </div>
+              )}
 
-                <span>{customer.address}</span>
-              </div>
+              {customer.address && (
+                <div className="customer-profile__address">
+                  <MapPin size={17} />
+                  <span>{customer.address}</span>
+                </div>
+              )}
             </section>
           )}
 
@@ -257,22 +185,20 @@ export function CustomerProfileDrawer({
                       </div>
 
                       <strong>
-                        {formatCurrency(order.total)}
+                        {formatCurrency(
+                          order.totalCents / 100,
+                        )}
                       </strong>
                     </div>
 
                     <p>{order.items}</p>
 
                     <div className="customer-history-order__bottom">
-                      <span>
-                        {order.channel}
-                      </span>
+                      <span>{order.channel}</span>
 
-                      <span
-                        data-status={order.status}
-                      >
+                      <span data-status={order.status}>
                         {order.status ===
-                        "Concluído" && (
+                          "Concluído" && (
                           <CheckCircle
                             size={13}
                             weight="fill"
@@ -289,9 +215,7 @@ export function CustomerProfileDrawer({
               <div className="customer-profile__empty">
                 <ShoppingBag size={24} />
 
-                <span>
-                  Nenhum pedido encontrado.
-                </span>
+                <span>Nenhum pedido encontrado.</span>
               </div>
             )}
           </section>

@@ -232,6 +232,21 @@ export async function createOrder(
     p_order_id: order.id,
   })
 
+  // Cadastra o cliente automaticamente (por telefone) se ainda não
+  // existir — best-effort, mesmo motivo do desconto de estoque
+  // acima. ON CONFLICT DO NOTHING preserva o que a equipe já tenha
+  // editado manualmente (nome, endereço, observação).
+  if (input.customerPhone?.trim()) {
+    await supabase.from('customers').upsert(
+      {
+        organization_id: context.organizationId,
+        name: input.customerName.trim(),
+        phone: input.customerPhone.trim().replace(/\D/g, ''),
+      },
+      { onConflict: 'organization_id,phone', ignoreDuplicates: true },
+    )
+  }
+
   revalidatePath('/pedidos')
   return { success: true, data: { id: order.id } }
 }

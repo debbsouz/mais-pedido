@@ -355,6 +355,16 @@ export async function createPublicOrder(
     p_order_id: orderId,
   })
 
+  // Cadastra o cliente automaticamente (por telefone) se ainda não
+  // existir — best-effort, igual ao desconto de estoque acima.
+  if (input.customerPhone?.trim()) {
+    await supabase.rpc('upsert_customer_from_order', {
+      p_organization_id: input.organizationId,
+      p_name: input.customerName.trim(),
+      p_phone: input.customerPhone.trim(),
+    })
+  }
+
   return { success: true, data: { id: orderId } }
 }
 

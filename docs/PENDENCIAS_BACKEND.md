@@ -52,25 +52,57 @@ sozinhos dos quadros operacionais (Pedidos, Cozinha, Entregas) — eles
 só exibem os 4 status ativos — mas continuam no banco, disponíveis
 para relatórios futuros de faturamento.
 
-## 2. Tabela de clientes não existe
+## 2. Clientes — ✅ construído em 2026-09-08 (eram 6 fictícios fixos)
 
-A tela `/clientes` mostra sempre os mesmos 6 clientes fictícios,
-hardcoded em `components/clientes/CustomersManagement.tsx`. Não existe
-nenhuma tabela `customers` no banco (confirmado — nenhuma migration
-cria isso). O formulário de cadastro/edição de cliente já existe pronto
-no front-end (`CustomerFormDrawer.tsx`, 423 linhas), mas está
-completamente órfão — não há botão que abra ele.
+A tela `/clientes` mostrava sempre os mesmos 6 clientes inventados
+(Mariana Souza, Carlos Eduardo...), sem tabela nenhuma no banco. O
+formulário de cadastro/edição já existia pronto (`CustomerFormDrawer.tsx`)
+mas estava órfão — nenhum botão abria ele.
 
-Pra essa tela funcionar de verdade, falta:
+Migrations `20260908_034_customers.sql` (tabela + RLS),
+`_035_customers_public_upsert.sql` e `_036_fix_..._normalize.sql`
+(função pra loja pública, corrigida) aplicadas.
 
-- Tabela `customers` (nome, telefone, e-mail, endereço, notas,
-  `organization_id`, RLS por organização — seguindo o mesmo padrão de
-  `products`/`categories`).
-- DAL (`lib/customers-dal.ts`) e Server Actions
-  (`app/actions/customers.ts`) equivalentes ao que já existe para
-  catálogo e pedidos.
+- **`customers`** guarda só a identidade/CRM (nome, telefone, e-mail,
+  endereço, observação) — mesmo princípio de `restaurant_tables`:
+  pedidos, total gasto e histórico **não são duplicados aqui**, vêm
+  dos pedidos reais (`orders`) casando pelo telefone (sempre
+  normalizado, só dígitos — `normalizePhone`/`formatPhone` em
+  `lib/format.ts`).
+- **Cadastro automático pelo pedido** (a própria tela mock já
+  prometia isso no texto, nunca tinha sido implementado): toda vez
+  que um pedido é criado com telefone — pelo painel
+  (`app/actions/orders.ts`) ou pela loja pública
+  (`app/actions/public-orders.ts`, via função `upsert_customer_from_order`
+  SECURITY DEFINER, porque visitante anônimo não pode escrever direto
+  na tabela) — o cliente é criado se ainda não existir.
+  `ON CONFLICT DO NOTHING`: nunca sobrescreve nome/endereço que a
+  equipe já tenha editado manualmente.
+- **CRUD manual completo**: cadastrar, editar e remover cliente
+  direto na tela (`app/actions/customers.ts`), pra registrar alguém
+  antes do primeiro pedido (ex.: WhatsApp).
+- **Removido da tela**: a seção "Fidelidade" (barra de progresso
+  X/10 pedidos) que existia no mock — é a interface de um programa de
+  cashback que nunca teve regra nenhuma definida (quantos pedidos?
+  qual a recompensa? como resgata?). Não inventei um número —
+  isso é o `cashback` do `lib/plans.ts`, ainda não construído.
 
-Isso é feature nova, não ajuste — não tentei simular com dado local.
+**Achado pelo caminho**: `/clientes`, `/cardapio`, `/financeiro` e
+`/relatorios` são layouts separados do grupo `(panel)` (`app/cardapio/layout.tsx`
+etc.), e nenhum deles envolvia `OrdersProvider` — só reaproveitava
+`AppLayout`/`Topbar`. Isso nunca tinha dado problema porque nada
+neles usava `useOrders()`. Ao consertar o sino de notificações mais
+cedo no mesmo dia (seção 10) pra usar dado real, os 4 quebraram
+(`useOrders deve ser usado dentro de OrdersProvider`). Corrigido
+adicionando `OrdersProvider` com dado real nos 4 layouts, igual o
+`(panel)` já fazia.
+
+Testado ponta a ponta: cadastro manual funciona (endereço/e-mail
+salvos e exibidos formatados); pedido real lançado com o mesmo
+telefone aparece automaticamente no perfil do cliente (pedidos,
+total gasto, ticket médio e histórico corretos); editar e remover
+cliente confirmados direto no banco. Dados de teste removidos
+depois.
 
 ## 4. Financeiro e Relatórios — construídos em 2026-09-02, "tempo médio" do Início ainda quebrado
 
@@ -290,6 +322,23 @@ bloqueio na entrada da rota (`lib/route-access.ts` +
 que já existia no Sidebar (Mesas, Cozinha, Entregas, Cardápio,
 Financeiro, e also Garçom/Atendente que ainda não tinham essa
 checagem em lugar nenhum).
+
+## 10. Sino de notificações — ✅ corrigido em 2026-09-08 (era decorativo)
+
+Achado numa varredura geral pedida pela Débora ("analise tudo").
+`components/layout/Topbar.tsx` — o sino visível em toda tela do
+painel sempre mostrava a bolinha vermelha ao carregar a página
+(`useState(true)` fixo, nunca reflete nada real) e duas notificações
+hardcoded que nunca mudavam: "3 pedidos aguardando confirmação" e
+"Cozinha em operação / Nenhum pedido crítico" — mesmos números em
+qualquer empresa. Só o card "Status da loja" ali dentro era real.
+
+Corrigido: os dois cards agora usam a contagem real de pedidos
+(`useOrders()`, mesmo padrão já usado em `OperationOverview.tsx`) —
+"aguardando confirmação" mostra o número real de pedidos novos (com
+uma mensagem positiva quando não há nenhum), "em preparo" mostra
+quantos estão sendo preparados agora. A bolinha vermelha só aparece
+quando há pedido de verdade esperando confirmação.
 
 ## 3. Preço do pedido — revalidação server-side (já corrigida, registrar aqui pra visibilidade)
 
