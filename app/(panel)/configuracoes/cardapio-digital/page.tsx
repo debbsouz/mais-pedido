@@ -10,6 +10,7 @@ import {
 
 import {
   getStoreSettings,
+  updateAdsSettings,
   updateStoreSettings,
 } from "@/app/actions/store-settings";
 import { SettingsHelp } from "@/components/configuracoes/SettingsHelp";
@@ -27,6 +28,14 @@ export default function CardapioDigitalPage() {
     useState<string | null>(null);
   const [linkCopied, setLinkCopied] =
     useState(false);
+  const [metaPixelId, setMetaPixelId] =
+    useState("");
+  const [googleAdsId, setGoogleAdsId] =
+    useState("");
+  const [isSavingAds, setIsSavingAds] =
+    useState(false);
+  const [adsSaveMessage, setAdsSaveMessage] =
+    useState<string | null>(null);
 
   useEffect(() => {
     void getStoreSettings().then((settings) => {
@@ -39,6 +48,8 @@ export default function CardapioDigitalPage() {
         (settings.minOrderCents / 100).toFixed(2),
       );
       setInstagramUrl(settings.instagramUrl ?? "");
+      setMetaPixelId(settings.metaPixelId ?? "");
+      setGoogleAdsId(settings.googleAdsId ?? "");
     });
   }, []);
 
@@ -86,6 +97,28 @@ export default function CardapioDigitalPage() {
     setIsSavingStore(false);
 
     setStoreSaveMessage(
+      result.success
+        ? "Salvo com sucesso."
+        : result.error,
+    );
+  }
+
+  async function handleSaveAdsSettings(
+    event: FormEvent,
+  ) {
+    event.preventDefault();
+
+    setIsSavingAds(true);
+    setAdsSaveMessage(null);
+
+    const result = await updateAdsSettings({
+      metaPixelId,
+      googleAdsId,
+    });
+
+    setIsSavingAds(false);
+
+    setAdsSaveMessage(
       result.success
         ? "Salvo com sucesso."
         : result.error,
@@ -202,6 +235,77 @@ export default function CardapioDigitalPage() {
           </div>
         </form>
       </div>
+
+      <div className="settings-section__header settings-section__header--secondary">
+        <div>
+          <h3>Integração com anúncios</h3>
+          <p>
+            Cadastre o Pixel do Meta e/ou a tag do Google Ads pra
+            medir suas campanhas — a criação e gestão dos anúncios
+            continua sendo feita direto no Meta Ads Manager ou
+            Google Ads, o +Pedido só carrega o rastreador na loja.
+          </p>
+        </div>
+
+        <SettingsHelp>
+          <p>
+            <strong>Pixel do Meta</strong>: no Gerenciador de
+            Eventos do Facebook, copie o número do Pixel (só
+            dígitos). <strong>Google Ads</strong>: copie o ID de
+            acompanhamento de conversão, algo como
+            &quot;AW-XXXXXXXXX&quot;. Deixe em branco o que não
+            usar.
+          </p>
+        </SettingsHelp>
+      </div>
+
+      <form
+        className="settings-card settings-form settings-form--grid"
+        onSubmit={handleSaveAdsSettings}
+      >
+        <div className="settings-form__field">
+          <span>Pixel do Meta (Facebook/Instagram)</span>
+          <input
+            type="text"
+            inputMode="numeric"
+            placeholder="Ex: 123456789012345"
+            value={metaPixelId}
+            onChange={(event) =>
+              setMetaPixelId(event.target.value)
+            }
+          />
+        </div>
+
+        <div className="settings-form__field">
+          <span>ID do Google Ads</span>
+          <input
+            type="text"
+            placeholder="Ex: AW-123456789"
+            value={googleAdsId}
+            onChange={(event) =>
+              setGoogleAdsId(event.target.value)
+            }
+          />
+        </div>
+
+        <div className="settings-form__field settings-form__field--full">
+          <button
+            type="submit"
+            className="settings-form__submit"
+            disabled={isSavingAds}
+          >
+            {isSavingAds
+              ? "Salvando..."
+              : "Salvar alterações"}
+          </button>
+
+          {adsSaveMessage && (
+            <small className="settings-form__note">
+              {adsSaveMessage}
+            </small>
+          )}
+        </div>
+      </form>
     </div>
   );
 }

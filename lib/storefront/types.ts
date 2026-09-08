@@ -75,9 +75,15 @@ export interface StorefrontRecentOrderItem {
   detail: string;
 }
 
+export interface StorefrontTracking {
+  metaPixelId?: string;
+  googleAdsId?: string;
+}
+
 export interface StorefrontData {
   organizationId: string;
   slug: string;
+  tracking: StorefrontTracking;
   brand: StorefrontBrand;
   status: StorefrontStatus;
   social: StorefrontSocial;

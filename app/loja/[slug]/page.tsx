@@ -1,3 +1,4 @@
+import { AdsTracking } from "@/components/loja/AdsTracking";
 import { StorefrontExperience } from "@/components/loja/StorefrontExperience";
 import { getStorefrontData } from "@/lib/storefront/get-storefront-data";
 
@@ -27,9 +28,13 @@ export default async function LojaPage({
   }
 
   return (
-    <StorefrontExperience
-      data={data}
-      tableNumber={mesa ?? null}
-    />
+    <>
+      <AdsTracking tracking={data.tracking} />
+
+      <StorefrontExperience
+        data={data}
+        tableNumber={mesa ?? null}
+      />
+    </>
   );
 }

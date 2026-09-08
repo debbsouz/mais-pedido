@@ -21,6 +21,8 @@ export interface StoreSettings {
   pixKey: string | null
   pixKeyType: string | null
   acceptedCardBrands: string[]
+  metaPixelId: string | null
+  googleAdsId: string | null
 }
 
 /**
@@ -39,7 +41,7 @@ export async function getStoreSettings(): Promise<StoreSettings | null> {
   const { data } = await supabase
     .from('organizations')
     .select(
-      'slug, name, cnpj, phone, is_open, min_order_cents, instagram_url, pix_key, pix_key_type, accepted_card_brands',
+      'slug, name, cnpj, phone, is_open, min_order_cents, instagram_url, pix_key, pix_key_type, accepted_card_brands, meta_pixel_id, google_ads_id',
     )
     .eq('id', context.organizationId)
     .single()
@@ -59,6 +61,8 @@ export async function getStoreSettings(): Promise<StoreSettings | null> {
     pixKey: data.pix_key,
     pixKeyType: data.pix_key_type,
     acceptedCardBrands: data.accepted_card_brands ?? [],
+    metaPixelId: data.meta_pixel_id,
+    googleAdsId: data.google_ads_id,
   }
 }
 
@@ -222,6 +226,71 @@ export async function updatePaymentSettings(
     return {
       success: false,
       error: 'Não foi possível salvar as formas de pagamento.',
+    }
+  }
+
+  revalidatePath('/configuracoes')
+
+  return { success: true }
+}
+
+export interface UpdateAdsSettingsInput {
+  metaPixelId: string
+  googleAdsId: string
+}
+
+/**
+ * IDs de rastreamento (Pixel do Meta / tag do Google Ads). O
+ * +Pedido não gerencia campanha nenhuma — só injeta esses scripts
+ * reais na loja pública quando preenchidos, pra quem já anuncia
+ * conseguir medir o que converteu.
+ */
+export async function updateAdsSettings(
+  input: UpdateAdsSettingsInput,
+): Promise<StoreSettingsActionResult> {
+  const context = await getOrdersContext()
+
+  if (!context || !roleHasPermission(context.role, 'viewSettings')) {
+    return { success: false, error: 'Não autorizado.' }
+  }
+
+  const metaPixelId = input.metaPixelId.trim()
+  const googleAdsId = input.googleAdsId.trim()
+
+  // Validação estrita: esses valores são injetados dentro de um
+  // <script> na loja pública (AdsTracking.tsx). Só dígitos e
+  // "AW-"/"G-"/"UA-" + alfanumérico/hífen são formatos reais de
+  // Pixel/Google Ads — qualquer outra coisa é rejeitada, nunca
+  // salva no banco.
+  if (metaPixelId && !/^\d+$/.test(metaPixelId)) {
+    return {
+      success: false,
+      error: 'Pixel do Meta deve conter só números.',
+    }
+  }
+
+  if (googleAdsId && !/^[A-Za-z0-9-]+$/.test(googleAdsId)) {
+    return {
+      success: false,
+      error: 'ID do Google Ads inválido.',
+    }
+  }
+
+  const supabase = await createClient()
+
+  const { data, error } = await supabase
+    .from('organizations')
+    .update({
+      meta_pixel_id: metaPixelId || null,
+      google_ads_id: googleAdsId || null,
+    })
+    .eq('id', context.organizationId)
+    .select('id')
+
+  if (error || !data || data.length === 0) {
+    return {
+      success: false,
+      error: 'Não foi possível salvar a integração com anúncios.',
     }
   }
 

@@ -122,6 +122,12 @@ export async function getStorefrontData(
   return {
     organizationId: org.id as string,
     slug: org.slug as string,
+    tracking: {
+      metaPixelId:
+        (org.meta_pixel_id as string | null) ?? undefined,
+      googleAdsId:
+        (org.google_ads_id as string | null) ?? undefined,
+    },
     brand: {
       name: org.name as string,
       type: "Estabelecimento",
