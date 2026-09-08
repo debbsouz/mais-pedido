@@ -17,6 +17,11 @@ import type { OrderUrgency } from "@/lib/order-timing";
 interface DeliveryCardProps {
   order: Order;
   urgency: OrderUrgency;
+  drivers: { id: string; name: string }[];
+  onAssignDriver: (
+    orderId: string,
+    driverId: string | null,
+  ) => void;
   onComplete: (orderId: string) => void;
 }
 
@@ -65,6 +70,8 @@ function getPayment(order: Order) {
 export function DeliveryCard({
   order,
   urgency,
+  drivers,
+  onAssignDriver,
   onComplete,
 }: DeliveryCardProps) {
   return (
@@ -150,6 +157,39 @@ export function DeliveryCard({
           </div>
         )}
       </div>
+
+      <label className="delivery-card__driver">
+        <Motorcycle size={18} />
+
+        <div>
+          <span>Entregador</span>
+
+          <select
+            value={
+              order.assignedDriverId ?? ""
+            }
+            onChange={(event) =>
+              onAssignDriver(
+                order.id,
+                event.target.value || null,
+              )
+            }
+          >
+            <option value="">
+              Sem entregador definido
+            </option>
+
+            {drivers.map((driver) => (
+              <option
+                key={driver.id}
+                value={driver.id}
+              >
+                {driver.name}
+              </option>
+            ))}
+          </select>
+        </div>
+      </label>
 
       <section className="delivery-card__order">
         <div className="delivery-card__order-title">

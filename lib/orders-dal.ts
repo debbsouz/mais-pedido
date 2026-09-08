@@ -45,6 +45,8 @@ export interface OrderDto {
   createdAt: Date
   updatedAt: Date
   items: OrderItemDto[]
+  assignedDriverId: string | null
+  assignedDriverName: string | null
 }
 
 export interface OrdersContext {
@@ -114,6 +116,33 @@ export const getOrders = cache(
       return []
     }
 
+    // orders.assigned_driver_id referencia auth.users, não
+    // profiles — sem FK direta pra embutir num select só, então
+    // busca os nomes à parte (mesmo motivo do team.ts).
+    const driverIds = Array.from(
+      new Set(
+        ordersData
+          .map((order) => order.assigned_driver_id as string | null)
+          .filter((id): id is string => Boolean(id)),
+      ),
+    )
+
+    const driverNamesById = new Map<string, string>()
+
+    if (driverIds.length > 0) {
+      const { data: driverProfiles } = await supabase
+        .from('profiles')
+        .select('id, full_name')
+        .in('id', driverIds)
+
+      for (const profile of driverProfiles ?? []) {
+        driverNamesById.set(
+          profile.id as string,
+          profile.full_name as string,
+        )
+      }
+    }
+
     return ordersData.map((order) => ({
       id: order.id,
       number: order.number as number,
@@ -139,6 +168,9 @@ export const getOrders = cache(
         priceCents: item.price_cents as number,
         quantity: item.quantity as number,
       })),
+      assignedDriverId: order.assigned_driver_id as string | null,
+      assignedDriverName:
+        driverNamesById.get(order.assigned_driver_id as string) ?? null,
     }))
   },
 )
@@ -216,6 +248,8 @@ export function toFrontendOrder(dto: OrderDto): Order {
     address: (dto.address as unknown as OrderAddress) ?? undefined,
     payment: (dto.payment as unknown as OrderPaymentDetails) ?? undefined,
     itemDetails,
+    assignedDriverId: dto.assignedDriverId,
+    assignedDriverName: dto.assignedDriverName,
   }
 }
 

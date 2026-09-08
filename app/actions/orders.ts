@@ -284,6 +284,58 @@ export async function updateOrderStatus(
   return { success: true }
 }
 
+/**
+ * Atribui (ou remove, se driverId for null) um entregador da
+ * própria equipe a um pedido em entrega.
+ */
+export async function assignDeliveryDriver(
+  orderId: string,
+  driverId: string | null,
+): Promise<OrderActionResult> {
+  const context = await requireOrderManage()
+
+  if (!context) {
+    return { success: false, error: 'Não autorizado.' }
+  }
+
+  const supabase = await createClient()
+
+  if (driverId) {
+    const { data: membership } = await supabase
+      .from('organization_members')
+      .select('id')
+      .eq('user_id', driverId)
+      .eq('organization_id', context.organizationId)
+      .eq('role', 'delivery')
+      .eq('is_active', true)
+      .maybeSingle()
+
+    if (!membership) {
+      return {
+        success: false,
+        error: 'Entregador inválido.',
+      }
+    }
+  }
+
+  const { data, error } = await supabase
+    .from('orders')
+    .update({ assigned_driver_id: driverId })
+    .eq('id', orderId)
+    .eq('organization_id', context.organizationId)
+    .select('id')
+
+  if (error || !data || data.length === 0) {
+    return {
+      success: false,
+      error: 'Não foi possível atribuir o entregador.',
+    }
+  }
+
+  revalidatePath('/entregas')
+  return { success: true }
+}
+
 export async function deleteOrder(
   orderId: string,
 ): Promise<OrderActionResult> {

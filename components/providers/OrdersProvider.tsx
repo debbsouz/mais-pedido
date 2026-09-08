@@ -290,6 +290,23 @@ export function OrdersProvider({
           ? `há ${diffMin} min`
           : `há ${Math.floor(diffMin / 60)}h`;
 
+    const assignedDriverId =
+      (data.assigned_driver_id as string | null) ??
+      null;
+
+    let assignedDriverName: string | null = null;
+
+    if (assignedDriverId) {
+      const { data: driverProfile } = await supabase
+        .from("profiles")
+        .select("full_name")
+        .eq("id", assignedDriverId)
+        .maybeSingle();
+
+      assignedDriverName =
+        (driverProfile?.full_name as string) ?? null;
+    }
+
     return {
       id: data.id as string,
       number: (data.number as number) ?? 0,
@@ -329,6 +346,8 @@ export function OrdersProvider({
         (data.payment as Order["payment"]) ??
         undefined,
       itemDetails,
+      assignedDriverId,
+      assignedDriverName,
     };
   }
 

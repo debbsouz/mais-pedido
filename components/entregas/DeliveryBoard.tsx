@@ -6,6 +6,8 @@ import {
   useState,
 } from "react";
 
+import { assignDeliveryDriver } from "@/app/actions/orders";
+import { getTeamMembers } from "@/app/actions/team";
 import { useOrders } from "@/components/providers/OrdersProvider";
 import {
   formatDuration,
@@ -18,11 +20,52 @@ import { DeliveryCard } from "./DeliveryCard";
 export function DeliveryBoard() {
   const {
     orders,
+    setOrders,
     completeOrder,
   } = useOrders();
 
   const [now, setNow] =
     useState<number | null>(null);
+
+  const [drivers, setDrivers] = useState<
+    { id: string; name: string }[]
+  >([]);
+
+  useEffect(() => {
+    void getTeamMembers().then((members) => {
+      setDrivers(
+        members
+          .filter((member) => member.role === "delivery")
+          .map((member) => ({
+            id: member.userId,
+            name: member.name,
+          })),
+      );
+    });
+  }, []);
+
+  async function assignDriver(
+    orderId: string,
+    driverId: string | null,
+  ) {
+    const driverName =
+      drivers.find((driver) => driver.id === driverId)
+        ?.name ?? null;
+
+    setOrders((current) =>
+      current.map((order) =>
+        order.id === orderId
+          ? {
+              ...order,
+              assignedDriverId: driverId,
+              assignedDriverName: driverName,
+            }
+          : order,
+      ),
+    );
+
+    await assignDeliveryDriver(orderId, driverId);
+  }
 
   useEffect(() => {
     const initialTimer =
@@ -159,6 +202,10 @@ export function DeliveryBoard() {
                   urgency={getOrderUrgency(
                     elapsedMinutes,
                   )}
+                  drivers={drivers}
+                  onAssignDriver={
+                    assignDriver
+                  }
                   onComplete={
                     completeDelivery
                   }

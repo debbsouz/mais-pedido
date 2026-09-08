@@ -117,6 +117,10 @@ export interface Order {
   pickupName?: string;
 
   payment?: OrderPaymentDetails;
+
+  assignedDriverId?: string | null;
+
+  assignedDriverName?: string | null;
 }
 
 interface OrderCardProps {
