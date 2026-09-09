@@ -51,9 +51,6 @@ function CardBrandMark({ brand }: { brand: string }) {
 }
 
 export default function PagamentosPage() {
-  const [pixKey, setPixKey] = useState<string | null>(
-    null,
-  );
   const [acceptedBrands, setAcceptedBrands] = useState<
     string[]
   >([]);
@@ -68,7 +65,6 @@ export default function PagamentosPage() {
         return;
       }
 
-      setPixKey(settings.pixKey);
       setAcceptedBrands(settings.acceptedCardBrands);
     });
   }, []);
@@ -100,8 +96,6 @@ export default function PagamentosPage() {
     );
   }
 
-  const pixIsActive = !!pixKey;
-
   return (
     <div>
       <div className="settings-section__header">
@@ -115,14 +109,12 @@ export default function PagamentosPage() {
 
         <SettingsHelp>
           <p>
-            O Pix automático é configurado pela nossa
-            equipe direto no Mercado Pago quando sua
-            empresa é cadastrada — o próprio banco
-            confirma o pagamento e libera o pedido no
-            painel, sem chave pra você digitar aqui. As
-            bandeiras marcadas aparecem pro cliente no
-            cardápio digital e ajudam o entregador a
-            saber que o pagamento é na maquininha.
+            Pix automático (confirmação direto pelo banco)
+            ainda não existe no sistema — está nos nossos
+            planos. As bandeiras marcadas aparecem pro
+            cliente no cardápio digital e ajudam o
+            entregador a saber que o pagamento é na
+            maquininha.
           </p>
         </SettingsHelp>
       </div>
@@ -146,34 +138,22 @@ export default function PagamentosPage() {
 
             <div className="settings-payment__online-text">
               <strong>Pix</strong>
-              <span>
-                {pixIsActive
-                  ? "Ativo — configurado pela nossa equipe"
-                  : "Ainda não configurado"}
-              </span>
+              <span>Em breve</span>
             </div>
 
-            <span
-              className={`settings-payment__status${
-                pixIsActive
-                  ? ""
-                  : " settings-payment__status--off"
-              }`}
-            >
-              {pixIsActive
-                ? "Ativo"
-                : "Não configurado"}
+            <span className="settings-payment__status settings-payment__status--off">
+              Em breve
             </span>
           </div>
 
-          {!pixIsActive && (
-            <p className="settings-payment__pix-note">
-              Quer ativar o Pix automático? Fale com a
-              Next Code — a configuração é feita pela
-              nossa equipe, direto na sua conta do
-              Mercado Pago.
-            </p>
-          )}
+          <p className="settings-payment__pix-note">
+            A confirmação automática de Pix (via Mercado
+            Pago) ainda não está disponível — está nos
+            nossos planos, mas hoje não existe. Por
+            enquanto, combine o Pix com o cliente por
+            fora do sistema, do mesmo jeito que
+            combinaria dinheiro ou maquininha.
+          </p>
         </div>
 
         <div className="settings-payment__group">

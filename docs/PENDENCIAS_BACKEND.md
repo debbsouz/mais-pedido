@@ -452,6 +452,61 @@ segundo pedido na loja pública mostra "Você tem R$10,00 de cashback"
 saldo debitado no banco → cancelar esse segundo pedido devolve o
 saldo. Dados de teste removidos depois.
 
+## 14. Revisão geral de "pronto pra vender" (2026-09-09)
+
+Débora pediu uma revisão completa pra decidir se o sistema já pode
+ser vendido. Rodei `npm run build` de verdade (nunca tinha sido
+testado — só `npm run dev` o dia inteiro) — **passa limpo**. Conferi
+RLS de toda tabela do banco direto no Postgres — todas com RLS
+ligada e pelo menos uma policy real, nenhum buraco. Os 3 apps de
+equipe (Garçom, Atendente, Cozinha) e a loja pública já têm CSS
+responsivo de verdade pra celular, não só desktop.
+
+Achados e corrigidos nessa revisão:
+
+- **Pix mentia sobre uma automação que não existe** — a tela
+  Pagamentos dizia "o próprio banco confirma o pagamento
+  automaticamente" (Mercado Pago), mas não existe NENHUMA integração
+  de pagamento no código, em lugar nenhum — busquei no projeto
+  inteiro. Corrigido pra dizer a verdade: "Em breve", com uma nota
+  explicando que por enquanto o Pix é combinado por fora do sistema,
+  igual dinheiro ou maquininha. Isso já era uma decisão sua antiga
+  (`LOJA_PUBLICA_BACKEND.md`, "Mercado Pago / pagamento real" listado
+  como fora de escopo) — o problema era só o texto da tela prometer
+  mais do que existe hoje.
+- **Consulta de cupom e de saldo de cashback não tinham limite de
+  tentativas** — visitante anônimo da loja pública podia tentar
+  validar cupom ou telefone repetidas vezes sem nenhum freio (dava
+  pra tentar adivinhar código de cupom ou telefone de cliente por
+  tentativa e erro). Migration `20260909_041_public_lookup_rate_limit.sql`:
+  20 tentativas a cada 10 minutos por IP e por tipo de consulta,
+  mesmo princípio do limite que já existia pra criar pedido.
+- **Página não encontrada dentro do painel perdia o menu lateral** —
+  adicionado `app/(panel)/not-found.tsx`. Detalhe técnico: isso só
+  ajuda em casos onde uma rota *reconhecida* chama `notFound()` por
+  dentro (nenhuma existe assim hoje) — uma URL totalmente errada
+  digitada à mão (ex.: `/xyz123`) sempre cai na página 404 genérica
+  da raiz, é assim que o Next.js funciona, não dá pra evitar sem
+  reestruturar as rotas. Baixíssima prioridade, o botão "voltar pro
+  início" já funciona direitinho de qualquer jeito.
+
+**Duas coisas que achei e NÃO são código — decisão/providência sua**:
+
+1. **Ainda não existe implantação em produção** — o `README.md`
+   continua sendo o padrão gerado pelo `create-next-app`, não existe
+   `.vercel` nem qualquer configuração de deploy no projeto. Ou seja,
+   hoje o sistema só roda na sua máquina (`localhost`) — pra vender
+   de verdade, precisa publicar num endereço público de verdade
+   (Vercel é o caminho mais direto pra um projeto Next.js) antes de
+   qualquer cliente conseguir acessar.
+2. **Termos de Uso / Política de Privacidade não existem** — a tela
+   `/termos` já avisa honestamente "Em elaboração". Como o sistema
+   coleta nome/telefone/endereço de cliente final pela loja pública,
+   vale ter um texto real antes de vender pra valer (não é algo que
+   eu deva escrever sozinho — é decisão jurídica/de negócio sua, mas
+   posso rascunhar uma base se você quiser, com aviso claro de que
+   não substitui uma revisão jurídica de verdade).
+
 ## 3. Preço do pedido — revalidação server-side (já corrigida, registrar aqui pra visibilidade)
 
 `app/actions/orders.ts` (`createOrder`) antes confiava cegamente no

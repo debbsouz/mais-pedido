@@ -90,6 +90,19 @@ export async function checkPublicCashback(
 
   const supabase = await createClient()
 
+  // Limite de tentativas por IP — sem isso, dava pra varrer telefone
+  // de cliente atrás de saldo de cashback sem nenhum freio.
+  const clientIp = await getClientIp()
+
+  const { data: allowed } = await supabase.rpc(
+    'check_and_log_lookup_attempt',
+    { client_ip: clientIp, lookup_action: 'cashback' },
+  )
+
+  if (!allowed) {
+    return { enabled: false, balanceCents: 0, minRedeemCents: null }
+  }
+
   const { data } = await supabase
     .rpc('get_public_cashback_info', {
       p_organization_id: organizationId,
@@ -139,6 +152,23 @@ export async function checkPublicCoupon(
   }
 
   const supabase = await createClient()
+
+  // Limite de tentativas por IP — sem isso, dava pra varrer código
+  // de cupom por tentativa e erro sem nenhum freio.
+  const clientIp = await getClientIp()
+
+  const { data: allowed } = await supabase.rpc(
+    'check_and_log_lookup_attempt',
+    { client_ip: clientIp, lookup_action: 'coupon' },
+  )
+
+  if (!allowed) {
+    return {
+      valid: false,
+      discountCents: 0,
+      errorMessage: 'Muitas tentativas. Aguarde alguns minutos.',
+    }
+  }
 
   const { data } = await supabase
     .rpc('validate_public_coupon', {

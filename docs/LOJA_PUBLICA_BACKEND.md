@@ -65,18 +65,15 @@ policy de `order_items` usa uma função SECURITY DEFINER
 
 ## 4. Pendências — necessárias pra loja ficar "completa", mas não bloqueiam o MVP
 
-### 4.1 Identidade visual da loja
+### 4.1 Identidade visual da loja — ✅ resolvido em 2026-09-09
 
-Não existem colunas para isso ainda. Sugestão de campos (em `organizations`
-ou `units`, o que fizer mais sentido para o modelo de multi-unidade):
+`logo_url`/`banner_url` em `organizations` (Supabase Storage, bucket
+`organization-branding`), editável em Configurações → Identidade
+Visual. Ver `PENDENCIAS_BACKEND.md` seção 11 pros detalhes.
 
-- `logo_url`, `banner_url` (Supabase Storage)
-- `theme_primary_color`, `theme_secondary_color`
-- `description`
-- `establishment_type` (ex.: "Hamburgueria", "Pizzaria")
-
-O front já sabe consumir tudo isso — ver `StorefrontBrand` em
-`lib/storefront/types.ts`.
+Ainda não existem `theme_primary_color`/`theme_secondary_color`/
+`description`/`establishment_type` — a loja usa a cor laranja padrão
+pra todo mundo. Não bloqueia venda, é refinamento visual.
 
 ### 4.2 Status aberto/fechado e pedido mínimo — ✅ resolvido em 2026-08-25
 
