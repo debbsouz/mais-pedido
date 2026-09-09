@@ -12902,6 +12902,27 @@ html[data-theme="dark"] .brand-mark--mastercard span:last-child {
   grid-column: 1 / -1;
 }
 
+.settings-cashback__toggle {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+}
+
+.settings-cashback__toggle input {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--brand-600);
+  cursor: pointer;
+}
+
+.settings-cashback__toggle span {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-secondary);
+}
+
 @media (max-width: 640px) {
   .settings-form--grid {
     grid-template-columns: 1fr;
@@ -14821,6 +14842,32 @@ html[data-theme="dark"] .storefront__status--closed {
 
 .cart-drawer__coupon-message--ok {
   color: var(--success);
+}
+
+.cart-drawer__cashback {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-top: 14px;
+  padding: 12px;
+  border: 1px solid var(--success);
+  border-radius: var(--radius-md);
+  background: var(--success-soft);
+  cursor: pointer;
+}
+
+.cart-drawer__cashback input {
+  margin-top: 2px;
+  width: 17px;
+  height: 17px;
+  accent-color: var(--success);
+  cursor: pointer;
+}
+
+.cart-drawer__cashback span {
+  color: var(--success);
+  font-size: 12.5px;
+  line-height: 1.5;
 }
 
 .cart-drawer__submit {

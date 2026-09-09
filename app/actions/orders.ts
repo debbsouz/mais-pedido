@@ -282,7 +282,9 @@ export async function updateOrderStatus(
     .update({ status })
     .eq('id', orderId)
     .eq('organization_id', context.organizationId)
-    .select('id')
+    .select(
+      'id, customer_phone, total_cents, cashback_earned_cents, cashback_redeemed_cents',
+    )
 
   if (error) {
     return {
@@ -295,8 +297,136 @@ export async function updateOrderStatus(
     return { success: false, error: 'Pedido não encontrado.' }
   }
 
+  const order = data[0]
+
+  // Cashback é ganho só quando o pedido é concluído de verdade (não
+  // na criação) — evita criar e cancelar pedido só pra acumular
+  // saldo. cashback_earned_cents = 0 garante que só credita uma vez,
+  // mesmo se o status oscilar entre telas.
+  if (
+    status === 'completed' &&
+    order.customer_phone &&
+    order.cashback_earned_cents === 0
+  ) {
+    await creditCashbackForOrder(
+      context.organizationId,
+      order.id,
+      order.customer_phone,
+      order.total_cents,
+    )
+  }
+
+  // Se um pedido que já tinha usado cashback for cancelado, devolve
+  // o saldo — o cliente não pode perder o desconto de um pedido que
+  // não aconteceu.
+  if (
+    status === 'cancelled' &&
+    order.customer_phone &&
+    order.cashback_redeemed_cents > 0
+  ) {
+    await refundCashbackForOrder(
+      context.organizationId,
+      order.customer_phone,
+      order.cashback_redeemed_cents,
+    )
+  }
+
   revalidatePath('/pedidos')
   return { success: true }
+}
+
+/**
+ * Credita o cashback de um pedido concluído, se a organização tiver
+ * o recurso ligado e o pedido atingir o mínimo configurado.
+ * Best-effort: não bloqueia a conclusão do pedido se isso falhar.
+ */
+async function creditCashbackForOrder(
+  organizationId: string,
+  orderId: string,
+  customerPhone: string,
+  totalCents: number,
+) {
+  const supabase = await createClient()
+
+  const { data: org } = await supabase
+    .from('organizations')
+    .select('cashback_enabled, cashback_percent, cashback_min_order_cents')
+    .eq('id', organizationId)
+    .single()
+
+  if (!org?.cashback_enabled || !org.cashback_percent) {
+    return
+  }
+
+  if (
+    org.cashback_min_order_cents &&
+    totalCents < org.cashback_min_order_cents
+  ) {
+    return
+  }
+
+  const earnedCents = Math.floor(
+    (totalCents * org.cashback_percent) / 100,
+  )
+
+  if (earnedCents <= 0) {
+    return
+  }
+
+  const normalizedPhone = customerPhone.replace(/\D/g, '')
+
+  const { data: customer } = await supabase
+    .from('customers')
+    .select('id, cashback_balance_cents')
+    .eq('organization_id', organizationId)
+    .eq('phone', normalizedPhone)
+    .maybeSingle()
+
+  if (!customer) {
+    return
+  }
+
+  await supabase
+    .from('customers')
+    .update({
+      cashback_balance_cents:
+        customer.cashback_balance_cents + earnedCents,
+    })
+    .eq('id', customer.id)
+
+  await supabase
+    .from('orders')
+    .update({ cashback_earned_cents: earnedCents })
+    .eq('id', orderId)
+}
+
+/** Devolve cashback resgatado num pedido que acabou sendo cancelado. */
+async function refundCashbackForOrder(
+  organizationId: string,
+  customerPhone: string,
+  redeemedCents: number,
+) {
+  const supabase = await createClient()
+  const normalizedPhone = customerPhone.replace(/\D/g, '')
+
+  const { data: customer } = await supabase
+    .from('customers')
+    .select('id, cashback_balance_cents')
+    .eq('organization_id', organizationId)
+    .eq('phone', normalizedPhone)
+    .maybeSingle()
+
+  if (!customer) {
+    return
+  }
+
+  await supabase
+    .from('customers')
+    .update({
+      cashback_balance_cents:
+        customer.cashback_balance_cents + redeemedCents,
+    })
+    .eq('id', customer.id)
 }
 
 /**

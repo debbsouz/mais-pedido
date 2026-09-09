@@ -407,6 +407,51 @@ Garçom (`WaiterHeader.tsx`) que não tinha nenhuma função — não
 mostrava número nenhum (diferente do bug do sino do painel, esse
 nunca fingiu ter dado nenhum), só não fazia nada ao tocar.
 
+## 13. Cashback — ✅ construído em 2026-09-09 (configurável por empresa)
+
+Débora foi clara: não dá pra ter uma regra única de cashback pra
+todo mundo — cada estabelecimento decide a própria (e quem decide
+não somos nós, é o dono do restaurante). Construído como um recurso
+que cada empresa liga e configura sozinha, sem precisar de ninguém
+da Next Code mexer em nada.
+
+Migrations `20260909_039_cashback.sql` e `_040_refund_public_cashback.sql`
+aplicadas.
+
+- **Configuração** (Configurações → Cardápio Digital → Cashback):
+  liga/desliga, percentual de volta (%), pedido mínimo pra ganhar
+  (opcional) e saldo mínimo pra usar (opcional). Só liga quem tem o
+  recurso no plano (Essencial+, `lib/plans.ts`) — checado no
+  servidor (`updateCashbackSettings`), não só escondido na tela.
+- **Ganha**: quando o pedido é marcado como concluído (não na
+  criação — evita criar e cancelar pedido só pra ganhar saldo à
+  toa). `app/actions/orders.ts` (`updateOrderStatus`) credita
+  automaticamente o percentual configurado no cliente (achado pelo
+  telefone), uma vez só por pedido.
+- **Usa**: na loja pública, depois do cliente digitar o telefone, a
+  tela de pagamento mostra o saldo disponível e deixa aplicar como
+  desconto (soma com cupom, se tiver os dois). O resgate é atômico
+  no banco (`redeem_public_cashback`, SECURITY DEFINER — visitante é
+  anônimo, mesmo padrão de `validate_public_coupon`) e nunca confia
+  em valor vindo do navegador.
+- **Se o pedido for cancelado depois de ter usado cashback**, o
+  saldo volta pro cliente (`refund_public_cashback`) — ele não pode
+  perder o desconto de um pedido que não aconteceu.
+
+**Limitação conhecida, aceita por ora**: se uma empresa ativar o
+cashback e depois for rebaixada de plano, o recurso continua
+funcionando até alguém desligar manualmente — não há uma checagem
+automática de plano toda vez que um pedido ganha/usa cashback, só na
+hora de LIGAR. Risco baixo (exigiria um downgrade real depois de já
+estar usando), registrado aqui caso vire problema de verdade.
+
+Testado ponta a ponta: configurar 10% → pedido de R$100 marcado como
+concluído credita R$10,00 no cliente (achado pelo telefone) →
+segundo pedido na loja pública mostra "Você tem R$10,00 de cashback"
+→ marca usar → total recalculado corretamente (R$32,00 → R$22,00) →
+saldo debitado no banco → cancelar esse segundo pedido devolve o
+saldo. Dados de teste removidos depois.
+
 ## 3. Preço do pedido — revalidação server-side (já corrigida, registrar aqui pra visibilidade)
 
 `app/actions/orders.ts` (`createOrder`) antes confiava cegamente no

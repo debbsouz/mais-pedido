@@ -13,6 +13,7 @@ import {
   updateAdsSettings,
   updateStoreSettings,
 } from "@/app/actions/store-settings";
+import { CashbackSection } from "@/components/configuracoes/CashbackSection";
 import { CouponsSection } from "@/components/configuracoes/CouponsSection";
 import { SettingsHelp } from "@/components/configuracoes/SettingsHelp";
 
@@ -309,6 +310,8 @@ export default function CardapioDigitalPage() {
       </form>
 
       <CouponsSection />
+
+      <CashbackSection />
     </div>
   );
 }

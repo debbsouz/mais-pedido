@@ -14,8 +14,10 @@ import {
 } from "@phosphor-icons/react";
 
 import {
+  checkPublicCashback,
   checkPublicCoupon,
   createPublicOrder,
+  type PublicCashbackInfo,
 } from "@/app/actions/public-orders";
 import { rememberOrderId } from "@/lib/storefront/order-history";
 import type {
@@ -152,6 +154,12 @@ export function CartDrawer({
   const [isCheckingCoupon, setIsCheckingCoupon] =
     useState(false);
 
+  const [cashbackInfo, setCashbackInfo] =
+    useState<PublicCashbackInfo | null>(null);
+
+  const [useCashback, setUseCashback] =
+    useState(false);
+
   const [wantsScheduling, setWantsScheduling] =
     useState(false);
 
@@ -177,7 +185,25 @@ export function CartDrawer({
     ? appliedCoupon.discountCents / 100
     : 0;
 
-  const total = Math.max(0, subtotal - discount);
+  const cashbackBalance =
+    (cashbackInfo?.balanceCents ?? 0) / 100;
+
+  const canRedeemCashback =
+    Boolean(cashbackInfo?.enabled) &&
+    cashbackBalance > 0 &&
+    (!cashbackInfo?.minRedeemCents ||
+      (cashbackInfo?.balanceCents ?? 0) >=
+        cashbackInfo.minRedeemCents);
+
+  const cashbackDiscount =
+    useCashback && canRedeemCashback
+      ? Math.min(cashbackBalance, subtotal - discount)
+      : 0;
+
+  const total = Math.max(
+    0,
+    subtotal - discount - cashbackDiscount,
+  );
 
   async function handleApplyCoupon() {
     if (!couponCode.trim()) {
@@ -217,8 +243,22 @@ export function CartDrawer({
   const isEmpty = lines.length === 0;
   const stepIndex = stepOrder.indexOf(step);
 
-  function goNext() {
+  async function goNext() {
     const next = stepOrder[stepIndex + 1];
+
+    if (
+      next === "payment" &&
+      customerPhone.trim() &&
+      !cashbackInfo
+    ) {
+      const info = await checkPublicCashback(
+        organizationId,
+        customerPhone,
+      );
+
+      setCashbackInfo(info);
+    }
+
     if (next) setStep(next);
   }
 
@@ -244,6 +284,8 @@ export function CartDrawer({
     setCouponCode("");
     setAppliedCoupon(null);
     setCouponMessage(null);
+    setCashbackInfo(null);
+    setUseCashback(false);
     setWantsScheduling(false);
     setScheduledDateTime("");
     onClose();
@@ -270,6 +312,7 @@ export function CartDrawer({
         quantity: line.quantity,
       })),
       couponCode: appliedCoupon?.code,
+      useCashback: cashbackDiscount > 0,
       scheduledFor:
         wantsScheduling && scheduledDateTime
           ? new Date(
@@ -733,6 +776,31 @@ export function CartDrawer({
                     selected={payment}
                     onSelect={setPayment}
                   />
+
+                  {canRedeemCashback && (
+                    <label className="cart-drawer__cashback">
+                      <input
+                        type="checkbox"
+                        checked={useCashback}
+                        onChange={(event) =>
+                          setUseCashback(
+                            event.target.checked,
+                          )
+                        }
+                      />
+
+                      <span>
+                        Você tem{" "}
+                        <strong>
+                          {formatPrice(
+                            cashbackBalance,
+                          )}
+                        </strong>{" "}
+                        de cashback — usar como
+                        desconto nesse pedido?
+                      </span>
+                    </label>
+                  )}
                 </section>
               )}
 
@@ -767,7 +835,7 @@ export function CartDrawer({
               <span>Total</span>
 
               <div className="cart-drawer__total-value">
-                {appliedCoupon && (
+                {(appliedCoupon || cashbackDiscount > 0) && (
                   <small className="cart-drawer__total-original">
                     {formatPrice(subtotal)}
                   </small>

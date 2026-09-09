@@ -2,7 +2,9 @@
 
 import { revalidatePath } from 'next/cache'
 
+import { getCurrentSubscription } from '@/lib/dal'
 import { getOrdersContext } from '@/lib/orders-dal'
+import { hasFeature } from '@/lib/access'
 import { roleHasPermission } from '@/lib/roles'
 import { createClient } from '@/lib/supabase/server'
 
@@ -25,6 +27,10 @@ export interface StoreSettings {
   googleAdsId: string | null
   logoUrl: string | null
   bannerUrl: string | null
+  cashbackEnabled: boolean
+  cashbackPercent: number | null
+  cashbackMinOrderCents: number | null
+  cashbackMinRedeemCents: number | null
 }
 
 /**
@@ -43,7 +49,7 @@ export async function getStoreSettings(): Promise<StoreSettings | null> {
   const { data } = await supabase
     .from('organizations')
     .select(
-      'slug, name, cnpj, phone, is_open, min_order_cents, instagram_url, pix_key, pix_key_type, accepted_card_brands, meta_pixel_id, google_ads_id, logo_url, banner_url',
+      'slug, name, cnpj, phone, is_open, min_order_cents, instagram_url, pix_key, pix_key_type, accepted_card_brands, meta_pixel_id, google_ads_id, logo_url, banner_url, cashback_enabled, cashback_percent, cashback_min_order_cents, cashback_min_redeem_cents',
     )
     .eq('id', context.organizationId)
     .single()
@@ -67,6 +73,10 @@ export async function getStoreSettings(): Promise<StoreSettings | null> {
     googleAdsId: data.google_ads_id,
     logoUrl: data.logo_url,
     bannerUrl: data.banner_url,
+    cashbackEnabled: data.cashback_enabled,
+    cashbackPercent: data.cashback_percent,
+    cashbackMinOrderCents: data.cashback_min_order_cents,
+    cashbackMinRedeemCents: data.cashback_min_redeem_cents,
   }
 }
 
@@ -338,6 +348,88 @@ export async function updateBrandingSettings(
     return {
       success: false,
       error: 'Não foi possível salvar a identidade visual.',
+    }
+  }
+
+  revalidatePath('/configuracoes')
+
+  return { success: true }
+}
+
+export interface UpdateCashbackSettingsInput {
+  enabled: boolean
+  percent: number | null
+  minOrderCents: number | null
+  minRedeemCents: number | null
+}
+
+/**
+ * Cada organização define sua própria regra de cashback — não existe
+ * um percentual único que sirva pra todo mundo. Só liga quem tem o
+ * recurso no plano contratado (Essencial+, ver lib/plans.ts).
+ */
+export async function updateCashbackSettings(
+  input: UpdateCashbackSettingsInput,
+): Promise<StoreSettingsActionResult> {
+  const context = await getOrdersContext()
+
+  if (!context || !roleHasPermission(context.role, 'viewSettings')) {
+    return { success: false, error: 'Não autorizado.' }
+  }
+
+  if (input.enabled) {
+    const subscription = await getCurrentSubscription()
+
+    if (!hasFeature(subscription.planId, 'cashback')) {
+      return {
+        success: false,
+        error: 'Seu plano atual não inclui cashback.',
+      }
+    }
+
+    if (
+      !Number.isInteger(input.percent) ||
+      (input.percent as number) < 1 ||
+      (input.percent as number) > 100
+    ) {
+      return {
+        success: false,
+        error: 'Informe um percentual entre 1 e 100.',
+      }
+    }
+  }
+
+  if (
+    input.minOrderCents !== null &&
+    (!Number.isInteger(input.minOrderCents) || input.minOrderCents < 0)
+  ) {
+    return { success: false, error: 'Pedido mínimo inválido.' }
+  }
+
+  if (
+    input.minRedeemCents !== null &&
+    (!Number.isInteger(input.minRedeemCents) || input.minRedeemCents < 0)
+  ) {
+    return { success: false, error: 'Saldo mínimo inválido.' }
+  }
+
+  const supabase = await createClient()
+
+  const { data, error } = await supabase
+    .from('organizations')
+    .update({
+      cashback_enabled: input.enabled,
+      cashback_percent: input.enabled ? input.percent : null,
+      cashback_min_order_cents: input.minOrderCents,
+      cashback_min_redeem_cents: input.minRedeemCents,
+    })
+    .eq('id', context.organizationId)
+    .select('id')
+
+  if (error || !data || data.length === 0) {
+    return {
+      success: false,
+      error: 'Não foi possível salvar as configurações de cashback.',
     }
   }
 

@@ -59,12 +59,59 @@ export interface CreatePublicOrderInput {
   couponCode?: string
   /** ISO 8601. Omitido = pedido pra agora. */
   scheduledFor?: string
+  /** Usar o saldo de cashback do cliente (identificado pelo telefone) como desconto. */
+  useCashback?: boolean
 }
 
 export interface PublicCouponCheckResult {
   valid: boolean
   discountCents: number
   errorMessage: string | null
+}
+
+export interface PublicCashbackInfo {
+  enabled: boolean
+  balanceCents: number
+  minRedeemCents: number | null
+}
+
+/**
+ * Saldo de cashback do cliente (pelo telefone) + se a organização
+ * oferece cashback. Chamado quando o cliente já digitou o telefone
+ * no carrinho, antes de fechar o pedido.
+ */
+export async function checkPublicCashback(
+  organizationId: string,
+  phone: string,
+): Promise<PublicCashbackInfo> {
+  if (!organizationId || !phone.trim()) {
+    return { enabled: false, balanceCents: 0, minRedeemCents: null }
+  }
+
+  const supabase = await createClient()
+
+  const { data } = await supabase
+    .rpc('get_public_cashback_info', {
+      p_organization_id: organizationId,
+      p_phone: phone,
+    })
+    .single()
+
+  const result = data as {
+    enabled: boolean
+    balance_cents: number
+    min_redeem_cents: number | null
+  } | null
+
+  if (!result) {
+    return { enabled: false, balanceCents: 0, minRedeemCents: null }
+  }
+
+  return {
+    enabled: result.enabled,
+    balanceCents: result.balance_cents,
+    minRedeemCents: result.min_redeem_cents,
+  }
 }
 
 const couponErrorMessages: Record<string, string> = {
@@ -281,7 +328,30 @@ export async function createPublicOrder(
     couponCode = input.couponCode.trim().toUpperCase()
   }
 
-  const totalCents = Math.max(0, subtotalCents - discountCents)
+  // Resgata cashback (se o cliente pediu e tiver saldo) — a função
+  // já debita o saldo do cliente, atômico, limitado ao que sobrou
+  // depois do cupom. Nunca confia no valor mostrado no carrinho.
+  let cashbackRedeemedCents = 0
+
+  if (input.useCashback && input.customerPhone?.trim()) {
+    const maxRedeemCents = Math.max(0, subtotalCents - discountCents)
+
+    const { data: redeemed } = await supabase.rpc(
+      'redeem_public_cashback',
+      {
+        p_organization_id: input.organizationId,
+        p_phone: input.customerPhone.trim(),
+        p_max_redeem_cents: maxRedeemCents,
+      },
+    )
+
+    cashbackRedeemedCents = (redeemed as number | null) ?? 0
+  }
+
+  const totalCents = Math.max(
+    0,
+    subtotalCents - discountCents - cashbackRedeemedCents,
+  )
 
   // Gera o id no servidor em vez de usar .select() após o insert:
   // visitante anônimo não tem permissão de LEITURA em orders (só
@@ -316,10 +386,22 @@ export async function createPublicOrder(
     total_cents: totalCents,
     coupon_code: couponCode,
     discount_cents: discountCents,
+    cashback_redeemed_cents: cashbackRedeemedCents,
     scheduled_for: scheduledFor,
   })
 
   if (orderError) {
+    // O pedido não foi criado — devolve o cashback já debitado, se
+    // algum, senão o cliente perde saldo sem nunca ter feito o
+    // pedido.
+    if (cashbackRedeemedCents > 0 && input.customerPhone) {
+      await supabase.rpc('refund_public_cashback', {
+        p_organization_id: input.organizationId,
+        p_phone: input.customerPhone,
+        p_amount_cents: cashbackRedeemedCents,
+      })
+    }
+
     return {
       success: false,
       error: toSafeError(orderError, 'Não foi possível criar o pedido.'),
