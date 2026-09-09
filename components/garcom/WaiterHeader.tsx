@@ -1,9 +1,6 @@
 "use client";
 
-import {
-  Bell,
-  UserCircle,
-} from "@phosphor-icons/react";
+import { UserCircle } from "@phosphor-icons/react";
 
 import { useCurrentUser } from "@/components/providers/AuthProvider";
 import { roles } from "@/lib/roles";
@@ -23,13 +20,6 @@ export function WaiterHeader() {
       </div>
 
       <div className="waiter-header__actions">
-        <button
-          type="button"
-          aria-label="Notificações"
-        >
-          <Bell size={20} />
-        </button>
-
         <div className="waiter-header__user">
           <UserCircle size={30} />
 

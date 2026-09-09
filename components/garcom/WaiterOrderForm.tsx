@@ -20,17 +20,6 @@ interface WaiterOrderFormProps {
   onChange: (items: NewOrderItem[]) => void;
 }
 
-const categories = [
-  "Todos",
-  "Hambúrgueres",
-  "Pizzas",
-  "Bebidas",
-  "Porções",
-  "Sobremesas",
-] as const;
-
-type ActiveCategory = (typeof categories)[number];
-
 export function WaiterOrderForm({
   items,
   onChange,
@@ -39,7 +28,7 @@ export function WaiterOrderForm({
     useState<ProductForOrder[]>([]);
 
   const [activeCategory, setActiveCategory] =
-    useState<ActiveCategory>("Todos");
+    useState("Todos");
 
   const [searchTerm, setSearchTerm] =
     useState("");
@@ -49,6 +38,19 @@ export function WaiterOrderForm({
       setProducts(data),
     );
   }, []);
+
+  // Categorias reais do cardápio dessa organização — não um
+  // conjunto fixo de exemplo (que só fazia sentido pra uma
+  // hamburgueria, e escondia produtos de categorias diferentes).
+  const categories = useMemo(() => {
+    const uniqueCategories = Array.from(
+      new Set(
+        products.map((product) => product.category),
+      ),
+    );
+
+    return ["Todos", ...uniqueCategories];
+  }, [products]);
 
   const filteredProducts = useMemo(() => {
     const normalizedSearch = searchTerm

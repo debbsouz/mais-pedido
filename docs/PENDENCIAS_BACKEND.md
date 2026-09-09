@@ -379,6 +379,34 @@ Cardápio testado e confirmado funcionando pela primeira vez.
 Arquivos de teste removidos do Storage depois (não dá pra apagar
 `storage.objects` direto por SQL — usa a API de Storage).
 
+## 12. Filtro de categoria travado em nomes de hamburgueria — ✅ corrigido em 2026-09-09
+
+Achado numa varredura pedida pela Débora ("o que podemos fazer
+agora?"). `components/pedidos/OrderItemsForm.tsx` (usado em Mesas e
+em "Novo pedido") e `components/garcom/WaiterOrderForm.tsx` (app do
+Garçom) tinham uma lista fixa de categorias pra filtrar produto:
+`["Todos", "Hambúrgueres", "Pizzas", "Bebidas", "Porções",
+"Sobremesas"]` — só fazia sentido pra uma hamburgueria. Pra qualquer
+outra empresa (uma sushi, uma pizzaria com nomes diferentes, uma
+padaria), as abas de categoria não batiam com as categorias reais
+cadastradas em `categories` — o produto existia, mas sumia ao clicar
+numa aba (ou nunca tinha aba nenhuma, se a categoria fosse "Sem
+categoria"). Bug funcional, não só visual: atrapalhava o garçom/
+atendente a lançar pedido.
+
+Corrigido: as categorias agora vêm dos produtos reais retornados por
+`getProductsForOrder()` (mesmo padrão já usado em
+`MenuManagement.tsx` e na loja pública, que nunca tiveram esse
+problema). Testado criando uma categoria "Sushi QA" de propósito
+(fora da lista antiga) — as abas passaram a mostrar "Sem categoria"
+e "Sushi QA" corretamente, nos dois formulários. Categoria e produto
+de teste removidos depois.
+
+De quebra, removido um sino de notificação no cabeçalho do app do
+Garçom (`WaiterHeader.tsx`) que não tinha nenhuma função — não
+mostrava número nenhum (diferente do bug do sino do painel, esse
+nunca fingiu ter dado nenhum), só não fazia nada ao tocar.
+
 ## 3. Preço do pedido — revalidação server-side (já corrigida, registrar aqui pra visibilidade)
 
 `app/actions/orders.ts` (`createOrder`) antes confiava cegamente no
