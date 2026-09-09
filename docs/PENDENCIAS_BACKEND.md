@@ -340,6 +340,45 @@ uma mensagem positiva quando não há nenhum), "em preparo" mostra
 quantos estão sendo preparados agora. A bolinha vermelha só aparece
 quando há pedido de verdade esperando confirmação.
 
+## 11. Identidade Visual — ✅ construído em 2026-09-09 (era "Em breve")
+
+`Configurações → Identidade Visual` só mostrava dois quadrados
+"Em breve" — honesto, mas incompleto. A loja pública já esperava
+`logoUrl`/`bannerUrl` há tempo (`StoreHeader.tsx`,
+`lib/storefront/types.ts`), só vinham fixos como `null` em
+`get-storefront-data.ts`.
+
+Migration `20260908_037_organization_branding.sql` aplicada:
+colunas `organizations.logo_url`/`banner_url`, bucket público
+`organization-branding` no Supabase Storage (upload autenticado,
+leitura pública, dono deleta o próprio — mesmo padrão de
+`product-images`, já usado no Cardápio).
+
+- Tela de upload real (clica, escolhe imagem PNG/JPG/WEBP até 5MB,
+  sobe pro Storage, salva a URL em `organizations` via
+  `updateBrandingSettings`). Dá pra trocar ou remover cada imagem.
+- `get-storefront-data.ts` agora lê `logo_url`/`banner_url` de
+  verdade — a loja pública mostra a marca do cliente.
+
+**Achado importante no caminho**: o bucket `product-images` (usado
+pelo Cardápio pra foto de produto) **nunca existiu de verdade**. A
+migration original (`20260811_008_product_images_storage.sql`) usava
+`storage.create_bucket()`, uma função que não existe nesta instância
+do Supabase — a migration falhava calada, sem criar bucket nem
+políticas. Ou seja, **o upload de foto de produto estava quebrado
+desde sempre** (confirmado testando: erro de RLS "new row violates
+row-level security policy"). Corrigido em duas migrations: `037`
+cria o bucket `product-images` que faltava (junto com o de
+identidade visual), `038` recria as políticas de RLS que a `008`
+nunca conseguiu criar.
+
+Testado ponta a ponta: upload de logo e banner funcionando, imagem
+persiste depois de recarregar a página, aparece de verdade na loja
+pública (`/loja/burger-house`). Upload de foto de produto no
+Cardápio testado e confirmado funcionando pela primeira vez.
+Arquivos de teste removidos do Storage depois (não dá pra apagar
+`storage.objects` direto por SQL — usa a API de Storage).
+
 ## 3. Preço do pedido — revalidação server-side (já corrigida, registrar aqui pra visibilidade)
 
 `app/actions/orders.ts` (`createOrder`) antes confiava cegamente no

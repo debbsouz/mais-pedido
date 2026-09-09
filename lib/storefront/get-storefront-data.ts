@@ -31,8 +31,10 @@ function buildWhatsAppUrl(
  * 20260825_014_loja_publica_leitura_e_pedido.sql).
  *
  * Campos que ainda não têm coluna real no banco (cor da marca,
- * logo/banner, avaliação, promoções, populares, pedidos recentes)
- * usam um valor neutro/vazio — nunca um número inventado. Os
+ * avaliação, promoções, populares, pedidos recentes) usam um valor
+ * neutro/vazio — nunca um número inventado. Logo e banner já são
+ * reais (organizations.logo_url/banner_url, editados em
+ * Configurações → Identidade Visual). Os
  * componentes que consomem esses campos já somem sozinhos quando
  * vêm vazios (promoções, destaques, "peça de novo"), e a avaliação
  * só aparece quando reviewCount > 0. Status aberto/fechado, pedido
@@ -132,8 +134,8 @@ export async function getStorefrontData(
       name: org.name as string,
       type: "Estabelecimento",
       description: "",
-      logoUrl: null,
-      bannerUrl: null,
+      logoUrl: (org.logo_url as string | null) ?? null,
+      bannerUrl: (org.banner_url as string | null) ?? null,
       initials: getInitials(org.name as string),
       theme: {
         primary: "#ea580c",

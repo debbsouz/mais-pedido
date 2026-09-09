@@ -12962,6 +12962,7 @@ html[data-theme="dark"] .brand-mark--mastercard span:last-child {
 
 .settings-brand__upload {
   display: grid;
+  position: relative;
   justify-items: center;
   align-content: center;
   gap: 6px;
@@ -12972,6 +12973,7 @@ html[data-theme="dark"] .brand-mark--mastercard span:last-child {
   color: var(--text-muted);
   text-align: center;
   cursor: not-allowed;
+  overflow: hidden;
 }
 
 .settings-brand__upload strong {
@@ -12981,6 +12983,77 @@ html[data-theme="dark"] .brand-mark--mastercard span:last-child {
 
 .settings-brand__upload span {
   font-size: 11px;
+}
+
+.settings-brand__upload--clickable {
+  cursor: pointer;
+  transition:
+    border-color 150ms ease,
+    background 150ms ease;
+}
+
+.settings-brand__upload--clickable:hover {
+  border-color: var(--brand-300);
+  background: var(--brand-50);
+}
+
+.settings-brand__upload--clickable[data-filled="true"] {
+  padding: 0;
+  border-style: solid;
+}
+
+.settings-brand__input {
+  display: none;
+}
+
+.settings-brand__preview {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.settings-brand__preview--logo {
+  min-height: 160px;
+  object-fit: contain;
+  padding: 14px;
+}
+
+.settings-brand__preview--banner {
+  min-height: 160px;
+}
+
+.settings-brand__uploading {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background: rgb(0 0 0 / 0.55);
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.settings-brand__remove {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border: 0;
+  border-radius: 8px;
+  background: rgb(0 0 0 / 0.55);
+  color: #ffffff;
+  cursor: pointer;
+}
+
+.settings-brand__remove:hover {
+  background: var(--danger);
+}
+
+.settings-form__note--error {
+  color: var(--danger);
 }
 
 @media (max-width: 520px) {

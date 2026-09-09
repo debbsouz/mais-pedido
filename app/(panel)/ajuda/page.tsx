@@ -45,7 +45,7 @@ const faqItems = [
   {
     question: "Como cadastro um funcionário (garçom, cozinha, entregador)?",
     answer:
-      "Em breve você vai poder convidar sua equipe direto em Configurações > Equipe.",
+      "Em Configurações > Equipe, digite o nome, e-mail e cargo da pessoa. Ela recebe um convite por e-mail e cria a própria senha — não precisa de mais nenhum passo.",
   },
 ];
 

@@ -23,6 +23,8 @@ export interface StoreSettings {
   acceptedCardBrands: string[]
   metaPixelId: string | null
   googleAdsId: string | null
+  logoUrl: string | null
+  bannerUrl: string | null
 }
 
 /**
@@ -41,7 +43,7 @@ export async function getStoreSettings(): Promise<StoreSettings | null> {
   const { data } = await supabase
     .from('organizations')
     .select(
-      'slug, name, cnpj, phone, is_open, min_order_cents, instagram_url, pix_key, pix_key_type, accepted_card_brands, meta_pixel_id, google_ads_id',
+      'slug, name, cnpj, phone, is_open, min_order_cents, instagram_url, pix_key, pix_key_type, accepted_card_brands, meta_pixel_id, google_ads_id, logo_url, banner_url',
     )
     .eq('id', context.organizationId)
     .single()
@@ -63,6 +65,8 @@ export async function getStoreSettings(): Promise<StoreSettings | null> {
     acceptedCardBrands: data.accepted_card_brands ?? [],
     metaPixelId: data.meta_pixel_id,
     googleAdsId: data.google_ads_id,
+    logoUrl: data.logo_url,
+    bannerUrl: data.banner_url,
   }
 }
 
@@ -291,6 +295,49 @@ export async function updateAdsSettings(
     return {
       success: false,
       error: 'Não foi possível salvar a integração com anúncios.',
+    }
+  }
+
+  revalidatePath('/configuracoes')
+
+  return { success: true }
+}
+
+export interface UpdateBrandingInput {
+  logoUrl: string | null
+  bannerUrl: string | null
+}
+
+/**
+ * Logo e banner exibidos na loja pública. O upload em si (Supabase
+ * Storage, bucket organization-branding) acontece no navegador —
+ * aqui só salva a URL pública já gerada. `null` remove a imagem
+ * (volta pro estado sem logo/banner).
+ */
+export async function updateBrandingSettings(
+  input: UpdateBrandingInput,
+): Promise<StoreSettingsActionResult> {
+  const context = await getOrdersContext()
+
+  if (!context || !roleHasPermission(context.role, 'viewSettings')) {
+    return { success: false, error: 'Não autorizado.' }
+  }
+
+  const supabase = await createClient()
+
+  const { data, error } = await supabase
+    .from('organizations')
+    .update({
+      logo_url: input.logoUrl,
+      banner_url: input.bannerUrl,
+    })
+    .eq('id', context.organizationId)
+    .select('id')
+
+  if (error || !data || data.length === 0) {
+    return {
+      success: false,
+      error: 'Não foi possível salvar a identidade visual.',
     }
   }
 
