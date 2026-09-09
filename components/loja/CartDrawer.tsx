@@ -591,6 +591,18 @@ export function CartDrawer({
                       }
                     />
                   </div>
+
+                  <p className="cart-drawer__privacy-note">
+                    Ao continuar, você concorda com a{" "}
+                    <a
+                      href="/privacidade"
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      Política de Privacidade
+                    </a>
+                    .
+                  </p>
                 </section>
               )}
 
