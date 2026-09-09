@@ -507,6 +507,61 @@ Achados e corrigidos nessa revisão:
    posso rascunhar uma base se você quiser, com aviso claro de que
    não substitui uma revisão jurídica de verdade).
 
+## 15. Pix automático via Mercado Pago — ✅ construído em 2026-09-09 (nunca testado ao vivo)
+
+Você pediu pra construir a integração real de Pix (Mercado Pago) já
+pronta pra vender, sem deixar rascunho visível pro cliente final, e
+confirmou o modelo mais simples: cada dono de restaurante pega o
+**próprio** Access Token dele no Mercado Pago dele e me passa —
+não é a Next Code que se cadastra como "aplicativo" no Mercado Pago
+(isso seria o modelo mais complicado que eu propus antes por engano
+e você corrigiu). Instrução explícita sua: **"Constrói sem testar
+por enquanto"** — ou seja, construí tudo, mas nunca chamei a API real
+do Mercado Pago (não tenho nenhuma credencial de verdade em mãos).
+
+O que foi construído:
+
+- Migration `20260909_042_mercado_pago.sql`: coluna
+  `organizations.mercado_pago_access_token` (o token de cada
+  empresa) e colunas em `orders` pra guardar o QR code gerado e o
+  horário de confirmação do pagamento.
+- `lib/mercado-pago.ts`: as duas chamadas pra API do Mercado Pago
+  (criar cobrança Pix, reconsultar status de um pagamento) — escrito
+  estritamente a partir da documentação oficial deles.
+- `app/api/webhooks/mercadopago/route.ts`: endereço que o Mercado
+  Pago chama quando o status de um pagamento muda. Por segurança,
+  ele nunca confia no que vem no aviso — sempre reconsulta o
+  pagamento direto na API do Mercado Pago antes de marcar como pago.
+- Quando um cliente final escolhe Pix no cardápio digital e a
+  empresa **tem** o token configurado: o sistema cria a cobrança na
+  hora, mostra o QR code e o código "copia e cola" na tela de
+  sucesso do pedido.
+- Quando a empresa **não tem** token configurado (situação de hoje,
+  nenhuma empresa configurou ainda): o pedido é criado normalmente,
+  só sem QR code — exatamente como funcionava antes dessa
+  integração existir. Testei esse caminho de verdade (pedido
+  completo do carrinho até a tela de sucesso, sem erro nenhum).
+- Tela Configurações → Pagamentos agora mostra "Ativo" ou "Não
+  configurado" de verdade (antes dizia sempre "Em breve").
+- O token de cada empresa nunca é devolvido pro navegador — só uma
+  informação de sim/não (`mercadoPagoConfigured`); a leitura do
+  token de verdade só acontece dentro do servidor.
+- Passo de ativação documentado em `docs/ONBOARDING_NOVA_EMPRESA.md`
+  seção 6.
+
+**O que eu NÃO consegui testar** (e por quê): criar uma cobrança Pix
+de verdade e receber o aviso de pagamento exigem uma credencial real
+do Mercado Pago e, pro aviso (webhook) chegar, um endereço público
+na internet — nenhum dos dois existe ainda (você decidiu publicar só
+no final). Então essa parte — a chamada pra API do Mercado Pago em
+si e o recebimento do aviso — está construída conforme a
+documentação oficial, mas **nunca rodou contra o serviço real**.
+Pra ativar de verdade pra um cliente: (1) publicar o sistema num
+endereço público, (2) pegar o Access Token do Mercado Pago do
+cliente e configurar conforme o passo 6 do onboarding, (3) fazer um
+pedido de teste com Pix de verdade pra confirmar que o QR code e a
+confirmação de pagamento funcionam ponta a ponta.
+
 ## 3. Preço do pedido — revalidação server-side (já corrigida, registrar aqui pra visibilidade)
 
 `app/actions/orders.ts` (`createOrder`) antes confiava cegamente no

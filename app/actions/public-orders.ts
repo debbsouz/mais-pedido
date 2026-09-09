@@ -3,6 +3,9 @@
 import { headers } from 'next/headers'
 
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
+import { createPixPayment } from '@/lib/mercado-pago'
+import { getSiteOrigin } from '@/lib/site-url'
 
 async function getClientIp(): Promise<string> {
   const headerList = await headers()
@@ -242,7 +245,13 @@ function toSafeError(
 
 export async function createPublicOrder(
   input: CreatePublicOrderInput,
-): Promise<PublicOrderActionResult<{ id: string }>> {
+): Promise<
+  PublicOrderActionResult<{
+    id: string
+    pixQrCode: string | null
+    pixQrCodeBase64: string | null
+  }>
+> {
   if (!input.organizationId) {
     return { success: false, error: 'Loja inválida.' }
   }
@@ -477,7 +486,63 @@ export async function createPublicOrder(
     })
   }
 
-  return { success: true, data: { id: orderId } }
+  // Pix real via Mercado Pago (chave da própria organização) — só
+  // se o pagamento escolhido for Pix e a organização tiver
+  // configurado a própria chave. Best-effort: se o Mercado Pago
+  // falhar, o pedido já foi criado — o cliente combina o pagamento
+  // por fora, igual antes dessa integração existir.
+  let pixQrCode: string | null = null
+  let pixQrCodeBase64: string | null = null
+
+  if (input.paymentMethod === 'pix') {
+    const admin = createAdminClient()
+
+    const { data: org } = await admin
+      .from('organizations')
+      .select('mercado_pago_access_token')
+      .eq('id', input.organizationId)
+      .maybeSingle()
+
+    const accessToken = org?.mercado_pago_access_token as
+      | string
+      | null
+
+    if (accessToken) {
+      const origin = await getSiteOrigin()
+
+      const payerEmail = input.customerPhone?.trim()
+        ? `pedido.${input.customerPhone.trim().replace(/\D/g, '')}@maispedido.com.br`
+        : `pedido.${orderId}@maispedido.com.br`
+
+      const pixResult = await createPixPayment({
+        accessToken,
+        amountCents: totalCents,
+        description: `Pedido +Pedido #${orderId.slice(0, 8)}`,
+        payerEmail,
+        externalReference: orderId,
+        notificationUrl: `${origin}/api/webhooks/mercadopago?org=${input.organizationId}`,
+      })
+
+      if (pixResult.success) {
+        pixQrCode = pixResult.qrCode
+        pixQrCodeBase64 = pixResult.qrCodeBase64
+
+        await admin
+          .from('orders')
+          .update({
+            mercado_pago_payment_id: pixResult.paymentId,
+            pix_qr_code: pixResult.qrCode,
+            pix_qr_code_base64: pixResult.qrCodeBase64,
+          })
+          .eq('id', orderId)
+      }
+    }
+  }
+
+  return {
+    success: true,
+    data: { id: orderId, pixQrCode, pixQrCodeBase64 },
+  }
 }
 
 // ============================================================

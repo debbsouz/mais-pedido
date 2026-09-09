@@ -14620,6 +14620,54 @@ html[data-theme="dark"] .storefront__status--closed {
   font-size: 12.5px;
 }
 
+.cart-drawer__pix {
+  display: grid;
+  justify-items: center;
+  gap: 8px;
+  margin: 0 20px 20px;
+  padding: 18px 16px 20px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  text-align: center;
+}
+
+.cart-drawer__pix strong {
+  font-size: 13.5px;
+}
+
+.cart-drawer__pix p {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 12px;
+}
+
+.cart-drawer__pix-qr {
+  width: 180px;
+  height: 180px;
+  margin: 4px 0;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: #fff;
+  padding: 8px;
+  box-sizing: border-box;
+}
+
+.cart-drawer__pix-copy {
+  display: flex;
+  min-height: 40px;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 0 16px;
+  border: 1.5px solid var(--store-brand);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--store-brand) 10%, var(--surface));
+  color: var(--store-brand);
+  font-size: 12.5px;
+  font-weight: 750;
+}
+
 .cart-drawer__lines {
   display: grid;
   gap: 14px;

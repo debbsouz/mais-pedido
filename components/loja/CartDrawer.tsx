@@ -5,6 +5,7 @@ import { useState } from "react";
 import {
   CaretLeft,
   Check,
+  Copy,
   Minus,
   Motorcycle,
   Plus,
@@ -135,6 +136,16 @@ export function CartDrawer({
 
   const [submitError, setSubmitError] =
     useState<string | null>(null);
+
+  const [pixQrCode, setPixQrCode] = useState<
+    string | null
+  >(null);
+
+  const [pixQrCodeBase64, setPixQrCodeBase64] = useState<
+    string | null
+  >(null);
+
+  const [pixCodeCopied, setPixCodeCopied] = useState(false);
 
   const [placedOrderId, setPlacedOrderId] =
     useState<string | null>(null);
@@ -281,6 +292,9 @@ export function CartDrawer({
     setPayment(null);
     setSubmitError(null);
     setPlacedOrderId(null);
+    setPixQrCode(null);
+    setPixQrCodeBase64(null);
+    setPixCodeCopied(false);
     setCouponCode("");
     setAppliedCoupon(null);
     setCouponMessage(null);
@@ -330,12 +344,33 @@ export function CartDrawer({
 
     const newOrderId = result.data?.id ?? null;
     setPlacedOrderId(newOrderId);
+    setPixQrCode(result.data?.pixQrCode ?? null);
+    setPixQrCodeBase64(
+      result.data?.pixQrCodeBase64 ?? null,
+    );
 
     if (newOrderId) {
       rememberOrderId(organizationId, newOrderId);
     }
 
     onOrderPlaced();
+  }
+
+  async function handleCopyPixCode() {
+    if (!pixQrCode) {
+      return;
+    }
+
+    try {
+      await navigator.clipboard.writeText(pixQrCode);
+      setPixCodeCopied(true);
+      window.setTimeout(
+        () => setPixCodeCopied(false),
+        2000,
+      );
+    } catch {
+      // Sem permissão de área de transferência — ignora.
+    }
   }
 
   const canContinueFromDetails =
@@ -429,6 +464,35 @@ export function CartDrawer({
                   pedido.
                 </p>
               </div>
+
+              {pixQrCodeBase64 && pixQrCode && (
+                <div className="cart-drawer__pix">
+                  <strong>
+                    Pague com Pix para confirmar
+                  </strong>
+                  <p>
+                    Escaneie o QR Code ou copie o
+                    código abaixo no app do seu banco.
+                  </p>
+
+                  <img
+                    src={`data:image/png;base64,${pixQrCodeBase64}`}
+                    alt="QR Code para pagamento Pix"
+                    className="cart-drawer__pix-qr"
+                  />
+
+                  <button
+                    type="button"
+                    className="cart-drawer__pix-copy"
+                    onClick={handleCopyPixCode}
+                  >
+                    <Copy size={16} />
+                    {pixCodeCopied
+                      ? "Código copiado!"
+                      : "Copiar código Pix"}
+                  </button>
+                </div>
+              )}
 
               <OrderTracker
                 fulfillment={fulfillment}

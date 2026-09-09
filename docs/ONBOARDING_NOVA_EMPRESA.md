@@ -1,7 +1,7 @@
 # Como cadastrar uma empresa nova (cliente novo)
 
 Processo manual — a Débora decidiu que, por enquanto, todo cliente
-novo é cadastrado por ela ou pelo Jon, direto no banco. Não existe
+novo é cadastrado por ela, direto no banco. Não existe
 tela de "criar minha conta" pública (decisão consciente, ver
 `docs/PENDENCIAS_BACKEND.md` seção 7 e o histórico da conversa —
 pode virar self-service depois, se fizer sentido).
@@ -96,3 +96,32 @@ acha a linha pelo `slug` ou `name`, edita a coluna `plan_id` pra um
 desses valores: `start`, `essencial`, `gestao-pro`, `premium`. Só
 recarregar a página no navegador que o sistema já reflete o plano
 novo — não precisa de mais nada.
+
+## 6. FAZER MANUAL NO SUPABASE — ativar o Pix automático (Mercado Pago)
+
+Opcional — só se o cliente quiser receber Pix direto pelo sistema
+(sem isso, o Pix continua existindo como opção de pagamento, só que
+combinado por fora, igual dinheiro/cartão na entrega).
+
+Cada empresa usa a própria conta do Mercado Pago dela — o dinheiro
+cai direto na conta do cliente, nunca passa pela Next Code. Passos:
+
+1. Peça pro dono da empresa entrar na conta Mercado Pago **dele**
+   (não a nossa) e ir em **Seu negócio → Configurações →
+   Integrações → Credenciais de produção** (o caminho exato muda de
+   vez em quando, o nome "Credenciais" ou "Suas integrações" é o que
+   importa).
+2. Ele copia o **Access Token de produção** (começa com `APP_USR-`)
+   e te passa por um canal seguro.
+3. **Table Editor → organizations**, acha a linha pelo `slug`, cola
+   o token na coluna `mercado_pago_access_token`.
+4. Pronto — não precisa reiniciar nada. Na próxima vez que um
+   cliente final escolher Pix no cardápio digital, o sistema já cria
+   a cobrança automaticamente na conta desse restaurante.
+
+**Nunca** peça o token por um canal inseguro (WhatsApp sem
+criptografia de ponta a ponta é aceitável só porque já é assim que
+tratamos outras senhas neste processo, mas evite deixar em texto
+solto em qualquer lugar público). O token nunca aparece pro cliente
+final nem é devolvido pelo navegador do painel — só é lido no
+servidor.
