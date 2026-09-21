@@ -13,7 +13,10 @@ import {
   type ProductForOrder,
 } from "@/app/actions/catalog";
 
-import { formatCurrency } from "@/lib/format";
+import {
+  formatCurrency,
+  isImageSource,
+} from "@/lib/format";
 
 interface Product {
   id: string;
@@ -228,7 +231,15 @@ export function OrderItemsForm({
               }
             >
               <div className="order-product-card__image">
-                <span>{product.image}</span>
+                {isImageSource(product.image) ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={product.image}
+                    alt={product.name}
+                  />
+                ) : (
+                  <span>{product.image}</span>
+                )}
 
                 {quantity > 0 && (
                   <strong>{quantity}</strong>

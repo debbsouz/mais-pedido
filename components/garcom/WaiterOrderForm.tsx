@@ -13,7 +13,10 @@ import {
   type ProductForOrder,
 } from "@/app/actions/catalog";
 import type { NewOrderItem } from "@/components/pedidos/OrderItemsForm";
-import { formatCurrency } from "@/lib/format";
+import {
+  formatCurrency,
+  isImageSource,
+} from "@/lib/format";
 
 interface WaiterOrderFormProps {
   items: NewOrderItem[];
@@ -248,7 +251,15 @@ export function WaiterOrderForm({
                   }
                 >
                   <span className="waiter-product__image">
-                    {product.image}
+                    {isImageSource(product.image) ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={product.image}
+                        alt={product.name}
+                      />
+                    ) : (
+                      product.image
+                    )}
                   </span>
 
                   <span className="waiter-product__content">

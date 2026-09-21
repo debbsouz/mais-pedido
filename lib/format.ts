@@ -39,6 +39,17 @@ export function getInitials(name: string): string {
 }
 
 /**
+ * `ProductForOrder.image` (app/actions/catalog.ts) vem como uma
+ * URL/data-URI real quando o produto tem foto, ou como o emoji
+ * "🍽️" de fallback quando não tem — os dois cabem no mesmo campo
+ * string. Esta função distingue os dois casos pra saber se deve
+ * renderizar um <img> ou mostrar o emoji como texto.
+ */
+export function isImageSource(value: string): boolean {
+  return value.startsWith("http") || value.startsWith("data:")
+}
+
+/**
  * Remove tudo que não é dígito — usado como chave de comparação
  * entre telefones digitados de formas diferentes (com/sem DDD,
  * parênteses, espaço, hífen).
