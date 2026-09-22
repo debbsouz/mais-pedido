@@ -21,6 +21,7 @@ interface StoreHeaderProps {
   status: StorefrontStatus;
   social: StorefrontSocial;
   onSearch: (term: string) => void;
+  showDeliveryTime?: boolean;
 }
 
 function formatPrice(value: number) {
@@ -35,7 +36,12 @@ export function StoreHeader({
   status,
   social,
   onSearch,
+  showDeliveryTime = true,
 }: StoreHeaderProps) {
+  const hasDeliveryTime =
+    showDeliveryTime &&
+    status.deliveryTimeMinMinutes !== null &&
+    status.deliveryTimeMaxMinutes !== null;
   const [isSearchOpen, setIsSearchOpen] =
     useState(false);
 
@@ -171,6 +177,19 @@ export function StoreHeader({
         <span>
           Pedido mín. {formatPrice(status.minOrder)}
         </span>
+
+        {hasDeliveryTime && (
+          <>
+            <span className="storefront__info-divider">
+              ·
+            </span>
+
+            <span>
+              Entrega em {status.deliveryTimeMinMinutes}
+              -{status.deliveryTimeMaxMinutes} min
+            </span>
+          </>
+        )}
       </div>
 
       <SocialLinks social={social} />

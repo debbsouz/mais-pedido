@@ -20,6 +20,8 @@ export interface StoreSettings {
   isOpen: boolean
   minOrderCents: number
   instagramUrl: string | null
+  deliveryTimeMinMinutes: number | null
+  deliveryTimeMaxMinutes: number | null
   pixKey: string | null
   pixKeyType: string | null
   acceptedCardBrands: string[]
@@ -50,7 +52,7 @@ export async function getStoreSettings(): Promise<StoreSettings | null> {
   const { data } = await supabase
     .from('organizations')
     .select(
-      'slug, name, cnpj, phone, is_open, min_order_cents, instagram_url, pix_key, pix_key_type, accepted_card_brands, meta_pixel_id, google_ads_id, logo_url, banner_url, cashback_enabled, cashback_percent, cashback_min_order_cents, cashback_min_redeem_cents, mercado_pago_access_token',
+      'slug, name, cnpj, phone, is_open, min_order_cents, instagram_url, pix_key, pix_key_type, accepted_card_brands, meta_pixel_id, google_ads_id, logo_url, banner_url, cashback_enabled, cashback_percent, cashback_min_order_cents, cashback_min_redeem_cents, mercado_pago_access_token, delivery_time_min_minutes, delivery_time_max_minutes',
     )
     .eq('id', context.organizationId)
     .single()
@@ -67,6 +69,8 @@ export async function getStoreSettings(): Promise<StoreSettings | null> {
     isOpen: data.is_open,
     minOrderCents: data.min_order_cents,
     instagramUrl: data.instagram_url,
+    deliveryTimeMinMinutes: data.delivery_time_min_minutes,
+    deliveryTimeMaxMinutes: data.delivery_time_max_minutes,
     pixKey: data.pix_key,
     pixKeyType: data.pix_key_type,
     acceptedCardBrands: data.accepted_card_brands ?? [],
@@ -122,12 +126,18 @@ export async function updateStoreStatus(
 export interface UpdateStoreSettingsInput {
   minOrderCents: number
   instagramUrl: string
+  deliveryTimeMinMinutes: number | null
+  deliveryTimeMaxMinutes: number | null
 }
 
 /**
- * Pedido mínimo e Instagram — o WhatsApp não é cadastrado aqui, vem
- * do telefone em Estabelecimento, e o Facebook foi removido (a loja
- * pública já tem um botão de compartilhar próprio).
+ * Pedido mínimo, Instagram e tempo estimado de entrega — o WhatsApp
+ * não é cadastrado aqui, vem do telefone em Estabelecimento, e o
+ * Facebook foi removido (a loja pública já tem um botão de
+ * compartilhar próprio). O tempo de entrega é opcional e só cada
+ * empresa sabe o valor certo pra ela (não dá pra Next Code estipular
+ * um número igual pra todo mundo) — por isso os dois campos ficam
+ * livres, e só aparecem na loja pública quando preenchidos os dois.
  */
 export async function updateStoreSettings(
   input: UpdateStoreSettingsInput,
@@ -145,6 +155,34 @@ export async function updateStoreSettings(
     }
   }
 
+  const { deliveryTimeMinMinutes, deliveryTimeMaxMinutes } = input
+
+  const hasMin = deliveryTimeMinMinutes !== null
+  const hasMax = deliveryTimeMaxMinutes !== null
+
+  if (hasMin !== hasMax) {
+    return {
+      success: false,
+      error:
+        'Informe o tempo de entrega mínimo e máximo, ou deixe os dois em branco.',
+    }
+  }
+
+  if (hasMin && hasMax) {
+    if (
+      !Number.isInteger(deliveryTimeMinMinutes) ||
+      !Number.isInteger(deliveryTimeMaxMinutes) ||
+      (deliveryTimeMinMinutes as number) <= 0 ||
+      (deliveryTimeMaxMinutes as number) < (deliveryTimeMinMinutes as number)
+    ) {
+      return {
+        success: false,
+        error:
+          'Tempo de entrega inválido — o mínimo deve ser maior que zero e o máximo maior ou igual ao mínimo.',
+      }
+    }
+  }
+
   const supabase = await createClient()
 
   const { data, error } = await supabase
@@ -152,6 +190,8 @@ export async function updateStoreSettings(
     .update({
       min_order_cents: input.minOrderCents,
       instagram_url: input.instagramUrl.trim() || null,
+      delivery_time_min_minutes: deliveryTimeMinMinutes,
+      delivery_time_max_minutes: deliveryTimeMaxMinutes,
     })
     .eq('id', context.organizationId)
     .select('id')

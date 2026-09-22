@@ -5,6 +5,7 @@ import {
   type ReactNode,
   useContext,
   useEffect,
+  useRef,
   useState,
 } from "react";
 
@@ -20,6 +21,7 @@ import {
 } from "@/app/actions/orders";
 
 import { createClient } from "@/lib/supabase/client";
+import { playNewOrderChime } from "@/lib/notification-sound";
 
 interface OrdersContextValue {
   orders: Order[];
@@ -115,6 +117,12 @@ export function OrdersProvider({
     useState<Order[]>(
       initialOrders ?? [],
     );
+
+  const ordersRef = useRef(orders);
+
+  useEffect(() => {
+    ordersRef.current = orders;
+  }, [orders]);
 
   async function moveOrder(
     orderId: string,
@@ -403,6 +411,16 @@ export function OrdersProvider({
               (newOrder) => {
                 if (!newOrder) {
                   return;
+                }
+
+                const alreadyExists =
+                  ordersRef.current.some(
+                    (o) =>
+                      o.id === newOrder.id,
+                  );
+
+                if (!alreadyExists) {
+                  playNewOrderChime();
                 }
 
                 setOrders((current) => {

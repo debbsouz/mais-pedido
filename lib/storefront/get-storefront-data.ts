@@ -43,7 +43,11 @@ function buildWhatsAppUrl(
  * interruptor manual com o horário de funcionamento programado
  * (app/actions/business-hours.ts, isWithinBusinessHours) — se não
  * houver horário configurado, vale só o interruptor manual, igual
- * antes. O WhatsApp não tem campo
+ * antes. O tempo estimado de entrega (delivery_time_min/max_minutes)
+ * é opcional e configurado por cada empresa em Configurações →
+ * Cardápio Digital — quando nenhum dos dois está preenchido, a loja
+ * pública simplesmente não mostra nada (nunca um tempo inventado).
+ * O WhatsApp não tem campo
  * próprio — é derivado do telefone cadastrado em Estabelecimento
  * (buildWhatsAppUrl). Ver docs/LOJA_PUBLICA_BACKEND.md, seção 4,
  * para o que ainda falta.
@@ -147,6 +151,12 @@ export async function getStorefrontData(
     status: {
       isOpen: effectiveIsOpen,
       minOrder: (org.min_order_cents as number) / 100,
+      deliveryTimeMinMinutes:
+        (org.delivery_time_min_minutes as number | null) ??
+        null,
+      deliveryTimeMaxMinutes:
+        (org.delivery_time_max_minutes as number | null) ??
+        null,
     },
     social: {
       instagram:

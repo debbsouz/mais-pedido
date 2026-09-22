@@ -28,6 +28,8 @@ export interface StorefrontBrand {
 export interface StorefrontStatus {
   isOpen: boolean;
   minOrder: number;
+  deliveryTimeMinMinutes: number | null;
+  deliveryTimeMaxMinutes: number | null;
 }
 
 export interface StorefrontSocial {

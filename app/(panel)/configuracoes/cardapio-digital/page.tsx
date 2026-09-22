@@ -24,6 +24,10 @@ export default function CardapioDigitalPage() {
   const [minOrder, setMinOrder] = useState("0");
   const [instagramUrl, setInstagramUrl] =
     useState("");
+  const [deliveryTimeMin, setDeliveryTimeMin] =
+    useState("");
+  const [deliveryTimeMax, setDeliveryTimeMax] =
+    useState("");
   const [isSavingStore, setIsSavingStore] =
     useState(false);
   const [storeSaveMessage, setStoreSaveMessage] =
@@ -50,6 +54,16 @@ export default function CardapioDigitalPage() {
         (settings.minOrderCents / 100).toFixed(2),
       );
       setInstagramUrl(settings.instagramUrl ?? "");
+      setDeliveryTimeMin(
+        settings.deliveryTimeMinMinutes !== null
+          ? String(settings.deliveryTimeMinMinutes)
+          : "",
+      );
+      setDeliveryTimeMax(
+        settings.deliveryTimeMaxMinutes !== null
+          ? String(settings.deliveryTimeMaxMinutes)
+          : "",
+      );
       setMetaPixelId(settings.metaPixelId ?? "");
       setGoogleAdsId(settings.googleAdsId ?? "");
     });
@@ -94,6 +108,12 @@ export default function CardapioDigitalPage() {
         ? minOrderCents
         : 0,
       instagramUrl,
+      deliveryTimeMinMinutes: deliveryTimeMin.trim()
+        ? Number(deliveryTimeMin)
+        : null,
+      deliveryTimeMaxMinutes: deliveryTimeMax.trim()
+        ? Number(deliveryTimeMax)
+        : null,
     });
 
     setIsSavingStore(false);
@@ -146,7 +166,13 @@ export default function CardapioDigitalPage() {
             ou onde preferir. O botão de WhatsApp da
             loja usa o telefone cadastrado na aba
             Estabelecimento, e a própria loja já tem um
-            botão de compartilhar no topo.
+            botão de compartilhar no topo. O tempo de
+            entrega é opcional — só você sabe quanto
+            tempo sua entrega costuma levar. Preenchendo
+            os dois campos, o cliente vê algo como
+            &ldquo;Entrega em 30-45 min&rdquo; no topo da
+            loja (some sozinho pra pedidos feitos direto
+            na mesa).
           </p>
         </SettingsHelp>
       </div>
@@ -214,6 +240,42 @@ export default function CardapioDigitalPage() {
               value={instagramUrl}
               onChange={(event) =>
                 setInstagramUrl(event.target.value)
+              }
+            />
+          </div>
+
+          <div className="settings-form__field">
+            <span>Tempo de entrega — de (min)</span>
+            <input
+              type="text"
+              inputMode="numeric"
+              placeholder="Ex: 30"
+              value={deliveryTimeMin}
+              onChange={(event) =>
+                setDeliveryTimeMin(
+                  event.target.value.replace(
+                    /\D/g,
+                    "",
+                  ),
+                )
+              }
+            />
+          </div>
+
+          <div className="settings-form__field">
+            <span>Tempo de entrega — até (min)</span>
+            <input
+              type="text"
+              inputMode="numeric"
+              placeholder="Ex: 45"
+              value={deliveryTimeMax}
+              onChange={(event) =>
+                setDeliveryTimeMax(
+                  event.target.value.replace(
+                    /\D/g,
+                    "",
+                  ),
+                )
               }
             />
           </div>

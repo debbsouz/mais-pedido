@@ -186,6 +186,7 @@ export function StorefrontExperience({
         status={data.status}
         social={data.social}
         onSearch={setSearchTerm}
+        showDeliveryTime={!tableNumber}
       />
 
       {activeTab === "home" && (
