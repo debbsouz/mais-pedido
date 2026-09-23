@@ -13723,6 +13723,10 @@ html[data-theme="dark"] .settings-plan__cta:hover:not(:disabled) {
   height: 56px;
 }
 
+.storefront__banner[data-empty="true"]::before {
+  content: none;
+}
+
 .storefront__banner img {
   position: relative;
   width: 100%;
