@@ -3,6 +3,8 @@
 import { revalidatePath } from 'next/cache'
 
 import { getOrdersContext } from '@/lib/orders-dal'
+import { getCurrentSubscription } from '@/lib/dal'
+import { hasFeature } from '@/lib/access'
 import { roleHasPermission } from '@/lib/roles'
 import { createClient } from '@/lib/supabase/server'
 
@@ -90,6 +92,15 @@ export async function createCoupon(
 
   if (!context || !roleHasPermission(context.role, 'viewSettings')) {
     return { success: false, error: 'Não autorizado.' }
+  }
+
+  const subscription = await getCurrentSubscription()
+
+  if (!hasFeature(subscription.planId, 'coupons')) {
+    return {
+      success: false,
+      error: 'Seu plano atual não inclui cupons de desconto.',
+    }
   }
 
   const validationError = validateCouponInput(input)

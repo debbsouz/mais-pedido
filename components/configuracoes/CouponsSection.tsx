@@ -14,6 +14,9 @@ import {
 } from "@/app/actions/coupons";
 import { formatCurrency } from "@/lib/format";
 import { SettingsHelp } from "@/components/configuracoes/SettingsHelp";
+import { PlanLockedNotice } from "@/components/configuracoes/PlanLockedNotice";
+import { useCurrentSubscription } from "@/components/providers/AuthProvider";
+import { hasFeature } from "@/lib/access";
 
 function discountLabel(coupon: Coupon) {
   return coupon.discountType === "percentage"
@@ -22,6 +25,12 @@ function discountLabel(coupon: Coupon) {
 }
 
 export function CouponsSection() {
+  const subscription = useCurrentSubscription();
+  const isUnlocked = hasFeature(
+    subscription.planId,
+    "coupons",
+  );
+
   const [coupons, setCoupons] = useState<
     Coupon[] | null
   >(null);
@@ -132,6 +141,9 @@ export function CouponsSection() {
         </SettingsHelp>
       </div>
 
+      {!isUnlocked ? (
+        <PlanLockedNotice feature="coupons" />
+      ) : (
       <div className="settings-card">
         {coupons === null && (
           <p className="settings-form__note">Carregando...</p>
@@ -285,6 +297,7 @@ export function CouponsSection() {
           </div>
         </form>
       </div>
+      )}
     </>
   );
 }

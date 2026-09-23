@@ -182,3 +182,21 @@ export function planHasFeature(
 ) {
   return plans[planId].features.includes(feature);
 }
+
+/**
+ * Menor plano (por preço) que já inclui a feature — usado pra
+ * avisar "disponível a partir do plano X" em telas bloqueadas.
+ */
+export function minPlanForFeature(
+  feature: FeatureId,
+): Plan | null {
+  const sorted = Object.values(plans).sort(
+    (a, b) => a.price - b.price,
+  );
+
+  return (
+    sorted.find((plan) =>
+      plan.features.includes(feature),
+    ) ?? null
+  );
+}

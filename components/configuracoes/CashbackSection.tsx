@@ -9,8 +9,17 @@ import {
   updateCashbackSettings,
 } from "@/app/actions/store-settings";
 import { SettingsHelp } from "@/components/configuracoes/SettingsHelp";
+import { PlanLockedNotice } from "@/components/configuracoes/PlanLockedNotice";
+import { useCurrentSubscription } from "@/components/providers/AuthProvider";
+import { hasFeature } from "@/lib/access";
 
 export function CashbackSection() {
+  const subscription = useCurrentSubscription();
+  const isUnlocked = hasFeature(
+    subscription.planId,
+    "cashback",
+  );
+
   const [enabled, setEnabled] = useState(false);
   const [percent, setPercent] = useState("5");
   const [minOrder, setMinOrder] = useState("");
@@ -111,6 +120,9 @@ export function CashbackSection() {
         </SettingsHelp>
       </div>
 
+      {!isUnlocked ? (
+        <PlanLockedNotice feature="cashback" />
+      ) : (
       <form
         className="settings-card settings-form settings-form--grid"
         onSubmit={handleSubmit}
@@ -191,6 +203,7 @@ export function CashbackSection() {
           )}
         </div>
       </form>
+      )}
     </>
   );
 }

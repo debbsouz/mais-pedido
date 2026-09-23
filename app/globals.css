@@ -12512,6 +12512,32 @@ html[data-theme="dark"] .settings-help__toggle[aria-expanded="true"] {
   break-inside: avoid;
 }
 
+.settings-locked {
+  justify-items: center;
+  gap: 10px;
+  padding: 32px 22px;
+  text-align: center;
+  color: var(--text-secondary);
+}
+
+.settings-locked svg {
+  color: var(--brand-600);
+}
+
+.settings-locked p {
+  font-size: 13.5px;
+  font-weight: 650;
+}
+
+.settings-locked__link {
+  padding: 8px 16px;
+  border-radius: 999px;
+  background: var(--brand-600);
+  color: #ffffff;
+  font-size: 12.5px;
+  font-weight: 750;
+}
+
 .settings-payment__group {
   display: grid;
   gap: 10px;
