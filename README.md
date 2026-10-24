@@ -1,36 +1,62 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+ <p align="center">
+  <img src="public/logo.png" alt="Mais Pedido — Banner" width="100%">
+</p>
 
-## Getting Started
+<h1 align="center">+Pedido</h1>
 
-First, run the development server:
+<p align="center">
+  Plataforma de gestão de pedidos para estabelecimentos do setor de alimentação.
+</p>
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+<p align="center">
+  <strong>Mais organização, agilidade e controle para o seu negócio.</strong>
+</p>
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+---
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Sobre o projeto
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+O **Mais Pedido** é uma plataforma SaaS desenvolvida para centralizar e simplificar a gestão de pedidos e as operações de estabelecimentos do setor de alimentação.
 
-## Learn More
+Com uma interface moderna e intuitiva, o sistema reúne ferramentas de gerenciamento em um único ambiente, buscando otimizar o fluxo de atendimento, facilitar o acompanhamento dos pedidos e tornar a rotina operacional mais eficiente.
 
-To learn more about Next.js, take a look at the following resources:
+A arquitetura foi planejada para atender diferentes empresas, com separação de dados e recursos de gestão por organização.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Funcionalidades
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- **Gestão de pedidos:** organização e acompanhamento dos pedidos por status.
+- **Painel Kanban:** visualização do fluxo de atendimento.
+- **Gerenciamento de cardápio:** administração de produtos, categorias, preços e disponibilidade.
+- **Dashboard administrativo:** acesso centralizado às áreas de gestão.
+- **Autenticação:** controle de acesso às áreas administrativas.
+- **Arquitetura multiempresa:** estrutura voltada ao atendimento de múltiplas organizações.
+- **Banco de dados:** persistência e organização das informações.
+- **Gerenciamento de imagens:** suporte às imagens dos produtos.
+- **Interface responsiva:** experiência adaptável a diferentes tamanhos de tela.
 
-## Deploy on Vercel
+## Tecnologias
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+- Next.js
+- React
+- TypeScript
+- Supabase
+- PostgreSQL
+- Tailwind CSS
+- Phosphor Icons
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Arquitetura
+
+O projeto foi estruturado com foco em modularidade, reutilização de componentes, organização do código e separação de responsabilidades.
+
+A arquitetura busca facilitar a manutenção, a evolução das funcionalidades e a adaptação da plataforma às necessidades de diferentes estabelecimentos.
+
+## Objetivo
+
+Oferecer uma solução digital para tornar a gestão de pedidos mais simples e eficiente, reunindo recursos essenciais para a operação de estabelecimentos em uma plataforma centralizada.
+
+---
+
+<p align="center">
+  <strong>+Pedido</strong><br>
+  Tecnologia para simplificar a gestão e transformar a experiência de atendimento.
+</p>
